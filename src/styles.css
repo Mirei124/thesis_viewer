@@ -105,6 +105,10 @@ p {
 .outline-item:hover:not(:disabled), .outline-item:focus-visible { background: #dbeafe; color: #1d4ed8; }
 .outline-item:disabled { cursor: not-allowed; color: #64748b; }
 .navigation-notice { border-left: 0.2rem solid #b45309; padding-left: 0.55rem; }
+.automatic-outline-label { color: #1e3a8a !important; font-weight: 700; }
+.automatic-outline-caution { border-left: 0.2rem solid #b45309; padding-left: 0.55rem; }
+.automatic-outline-list { max-height: 19rem; overflow: auto; }
+.automatic-outline-meta { color: #64748b; font-size: 0.75rem; }
 .thumbnail-hint { margin-bottom: 0.7rem !important; }
 .thumbnail-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.6rem; }
 .thumbnail-button { display: grid; gap: 0.35rem; min-width: 0; cursor: pointer; border: 1px solid #cbd5e1; border-radius: 0.45rem; background: #fff; color: #334155; font: inherit; font-size: 0.8rem; padding: 0.4rem; text-align: center; }

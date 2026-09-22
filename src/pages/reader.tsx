@@ -18,6 +18,10 @@ import {
   type PageExtraction,
   type PdfPageTextBlock,
 } from '../lib/pdfPageBlocks';
+import {
+  pdfSectionCandidatesFromPages,
+  type PdfSectionCandidate,
+} from '../lib/pdfSectionCandidates';
 
 GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
@@ -107,6 +111,11 @@ type OutlineState =
   | { kind: 'loading' }
   | { kind: 'ready'; items: PdfOutlineItem[] }
   | { kind: 'unavailable'; message: string };
+type AutoSectionState =
+  | { kind: 'idle' }
+  | { kind: 'identifying' }
+  | { kind: 'ready'; candidates: PdfSectionCandidate[] }
+  | { kind: 'error'; message: string };
 type Thumbnail = { kind: 'loading' } | { kind: 'ready'; src: string } | { kind: 'error' };
 type SearchIndexState =
   | { kind: 'idle' }
@@ -249,6 +258,7 @@ function ReaderPage() {
   const [isRendering, setIsRendering] = useState(false);
   const [outline, setOutline] = useState<OutlineState>({ kind: 'idle' });
   const [outlineNotice, setOutlineNotice] = useState('');
+  const [autoSections, setAutoSections] = useState<AutoSectionState>({ kind: 'idle' });
   const [thumbnails, setThumbnails] = useState<Record<number, Thumbnail>>({});
   const [thumbnailSession, setThumbnailSession] = useState(0);
   const [searchIndex, setSearchIndex] = useState<SearchIndexState>({ kind: 'idle' });
@@ -341,6 +351,7 @@ function ReaderPage() {
     setThumbnails({});
     setOutline({ kind: 'idle' });
     setOutlineNotice('');
+    setAutoSections({ kind: 'idle' });
     setSearchIndex({ kind: 'idle' });
     setExtraction({ kind: 'idle' });
     setSearchQuery('');
@@ -394,6 +405,7 @@ function ReaderPage() {
 
     setSearchIndex({ kind: 'indexing', indexedPageCount, pageCount: pdf.numPages, failedPageCount, revision: 0 });
     setExtraction({ kind: 'extracting', extractedPageCount: indexedPageCount, pageCount: pdf.numPages, textPageCount, emptyPageCount, failedPageCount });
+    setAutoSections({ kind: 'identifying' });
 
     for (let pageIndex = 0; pageIndex < pdf.numPages; pageIndex += 1) {
       if (extractionRequestId !== extractionRequestIdRef.current || searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
@@ -456,6 +468,15 @@ function ReaderPage() {
           blockCount: pageBlocksRef.current.length,
           pages,
         });
+        try {
+          const candidates = pdfSectionCandidatesFromPages(pages, documentVersion);
+          if (extractionRequestId !== extractionRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
+          setAutoSections({ kind: 'ready', candidates });
+        } catch {
+          if (extractionRequestId === extractionRequestIdRef.current && isCurrent(requestId) && documentRef.current === pdf) {
+            setAutoSections({ kind: 'error', message: 'Automatic section candidates could not be inspected. Page navigation remains available.' });
+          }
+        }
       } else {
         setExtraction({ kind: 'extracting', extractedPageCount: indexedPageCount, pageCount: pdf.numPages, textPageCount, emptyPageCount, failedPageCount });
       }
@@ -513,6 +534,12 @@ function ReaderPage() {
         setOutlineNotice(`Could not resolve the destination for “${item.title || 'this outline entry'}”.`);
       }
     }
+  }
+
+  function navigateAutoSection(candidate: PdfSectionCandidate) {
+    if (state.kind !== 'ready') return;
+    setOutlineNotice(`Automatic candidate: “${candidate.title}” on page ${candidate.pageIndex + 1}.`);
+    goToPage(candidate.pageIndex);
   }
 
   useEffect(() => {
@@ -1004,9 +1031,33 @@ function ReaderPage() {
             <h2 id="outline-title">Outline</h2>
             {outline.kind === 'idle' || outline.kind === 'loading'
               ? <p>Reading this PDF’s outline…</p>
-              : outline.kind === 'unavailable'
-                ? <p>{outline.message}</p>
-                : <nav aria-label="PDF outline"><OutlineItems items={outline.items} depth={0} onNavigate={navigateOutline} /></nav>}
+              : outline.kind === 'ready'
+                ? <nav aria-label="PDF outline"><OutlineItems items={outline.items} depth={0} onNavigate={navigateOutline} /></nav>
+                : <>
+                  <p>{outline.message}</p>
+                  {autoSections.kind === 'idle' || autoSections.kind === 'identifying'
+                    ? <p>Identifying conservative automatic section candidates from local PDF text…</p>
+                    : autoSections.kind === 'error'
+                      ? <p className="navigation-notice">{autoSections.message}</p>
+                      : autoSections.candidates.length === 0
+                        ? <p>No reliable automatic section candidates were found. Use page thumbnails and page navigation.</p>
+                        : <nav aria-label="Automatically identified section candidates">
+                          <p className="automatic-outline-label">Automatically identified sections · candidates only</p>
+                          <p className="automatic-outline-caution">These are not a native PDF outline or a reconstructed reading order. Each candidate comes from one PDF.js text item. Multi-column pages, tables, and formulas can produce false headings; low-confidence entries are marked.</p>
+                          <ul className="outline-list automatic-outline-list">
+                            {autoSections.candidates.map((candidate) => <li key={candidate.candidateId}>
+                              <button
+                                type="button"
+                                className="outline-item"
+                                onClick={() => navigateAutoSection(candidate)}
+                                title={`Automatic ${candidate.confidence}-confidence candidate; go to page ${candidate.pageIndex + 1}`}
+                              >
+                                {candidate.title} <span className="automatic-outline-meta">Page {candidate.pageIndex + 1} · {candidate.confidence} confidence · source: {candidate.signals.join(', ')}</span>
+                              </button>
+                            </li>)}
+                          </ul>
+                        </nav>}
+                </>}
             {outlineNotice && <p className="navigation-notice" role="status">{outlineNotice}</p>}
           </section>
           <section className="navigation-panel" aria-labelledby="thumbnails-title">
