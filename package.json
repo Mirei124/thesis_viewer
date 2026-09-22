@@ -1,0 +1,26 @@
+{
+  "name": "thesis-viewer",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wxt",
+    "dev:firefox": "wxt --browser firefox",
+    "typecheck": "wxt prepare && tsc --noEmit",
+    "build:chrome": "wxt build --browser chrome",
+    "build:firefox": "wxt build --browser firefox"
+  },
+  "dependencies": {
+    "@wxt-dev/module-react": "^1.1.0",
+    "pdfjs-dist": "^6.3.289",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "wxt": "^0.20.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "pnpm@11.26.0"
+}

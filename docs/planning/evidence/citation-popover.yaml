@@ -1,0 +1,802 @@
+- generic [ref=f11e1]:
+  - iframe [ref=f11e4]:
+    - generic [ref=f15e1]:
+      - generic [ref=f15e3]:
+        - generic [ref=f15e6]:
+          - generic [ref=f15e7]:
+            - radiogroup [ref=f15e10]:
+              - radio "Thumbnails" [ref=f15e1198] [cursor=pointer]
+              - radio "Document Outline" [checked] [ref=f15e1199] [cursor=pointer]
+            - generic [ref=f15e14]:
+              - link "Introduction" [ref=f15e1200] [cursor=pointer]:
+                - /url: "#section.1"
+              - link "Preliminary" [ref=f15e1201] [cursor=pointer]:
+                - /url: "#section.2"
+              - link "Methodology" [ref=f15e1202] [cursor=pointer]:
+                - /url: "#section.3"
+              - link "Experiments" [ref=f15e1203] [cursor=pointer]:
+                - /url: "#section.4"
+              - link "Analysis" [ref=f15e1204] [cursor=pointer]:
+                - /url: "#section.5"
+              - link "Related Work" [ref=f15e1205] [cursor=pointer]:
+                - /url: "#section.6"
+              - link "Conclusion" [ref=f15e1206] [cursor=pointer]:
+                - /url: "#section.7"
+              - link "Bibliographical References" [ref=f15e1207] [cursor=pointer]:
+                - /url: "#section.8"
+              - link "Details of Similarity Calculation" [ref=f15e1208] [cursor=pointer]:
+                - /url: "#appendix.A"
+              - link "Details of Downstream Tasks" [ref=f15e1209] [cursor=pointer]:
+                - /url: "#appendix.B"
+              - link "Implementation Details" [ref=f15e1210] [cursor=pointer]:
+                - /url: "#appendix.C"
+              - link "More Visualization Examples of Token Trimming" [ref=f15e1211] [cursor=pointer]:
+                - /url: "#appendix.D"
+          - generic [ref=f15e41]:
+            - region "Page ⁨1⁩" [ref=f15e1212]:
+              - generic [ref=f15e44]:
+                - text: "SmartTrim : Adaptive Tokens and Attention Pruning for Efficient Vision-Language Models Zekun Wang 1 ∗ , Jingchang Chen 1 ∗ , Wangchunshu Zhou 2 , Haichao Zhu Jiafeng Liang 1 , Liping Shan 3 , Ming Liu 1 , 4 , Dongliang Xu 3 , Qing Yang 3 , Bing Qin 1 , 4 1 Harbin Institute of Technology 2 ETH Zurich 3 Du Xiaoman (Beijing) Science Technology Co., Ltd 4 Peng Cheng Laboratory {zkwang, jcchen, mliu, qinb}@ir.hit.edu.cn Abstract Despite achieving remarkable performance on various vision-language tasks, Transformer-based Vision-Language Models (VLMs) suffer from redundancy in inputs and parameters, significantly hampering their efficiency in real-world applications. Moreover, the degree of redundancy in token representations and model parameters, such as attention heads, varies significantly for different inputs. In light of the challenges, we propose Smart- Trim , an adaptive acceleration framework for VLMs, which adjusts the computational overhead per instance. Specifically, we integrate lightweight modules into the original backbone to identify and prune redundant token representations and attention heads within each layer. Furthermore, we devise a self-distillation strategy to enhance the consistency between the predictions of the pruned model and its fully-capacity counterpart. Ex- perimental results across various vision-language tasks consistently demonstrate that SmartTrim accelerates the original model by 2 - 3 times with minimal performance degradation, highlighting the effectiveness and ef- ficiency compared to previous approaches. Code will be available at"
+                - generic [ref=f15e45]:
+                  - text: https://github.com/kugwzk/SmartTrim
+                  - link "https://github.com/kugwzk/SmartTrim" [ref=f15e1213] [cursor=pointer]:
+                    - /url: https://github.com/kugwzk/SmartTrim
+                - text: ". Keywords: Vision-Language Model, Adaptive Inference, Pruning, Dynamic Network How many clocks do you see? Is there a glass? How many bananas are in the bowl?"
+                - generic [ref=f15e47]:
+                  - text: What is the visible portion of the
+                  - link [ref=f15e48] [cursor=pointer]:
+                    - /url: "#cite.efficientvlm"
+                - generic [ref=f15e49]:
+                  - text: name of the railroad in yellow?
+                  - link [ref=f15e50] [cursor=pointer]:
+                    - /url: "#cite.upop"
+                - text: "Easy Instances Hard Instances 18 20 22 24 26 28 30 32 FLOPs(G) Figure 1: FLOPs histogram of SmartTrim"
+                - generic [ref=f15e51]:
+                  - text: on VQA.
+                  - link [ref=f15e52] [cursor=pointer]:
+                    - /url: "#figure.caption.1"
+                - text: SmartTrim allocates diverse computational over- head based on cross-modal complexity, assigning fewer computations to easy instances (left) and more to hard ones (right). 1. Introduction
+                - generic [ref=f15e53]:
+                  - text: Transformer-based (Vaswani et al., 2017) Vision-
+                  - link [active] [ref=f15e54] [cursor=pointer]:
+                    - /url: "#cite.transformer"
+                - text: Language Models (VLMs) have shown great suc- cess on various vision-language tasks with their del-
+                - generic [ref=f15e55]:
+                  - text: icate model structures (Radford et al., 2021; Wang
+                  - link [ref=f15e56] [cursor=pointer]:
+                    - /url: "#cite.clip"
+                  - link [ref=f15e57] [cursor=pointer]:
+                    - /url: "#cite.beit3"
+                - generic [ref=f15e58]: et al., 2023b; Chen et al., 2023). Despite achieving
+                - text: superior performance, these models are computa-
+                - generic [ref=f15e59]:
+                  - text: tionally expensive due to the long input sequences
+                  - link [ref=f15e60] [cursor=pointer]:
+                    - /url: "#figure.caption.2"
+                - text: and large number of parameters, hindering their deployment in the production environment. In pursuit of efficient VLMs, a few acceleration
+                - generic [ref=f15e61]:
+                  - text: approaches have been proposed, including knowl-
+                  - link [ref=f15e62] [cursor=pointer]:
+                    - /url: "#cite.DistillVLM"
+                - generic [ref=f15e63]:
+                  - text: edge distillation (Fang et al., 2021; Wang et al.,
+                  - link [ref=f15e64] [cursor=pointer]:
+                    - /url: "#cite.efficientvlm"
+                - generic [ref=f15e65]:
+                  - text: 2023a), parameter pruning (Gan et al., 2022; Shi
+                  - link [ref=f15e66] [cursor=pointer]:
+                    - /url: "#cite.DBLP%3Aconf/aaai/GanCLC0WLW022"
+                  - link [ref=f15e67] [cursor=pointer]:
+                    - /url: "#cite.upop"
+                - generic [ref=f15e68]:
+                  - text: et al., 2023), and token pruning (Jiang et al., 2022;
+                  - link [ref=f15e69] [cursor=pointer]:
+                    - /url: "#cite.TRIPS"
+                  - link [ref=f15e70] [cursor=pointer]:
+                    - /url: "#cite.pumer"
+                - text: Cao et al., 2023). These methods reduce inference overhead, implying that a large proportion of pa- rameters and token representations are redundant. However, they adhere to a static computational ar- chitecture for all instances, overlooking the variation of complexities among different instances, leading
+                - generic [ref=f15e71]:
+                  - text: to severe performance degradation at higher accel-
+                  - link [ref=f15e72] [cursor=pointer]:
+                    - /url: "#cite.shallow_deep"
+                - generic [ref=f15e73]:
+                  - text: eration ratios (Kaya et al., 2019; Liu et al., 2020). As
+                  - link [ref=f15e74] [cursor=pointer]:
+                    - /url: "#cite.fastbert"
+                - text: demonstrated in Figure 1, the instances involving complex cross-modal interactions naturally require more computations to fully comprehend the intri- cate details of images and associated questions. Conversely, easy instances can be solved with less overhead. Consequently, enormous original VLMs may overthink simple instances, leading to wasted computation, while static accelerated models strug- gle with complex ones, incurring extensive perfor- mance degradation. To this end, we focus on adaptive acceleration on a per-input basis, which is orthogonal to static
+                - generic [ref=f15e75]:
+                  - text: approaches and more flexible to meet different con-
+                  - link [ref=f15e76] [cursor=pointer]:
+                    - /url: "#cite.beit3"
+                  - link [ref=f15e77] [cursor=pointer]:
+                    - /url: "#cite.pali"
+                - text: "straints. In this work, we propose SmartTrim , an adaptive pruning framework for VLM (shown in Fig- ure 2), which streamlines the model from two as- pects with significant redundancy: token represen- arXiv:2305.15033v2 [cs.CL] 26 Feb 2024"
+              - generic [ref=f15e96]:
+                - button [ref=f15e1214] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1215]
+                - generic [ref=f15e99] [cursor=pointer]: Translate Page
+                - generic [ref=f15e101]:
+                  - generic [ref=f15e102]: Auto
+                  - button "OFF" [ref=f15e1216] [cursor=pointer]
+            - region "Page ⁨2⁩" [ref=f15e1217]:
+              - generic [ref=f15e106]:
+                - text: "✂ MSA ✂ MCA ✂ FFN encoder Transformer layer 1 Transformer layer 2 ✂ MSA ✂ MCA ✂ FFN encoder Token trimmer … … … Transformer layer N ✂ ℒ !\" Input ( a ) Model Architecture ( b ) Self - Distillation ✂ ✂ textual tokens visual tokens cross - modal encoder × 𝐿 [CLS ] [CLS ] Figure 2: Overview of our SmartTrim framework, best viewed in color. (a) Model Architecture of SmartTrim . We incorporate the trimmers into layers of the uni-modal encoders and the cross-modal encoder to prune redundant tokens and heads. Given a set of image-text pairs, SmartTrim adjusts the computations for each instance based on the trimmer outputs. (b) Self-Distillation strategy. At each training step, the predictions of the pruned model are aligned to its fully-capacity counterpart. tation and attention heads. SmartTrim integrates the lightweight modules (called trimmers) into lay- ers of the original backbone to identify redundant tokens and heads guided by cross-modal informa- tion. Specifically, the XModal-aware token trimmers are introduced to determine which tokens to retain considering not only their representations but also their importance in cross-modal interactions. For head pruning, we introduce Modal-adaptive head trimmers in different attention modules to adaptively select which heads to activate. During training, we propose a self-distillation strategy, which encour- ages the predictions of the pruned model to align with its fully-capacity counterpart at the same step. The self-distillation scheme alleviates the need for a separately fine-tuned teacher model in conven- tional knowledge distillation. Furthermore, with a curriculum training scheduler, SmartTrim"
+                - generic [ref=f15e107]:
+                  - text: has a
+                  - link [ref=f15e108] [cursor=pointer]:
+                    - /url: "#cite.vilbert"
+                - text: "smoother and more stable optimization process. Compared to previous methods, our approach not only avoids additional expensive pre-training, but also provides more fine-grained control to better explore efficiency-performance trade-offs. We evaluate the proposed SmartTrim on two representative VLMs with different architectures:"
+                - generic [ref=f15e109]:
+                  - text: METER (Dou et al., 2022), an encoder-based
+                  - link [ref=f15e110] [cursor=pointer]:
+                    - /url: "#cite.blip"
+                - generic [ref=f15e111]: model; and BLIP (Li et al., 2022), an encoder-
+                - text: decoder-based model. Experimental results reveal that SmartTrim consistently outperforms previous methods on various datasets. Notably, SmartTrim achieves an impressive speed-up from 1 . 5 × to 4 × on the original model while incurring only a marginal performance drop ( 1% ~ 3% ). Further analysis indi- cates that SmartTrim
+                - generic [ref=f15e112]:
+                  - text: effectively learns to adap-
+                  - link [ref=f15e113] [cursor=pointer]:
+                    - /url: "#cite.DBLP%3Aconf/nips/MichelLN19"
+                  - link [ref=f15e114] [cursor=pointer]:
+                    - /url: "#cite.power_bert"
+                - text: tively allocate computational budgets based on the complexity of cross-modal interactions. 2. Preliminary 2.1. Transformer-based VLM Uni-Modal Encoders The input image and text are tokenized into visual and textual tokens, re- spectively. The two sequences are fed into visual and textual encoders to extract the respective fea- tures, where each layer consists of a multi-head self-attention module (MSA) and a feed-forward network module (FFN). Cross-Modal Encoder To capture cross-modal
+                - generic [ref=f15e115]:
+                  - text: interactions, the co-attention mechanism (Lu et al.,
+                  - link [ref=f15e116] [cursor=pointer]:
+                    - /url: "#cite.vilbert"
+                - text: 2019) is employed in each layer of cross-modal encoder. Specifically, in addition to MSA and FFN, a multi-head cross-attention module (MCA) is in- troduced, where query features are projected from one modality ( e.g. , vision), while key and value features are obtained from another modality ( e.g. , language). 2.2.
+                - generic [ref=f15e117]:
+                  - text: Empirical Analyses
+                  - link [ref=f15e118] [cursor=pointer]:
+                    - /url: "#cite.meter"
+                - text: The long sequence in VLMs incurs substantial com- putational overhead as the complexity of attention modules scales quadratically with length. In ad- dition, hundreds of millions of parameters further burden the situation. Previous studies of uni-modal Transformers reveal that redundancy is present in
+                - generic [ref=f15e119]:
+                  - text: token representations or attention heads (Michel
+                  - link [ref=f15e120] [cursor=pointer]:
+                    - /url: "#cite.DBLP%3Aconf/nips/MichelLN19"
+                - generic [ref=f15e121]:
+                  - text: et al., 2019; Goyal et al., 2020; Wang et al., 2022a).
+                  - link [ref=f15e122] [cursor=pointer]:
+                    - /url: "#cite.redundancy_in_vit"
+                - text: To investigate whether redundancy also exists in
+              - generic [ref=f15e131]:
+                - button [ref=f15e1218] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1219]
+                - generic [ref=f15e134] [cursor=pointer]: Translate Page
+                - generic [ref=f15e136]:
+                  - generic [ref=f15e137]: Auto
+                  - button "OFF" [ref=f15e1220] [cursor=pointer]
+            - region "Page ⁨3⁩" [ref=f15e1221]:
+              - generic [ref=f15e1314]:
+                - text: "0 1 2 3 4 5 index 0.4 0.6 0.8 1.0 Token Similarity textual visual 0 1 2 3 4 5 Layer Index 0.4 0.6 0.8 1.0 Head Similarity textual_self textual_cross visual_self visual_cross Figure 3: The similarities in representations of to- kens (top) and heads (bottom) in cross-modal en- coder of METER fine-tuned on VQA. VLMs, we measure cosine similarities between dif- ferent token representations and heads at each"
+                - generic [ref=f15e1315]:
+                  - text: layer of a fine-tuned METER. As shown in Figure 3,
+                  - link [ref=f15e1316] [cursor=pointer]:
+                    - /url: "#figure.caption.5"
+                - text: "our empirical findings are as follows: ❶ Similarities between the representations of tokens and heads are consistently high across all layers, implying sig- nificant redundancy within the model. ❷ The simi- larity of token representations increases progres- sively with depth, indicating a growing redundancy in deeper layers. ❸"
+                - generic [ref=f15e1317]:
+                  - text: Similarities vary greatly be-
+                  - link [ref=f15e1318] [cursor=pointer]:
+                    - /url: "#subsection.2.2"
+                - text: tween instances, prompting the need to investigate input-dependent adaptive pruning. 3. Methodology In this section, we introduce the proposed adaptive pruning method for VLMs named SmartTrim , as shown in Figure 2. We first describe the details of adaptive trimmers and then introduce the end-to- end training recipe for SmartTrim . 3.1. Adaptive Trimmers XModal-Aware Token Trimmer As shown in Fig- ure 2 (a), SmartTrim progressively prunes token representations in blocks, delivering more impor- tant tokens to subsequent blocks, and eliminating the rest
+                - generic [ref=f15e1319]:
+                  - text: "1"
+                  - link [ref=f15e1320] [cursor=pointer]:
+                    - /url: "#Hfootnote.1"
+                - text: . To estimate the importance of token rep-
+                - generic [ref=f15e1321]:
+                  - text: resentations, we insert a lightweight MLP-based
+                  - link [ref=f15e1322] [cursor=pointer]:
+                    - /url: "#cite.SpAtten"
+                - text: "module (named XModal-aware trimmer ) before each block of uni-modal and cross-modal encoders. Taking the cross-modal encoder block, for example, the N t token representations X ∈ R N t × D are first fed into the local policy network: π l t = MLP t ( X ′ ) = MLP t (Linear( X )) 1 We retain [CLS] tokens in each block of model. where π l t ∈ R N t is the local importance score of tokens, X ′ ∈ R N t × D ′ is obtained by the dimension reduction of X . The π l t is only computed based on the independent representations of tokens, without considering their contribution in cross-modal inter- actions. To estimate the importance of cross-modal interactions without imposing excessive additional computation, we fuse global representations"
+                - generic [ref=f15e1323]:
+                  - text: "2"
+                  - link [ref=f15e1324] [cursor=pointer]:
+                    - /url: "#Hfootnote.2"
+                - text: "of vi- sual and textual modality and then project to obtain the cross-modal global representation g , which con- tains global information of both modalities. Then, we feed g and X ′ to the global policy network to calculate the XModal-global importance score π g t : π g t = norm( gW g X ′ ⊺ ) where W g is the projection layer. The final token importance score π t sums π l t and π g t : π t = π l t + π g t . During inference, the pruning mask M t ∈ { 0 , 1 } N t is sampled directly from sigmoid ( π t ) : 1 indicates that the token is retained; otherwise, the token is re- moved. By this pruning, our token trimmers reduce the amount of computation in both the attention and FFN modules for subsequent blocks. Modal-adaptive Head Trimmer The VLMs cap- ture intra-modal and inter-modal interactions via MSA and MCA, respectively. However, the compu- tational overhead required for modeling varies de- pending on the input complexity of attention, lead- ing to redundancy in attention modules, as shown in Section 2.2. To this end, we integrate the modal- adaptive head trimmer into the attention modules. Specifically, we take the global representations of input sequences to feed into head trimmers: π h = ( MLP self h ( x cls ) ( MSA ) MLP cross h ([ x cls , y cls ])) ( MCA ) where x cls , y cls are the [CLS]"
+                - generic [ref=f15e1325]:
+                  - text: representations of
+                  - link [ref=f15e1326] [cursor=pointer]:
+                    - /url: "#figure.caption.2"
+                - text: the self-modality and another modality, respectively. Like the token trimmer, the head trimmer samples M h from sigmoid ( π h ) to determine which heads to keep or remove. Note that our trimmers introduce only a minor number of parameters ( 3%
+                - generic [ref=f15e1327]:
+                  - text: ) that yield a negligible
+                  - link [ref=f15e1328] [cursor=pointer]:
+                    - /url: "#figure.caption.2"
+                - text: computational overhead on FLOPs ( 1% ) compared to the original backbone. In addition, adaptive trim- mers are more hardware-friendly by avoiding the use of costly operations like top- k in other meth-
+                - generic [ref=f15e1329]: ods (Wang et al., 2021).
+                - text: 3.2. Training Recipe The adaptive trimmers are seamlessly integrated into the backbone network fine-tuned with the task- 2 We choose the representations of [CLS] tokens as global representations of each modality, which is better than other strategies in preliminary experiments, such as average or attentive pooling.
+              - generic [ref=f15e140]:
+                - button [ref=f15e1222] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1223]
+                - generic [ref=f15e143] [cursor=pointer]: Translate Page
+                - generic [ref=f15e145]:
+                  - generic [ref=f15e146]: Auto
+                  - button "OFF" [ref=f15e1224] [cursor=pointer]
+            - region "Page ⁨4⁩" [ref=f15e1225]:
+              - generic [ref=f15e149]:
+                - button [ref=f15e1226] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1227]
+                - generic [ref=f15e152] [cursor=pointer]: Translate Page
+                - generic [ref=f15e154]:
+                  - generic [ref=f15e155]: Auto
+                  - button "OFF" [ref=f15e1228] [cursor=pointer]
+            - region "Page ⁨5⁩" [ref=f15e1229]:
+              - generic [ref=f15e158]:
+                - button [ref=f15e1230] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1231]
+                - generic [ref=f15e161] [cursor=pointer]: Translate Page
+                - generic [ref=f15e163]:
+                  - generic [ref=f15e164]: Auto
+                  - button "OFF" [ref=f15e1232] [cursor=pointer]
+            - region "Page ⁨6⁩" [ref=f15e1233]:
+              - generic [ref=f15e167]:
+                - button [ref=f15e1234] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1235]
+                - generic [ref=f15e170] [cursor=pointer]: Translate Page
+                - generic [ref=f15e172]:
+                  - generic [ref=f15e173]: Auto
+                  - button "OFF" [ref=f15e1236] [cursor=pointer]
+            - region "Page ⁨7⁩" [ref=f15e1237]:
+              - generic [ref=f15e176]:
+                - button [ref=f15e1238] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1239]
+                - generic [ref=f15e179] [cursor=pointer]: Translate Page
+                - generic [ref=f15e181]:
+                  - generic [ref=f15e182]: Auto
+                  - button "OFF" [ref=f15e1240] [cursor=pointer]
+            - region "Page ⁨8⁩" [ref=f15e1241]:
+              - generic [ref=f15e185]:
+                - button [ref=f15e1242] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1243]
+                - generic [ref=f15e188] [cursor=pointer]: Translate Page
+                - generic [ref=f15e190]:
+                  - generic [ref=f15e191]: Auto
+                  - button "OFF" [ref=f15e1244] [cursor=pointer]
+            - region "Page ⁨9⁩" [ref=f15e1245]:
+              - generic [ref=f15e194]:
+                - button [ref=f15e1246] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1247]
+                - generic [ref=f15e197] [cursor=pointer]: Translate Page
+                - generic [ref=f15e199]:
+                  - generic [ref=f15e200]: Auto
+                  - button "OFF" [ref=f15e1248] [cursor=pointer]
+            - region "Page ⁨10⁩" [ref=f15e1249]:
+              - generic [ref=f15e203]:
+                - button [ref=f15e1250] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1251]
+                - generic [ref=f15e206] [cursor=pointer]: Translate Page
+                - generic [ref=f15e208]:
+                  - generic [ref=f15e209]: Auto
+                  - button "OFF" [ref=f15e1252] [cursor=pointer]
+            - region "Page ⁨11⁩" [ref=f15e1253]:
+              - generic [ref=f15e212]:
+                - button [ref=f15e1254] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1255]
+                - generic [ref=f15e215] [cursor=pointer]: Translate Page
+                - generic [ref=f15e217]:
+                  - generic [ref=f15e218]: Auto
+                  - button "OFF" [ref=f15e1256] [cursor=pointer]
+            - region "Page ⁨12⁩" [ref=f15e1257]:
+              - generic [ref=f15e1338]:
+                - generic [ref=f15e1339]:
+                  - text: "2021. Ia-red$ˆ2$: Interpretability-aware redun-"
+                  - link "https://proceedings.neurips.cc/paper/2021/hash/d072677d210ac4c03ba046120f0802ec-Abstract.html" [ref=f15e1340] [cursor=pointer]:
+                    - /url: https://proceedings.neurips.cc/paper/2021/hash/d072677d210ac4c03ba046120f0802ec-Abstract.html
+                - text: dancy reduction for vision transformers. In
+                - generic [ref=f15e1341]:
+                  - text: Ad-
+                  - link "https://proceedings.mlr.press/v202/shi23e.html" [ref=f15e1342] [cursor=pointer]:
+                    - /url: https://proceedings.mlr.press/v202/shi23e.html
+                - text: "vances in Neural Information Processing Sys- tems 34: Annual Conference on Neural Informa- tion Processing Systems 2021, NeurIPS 2021, December 6-14, 2021, virtual , pages 24898– 24911. Bryan A. Plummer, Liwei Wang, Chris M. Cer- vantes, Juan C. Caicedo, Julia Hockenmaier,"
+                - generic [ref=f15e1343]:
+                  - text: "and Svetlana Lazebnik. 2015. Flickr30k entities:"
+                  - link "https://doi.org/10.1109/ICCV.2015.303" [ref=f15e1344] [cursor=pointer]:
+                    - /url: https://doi.org/10.1109/ICCV.2015.303
+                  - link "https://doi.org/10.18653/v1/p19-1644" [ref=f15e1345] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/v1/p19-1644
+                - text: Collecting region-to-phrase correspondences for richer image-to-sentence models. In 2015 IEEE International Conference on Computer Vision, ICCV 2015, Santiago, Chile, December 7-13, 2015 , pages 2641–2649. IEEE Computer Soci- ety. Alec Radford, Jong Wook Kim, Chris Hallacy,
+                - generic [ref=f15e1346]:
+                  - text: Aditya Ramesh, Gabriel Goh, Sandhini Agarwal,
+                  - link "https://doi.org/10.18653/v1/D19-1441" [ref=f15e1347] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/v1/D19-1441
+                - generic [ref=f15e1348]:
+                  - text: Girish Sastry, Amanda Askell, Pamela Mishkin,
+                  - link "https://doi.org/10.18653/v1/D19-1441" [ref=f15e1349] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/v1/D19-1441
+                - text: Jack Clark, Gretchen Krueger, and Ilya Sutskever.
+                - generic [ref=f15e1350]:
+                  - text: 2021. Learning transferable visual models from
+                  - link "http://proceedings.mlr.press/v139/radford21a.html" [ref=f15e1351] [cursor=pointer]:
+                    - /url: http://proceedings.mlr.press/v139/radford21a.html
+                - text: natural language supervision. In Proceedings of the 38th International Conference on Machine Learning, ICML 2021, 18-24 July 2021, Virtual Event , volume 139 of Proceedings of Machine Learning Research , pages 8748–8763. PMLR. Yongming Rao, Wenliang Zhao, Benlin Liu, Jiwen
+                - generic [ref=f15e1352]:
+                  - text: Lu, Jie Zhou, and Cho-Jui Hsieh. 2021. Dynam-
+                  - link "https://proceedings.neurips.cc/paper/2021/hash/747d3443e319a22747fbb873e8b2f9f2-Abstract.html" [ref=f15e1353] [cursor=pointer]:
+                    - /url: https://proceedings.neurips.cc/paper/2021/hash/747d3443e319a22747fbb873e8b2f9f2-Abstract.html
+                - generic [ref=f15e1354]:
+                  - text: "icvit: Efficient vision transformers with dynamic"
+                  - link "https://doi.org/10.1109/CVPR52729.2023.01038" [ref=f15e1355] [cursor=pointer]:
+                    - /url: https://doi.org/10.1109/CVPR52729.2023.01038
+                - text: token sparsification. In
+                - generic [ref=f15e1356]:
+                  - text: Advances in Neural Infor-
+                  - link "https://doi.org/10.1109/CVPR52729.2023.01038" [ref=f15e1357] [cursor=pointer]:
+                    - /url: https://doi.org/10.1109/CVPR52729.2023.01038
+                - text: "mation Processing Systems 34: Annual Confer- ence on Neural Information Processing Systems 2021, NeurIPS 2021, December 6-14, 2021, vir- tual , pages 13937–13949. Michael S. Ryoo, A. J. Piergiovanni, Anurag Arnab, Mostafa Dehghani, and Anelia Angelova. 2021."
+                - generic [ref=f15e1358]:
+                  - text: "Tokenlearner: Adaptive space-time tokenization"
+                  - link "https://proceedings.neurips.cc/paper/2021/hash/6a30e32e56fce5cf381895dfe6ca7b6f-Abstract.html" [ref=f15e1359] [cursor=pointer]:
+                    - /url: https://proceedings.neurips.cc/paper/2021/hash/6a30e32e56fce5cf381895dfe6ca7b6f-Abstract.html
+                  - link "https://doi.org/10.1109/CVPR52688.2022.01185" [ref=f15e1360] [cursor=pointer]:
+                    - /url: https://doi.org/10.1109/CVPR52688.2022.01185
+                - text: "for videos. In Advances in Neural Information Processing Systems 34: Annual Conference on Neural Information Processing Systems 2021, NeurIPS 2021, December 6-14, 2021, virtual , pages 12786–12797. Victor Sanh, Lysandre Debut, Julien Chaumond, and Thomas Wolf. 2019."
+                - link "http://arxiv.org/abs/1910.01108" [ref=f15e1362] [cursor=pointer]:
+                  - /url: http://arxiv.org/abs/1910.01108
+                - text: Distilbert, a distilled
+                - generic [ref=f15e1363]:
+                  - text: "version of BERT: smaller, faster, cheaper and"
+                  - link "http://arxiv.org/abs/1910.01108" [ref=f15e1364] [cursor=pointer]:
+                    - /url: http://arxiv.org/abs/1910.01108
+                  - link "https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf" [ref=f15e1365] [cursor=pointer]:
+                    - /url: https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf
+                - text: lighter. CoRR , abs/1910.01108. Victor Sanh, Thomas Wolf, and Alexander M. Rush.
+                - generic [ref=f15e1366]:
+                  - text: "2020. Movement pruning: Adaptive sparsity by"
+                  - link "https://proceedings.neurips.cc/paper/2020/hash/eae15aabaa768ae4a5993a8a4f4fa6e4-Abstract.html" [ref=f15e1367] [cursor=pointer]:
+                    - /url: https://proceedings.neurips.cc/paper/2020/hash/eae15aabaa768ae4a5993a8a4f4fa6e4-Abstract.html
+                  - link "https://proceedings.neurips.cc/paper/2020/hash/eae15aabaa768ae4a5993a8a4f4fa6e4-Abstract.html" [ref=f15e1368] [cursor=pointer]:
+                    - /url: https://proceedings.neurips.cc/paper/2020/hash/eae15aabaa768ae4a5993a8a4f4fa6e4-Abstract.html
+                - text: fine-tuning. In Advances in Neural Information
+                - generic [ref=f15e1369]:
+                  - text: "Processing Systems 33: Annual Conference on"
+                  - link "https://doi.org/10.1109/HPCA51647.2021.00018" [ref=f15e1370] [cursor=pointer]:
+                    - /url: https://doi.org/10.1109/HPCA51647.2021.00018
+                - generic [ref=f15e1371]:
+                  - text: Neural Information Processing Systems 2020,
+                  - link "https://doi.org/10.1109/HPCA51647.2021.00018" [ref=f15e1372] [cursor=pointer]:
+                    - /url: https://doi.org/10.1109/HPCA51647.2021.00018
+                - text: NeurIPS 2020, December 6-12, 2020, virtual . Dachuan Shi, Chaofan Tao, Ying Jin, Zhendong
+                - generic [ref=f15e1373]:
+                  - text: "Yang, Chun Yuan, and Jiaqi Wang. 2023. Upop:"
+                  - link "https://proceedings.mlr.press/v202/shi23e.html" [ref=f15e1374] [cursor=pointer]:
+                    - /url: https://proceedings.mlr.press/v202/shi23e.html
+                - generic [ref=f15e1375]:
+                  - text: Unified and progressive pruning for compressing
+                  - link "https://proceedings.neurips.cc/paper/2021/hash/d072677d210ac4c03ba046120f0802ec-Abstract.html" [ref=f15e1376] [cursor=pointer]:
+                    - /url: https://proceedings.neurips.cc/paper/2021/hash/d072677d210ac4c03ba046120f0802ec-Abstract.html
+                  - link "https://proceedings.mlr.press/v202/shi23e.html" [ref=f15e1377] [cursor=pointer]:
+                    - /url: https://proceedings.mlr.press/v202/shi23e.html
+                - text: vision-language transformers. In International Conference on Machine Learning, ICML 2023, 23-29 July 2023, Honolulu, Hawaii, USA , vol- ume 202 of Proceedings of Machine Learning Research , pages 31292–31311. PMLR. Alane Suhr, Stephanie Zhou, Ally Zhang, Iris Zhang,
+                - generic [ref=f15e1378]:
+                  - text: Huajun Bai, and Yoav Artzi. 2019. A corpus for
+                  - link "https://doi.org/10.18653/v1/p19-1644" [ref=f15e1379] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/v1/p19-1644
+                - generic [ref=f15e1380]:
+                  - text: reasoning about natural language grounded in
+                  - link "https://doi.org/10.18653/v1/p19-1644" [ref=f15e1381] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/v1/p19-1644
+                - text: photographs. In
+                - generic [ref=f15e1382]:
+                  - text: Proceedings of the 57th Confer-
+                  - link "https://doi.org/10.1109/ICCV.2015.303" [ref=f15e1383] [cursor=pointer]:
+                    - /url: https://doi.org/10.1109/ICCV.2015.303
+                - generic [ref=f15e1384]:
+                  - text: ence of the Association for Computational Lin-
+                  - link "https://doi.org/10.1109/ICCV.2015.303" [ref=f15e1385] [cursor=pointer]:
+                    - /url: https://doi.org/10.1109/ICCV.2015.303
+                - text: "guistics, ACL 2019, Florence, Italy, July 28- Au- gust 2, 2019, Volume 1: Long Papers , pages 6418–6428. Association for Computational Lin- guistics. Siqi Sun, Yu Cheng, Zhe Gan, and Jingjing Liu. 2019. Patient knowledge distillation for BERT model compression. In Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International"
+                - generic [ref=f15e1386]:
+                  - text: Joint Conference on Natural Language Process-
+                  - link "http://proceedings.mlr.press/v139/radford21a.html" [ref=f15e1387] [cursor=pointer]:
+                    - /url: http://proceedings.mlr.press/v139/radford21a.html
+                - text: ing, EMNLP-IJCNLP 2019, Hong Kong, China, November 3-7, 2019 , pages 4322–4331. Associ- ation for Computational Linguistics. Shengkun Tang, Yaqing Wang, Zhenglun Kong, Tianchi Zhang, Yao Li, Caiwen Ding, Yanzhi
+                - generic [ref=f15e1388]:
+                  - text: Wang, Yi Liang, and Dongkuan Xu. 2023. You
+                  - link "https://proceedings.neurips.cc/paper/2021/hash/747d3443e319a22747fbb873e8b2f9f2-Abstract.html" [ref=f15e1389] [cursor=pointer]:
+                    - /url: https://proceedings.neurips.cc/paper/2021/hash/747d3443e319a22747fbb873e8b2f9f2-Abstract.html
+                  - link "https://doi.org/10.1109/CVPR52729.2023.01038" [ref=f15e1390] [cursor=pointer]:
+                    - /url: https://doi.org/10.1109/CVPR52729.2023.01038
+                - generic [ref=f15e1391]:
+                  - text: "need multiple exiting: Dynamic early exiting for"
+                  - link "https://proceedings.neurips.cc/paper/2021/hash/747d3443e319a22747fbb873e8b2f9f2-Abstract.html" [ref=f15e1392] [cursor=pointer]:
+                    - /url: https://proceedings.neurips.cc/paper/2021/hash/747d3443e319a22747fbb873e8b2f9f2-Abstract.html
+                - text: accelerating unified vision language model. In IEEE/CVF Conference on Computer Vision and Pattern Recognition, CVPR 2023, Vancouver, BC, Canada, June 17-24, 2023 , pages 10781– 10791. IEEE. Yehui Tang, Kai Han, Yunhe Wang, Chang Xu, Jianyuan Guo, Chao Xu, and Dacheng Tao. 2022.
+                - generic [ref=f15e1393]:
+                  - text: Patch slimming for efficient vision transformers.
+                  - link "https://proceedings.neurips.cc/paper/2021/hash/6a30e32e56fce5cf381895dfe6ca7b6f-Abstract.html" [ref=f15e1394] [cursor=pointer]:
+                    - /url: https://proceedings.neurips.cc/paper/2021/hash/6a30e32e56fce5cf381895dfe6ca7b6f-Abstract.html
+                - text: In IEEE/CVF Conference on Computer Vision and Pattern Recognition, CVPR 2022, New Or- leans, LA, USA, June 18-24, 2022 , pages 12155– 12164. IEEE. Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N Gomez,
+                - generic [ref=f15e1395]:
+                  - text: Ł ukasz Kaiser, and Illia Polosukhin. 2017. At-
+                  - link "https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf" [ref=f15e1396] [cursor=pointer]:
+                    - /url: https://proceedings.neurips.cc/paper/2017/file/3f5ee243547dee91fbd053c1c4a845aa-Paper.pdf
+                - text: tention is all you need. In
+                - generic [ref=f15e1397]:
+                  - text: Advances in Neural
+                  - link "http://arxiv.org/abs/1910.01108" [ref=f15e1398] [cursor=pointer]:
+                    - /url: http://arxiv.org/abs/1910.01108
+                - text: "Information Processing Systems , volume 30. Cur- ran Associates, Inc. Hanrui Wang, Zhekai Zhang, and Song Han. 2021. Spatten: Efficient sparse attention architecture with cascade token and head pruning. In IEEE International Symposium on High-Performance Computer Architecture, HPCA 2021, Seoul, South Korea, February 27 - March 3, 2021 , pages 97–110. IEEE."
+              - generic [ref=f15e221]:
+                - button [ref=f15e1258] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1259]
+                - generic [ref=f15e224] [cursor=pointer]: Translate Page
+                - generic [ref=f15e226]:
+                  - generic [ref=f15e227]: Auto
+                  - button "OFF" [ref=f15e1260] [cursor=pointer]
+            - region "Page ⁨13⁩" [ref=f15e1261]:
+              - generic [ref=f15e1433]:
+                - text: Jianfeng Wang, Xiaowei Hu, Pengchuan Zhang, Xiujun Li, Lijuan Wang, Lei Zhang, Jianfeng Gao, and Zicheng Liu. 2020a.
+                - generic [ref=f15e1434]:
+                  - text: "Minivlm:"
+                  - link "http://arxiv.org/abs/2012.06946" [ref=f15e1435] [cursor=pointer]:
+                    - /url: http://arxiv.org/abs/2012.06946
+                - generic [ref=f15e1436]:
+                  - text: A
+                  - link "https://doi.org/10.18653/v1/2020.emnlp-main.496" [ref=f15e1437] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/v1/2020.emnlp-main.496
+                - text: smaller and faster vision-language model. CoRR , abs/2012.06946. Peihao Wang, Wenqing Zheng, Tianlong Chen, and
+                - generic [ref=f15e1438]:
+                  - text: Zhangyang Wang. 2022a. Anti-oversmoothing in
+                  - link "https://openreview.net/forum?id=O476oWmiNNp" [ref=f15e1439] [cursor=pointer]:
+                    - /url: https://openreview.net/forum?id=O476oWmiNNp
+                  - link "https://openreview.net/forum?id=O476oWmiNNp" [ref=f15e1440] [cursor=pointer]:
+                    - /url: https://openreview.net/forum?id=O476oWmiNNp
+                - text: "deep vision transformers via the fourier domain analysis: From theory to practice. In The Tenth"
+                - generic [ref=f15e1441]:
+                  - text: International Conference on Learning Represen-
+                  - link "https://doi.org/10.18653/v1/2022.acl-long.107" [ref=f15e1442] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/v1/2022.acl-long.107
+                - text: tations, ICLR 2022, Virtual Event, April 25-29, 2022 . OpenReview.net. Peng Wang, An Yang, Rui Men, Junyang Lin, Shuai Bai, Zhikang Li, Jianxin Ma, Chang Zhou, Jingren
+                - generic [ref=f15e1443]:
+                  - text: "Zhou, and Hongxia Yang. 2022b. OFA: unifying"
+                  - link "https://proceedings.mlr.press/v162/wang22al.html" [ref=f15e1444] [cursor=pointer]:
+                    - /url: https://proceedings.mlr.press/v162/wang22al.html
+                  - link "https://proceedings.mlr.press/v162/wang22al.html" [ref=f15e1445] [cursor=pointer]:
+                    - /url: https://proceedings.mlr.press/v162/wang22al.html
+                - text: architectures, tasks, and modalities through a simple sequence-to-sequence learning frame- work. In
+                - generic [ref=f15e1446]:
+                  - text: International Conference on Machine
+                  - link "http://arxiv.org/abs/1901.06706" [ref=f15e1447] [cursor=pointer]:
+                    - /url: http://arxiv.org/abs/1901.06706
+                - text: Learning, ICML 2022, 17-23 July 2022, Bal- timore, Maryland, USA , volume 162 of Pro- ceedings of Machine Learning Research , pages 23318–23340. PMLR. Tiannan Wang, Wangchunshu Zhou, Yan Zeng,
+                - generic [ref=f15e1448]:
+                  - text: "and Xinsong Zhang. 2023a. Efficientvlm: Fast"
+                  - link "https://doi.org/10.18653/V1/2023.FINDINGS-ACL.873" [ref=f15e1449] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/V1/2023.FINDINGS-ACL.873
+                - text: "and accurate vision-language models via knowl- edge distillation and modal-adaptive pruning. In Findings of the Association for Computational Linguistics: ACL 2023, Toronto, Canada, July 9-14, 2023 , pages 13899–13913. Association"
+                - generic [ref=f15e1450]:
+                  - text: for Computational Linguistics.
+                  - link "https://doi.org/10.18653/v1/2020.emnlp-main.633" [ref=f15e1451] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/v1/2020.emnlp-main.633
+                - text: Wenhui Wang, Hangbo Bao, Li Dong, Johan Bjorck, Zhiliang Peng, Qiang Liu, Kriti Aggar- wal, Owais Khan Mohammed, Saksham Singhal,
+                - generic [ref=f15e1452]:
+                  - text: Subhojit Som, and Furu Wei. 2023b. Image as
+                  - link "https://doi.org/10.1109/CVPR52729.2023.01838" [ref=f15e1453] [cursor=pointer]:
+                    - /url: https://doi.org/10.1109/CVPR52729.2023.01838
+                - generic [ref=f15e1454]:
+                  - text: "a foreign language: BEIT pretraining for vision"
+                  - link "https://doi.org/10.1109/CVPR52729.2023.01838" [ref=f15e1455] [cursor=pointer]:
+                    - /url: https://doi.org/10.1109/CVPR52729.2023.01838
+                  - link "https://doi.org/10.1109/CVPR52729.2023.01838" [ref=f15e1456] [cursor=pointer]:
+                    - /url: https://doi.org/10.1109/CVPR52729.2023.01838
+                - text: and vision-language tasks. In IEEE/CVF Confer- ence on Computer Vision and Pattern Recogni-
+                - generic [ref=f15e1457]:
+                  - text: tion, CVPR 2023, Vancouver, BC, Canada, June
+                  - link "http://arxiv.org/abs/2111.05193" [ref=f15e1458] [cursor=pointer]:
+                    - /url: http://arxiv.org/abs/2111.05193
+                - text: 17-24, 2023 , pages 19175–19186. IEEE. Wenhui Wang, Furu Wei, Li Dong, Hangbo Bao,
+                - generic [ref=f15e1459]:
+                  - text: "Nan Yang, and Ming Zhou. 2020b. Minilm: Deep"
+                  - link "https://proceedings.neurips.cc/paper/2020/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html" [ref=f15e1460] [cursor=pointer]:
+                    - /url: https://proceedings.neurips.cc/paper/2020/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html
+                - generic [ref=f15e1461]:
+                  - text: self-attention distillation for task-agnostic com-
+                  - link "https://doi.org/10.1609/AAAI.V37I9.26263" [ref=f15e1462] [cursor=pointer]:
+                    - /url: https://doi.org/10.1609/AAAI.V37I9.26263
+                - text: "pression of pre-trained transformers. In Ad- vances in Neural Information Processing Sys- tems 33: Annual Conference on Neural Informa- tion Processing Systems 2020, NeurIPS 2020, December 6-12, 2020, virtual . Zekun Wang, Wenhui Wang, Haichao Zhu, Ming Liu, Bing Qin, and Furu Wei. 2022c."
+                - link "https://doi.org/10.18653/V1/2022.EMNLP-MAIN.608" [ref=f15e1464] [cursor=pointer]:
+                  - /url: https://doi.org/10.18653/V1/2022.EMNLP-MAIN.608
+                - generic [ref=f15e1465]:
+                  - text: Distilled
+                  - link "https://doi.org/10.18653/V1/2022.EMNLP-MAIN.608" [ref=f15e1466] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/V1/2022.EMNLP-MAIN.608
+                - text: dual-encoder model for vision-language under- standing. In Proceedings of the 2022 Conference on Empirical Methods in Natural Language Pro- cessing, EMNLP 2022, Abu Dhabi, United Arab Emirates, December 7-11, 2022
+                - generic [ref=f15e1467]:
+                  - text: ", pages 8901–"
+                  - link "https://ojs.aaai.org/index.php/AAAI/article/view/20202" [ref=f15e1468] [cursor=pointer]:
+                    - /url: https://ojs.aaai.org/index.php/AAAI/article/view/20202
+                - text: 8913. Association for Computational Linguistics. Ziheng Wang, Jeremy Wohlwend, and Tao Lei. 2020c.
+                - link "https://doi.org/10.18653/v1/2020.emnlp-main.496" [ref=f15e1470] [cursor=pointer]:
+                  - /url: https://doi.org/10.18653/v1/2020.emnlp-main.496
+                - text: Structured pruning of large language models. In
+                - generic [ref=f15e1471]:
+                  - text: Proceedings of the 2020 Conference
+                  - link "http://arxiv.org/abs/2012.06946" [ref=f15e1472] [cursor=pointer]:
+                    - /url: http://arxiv.org/abs/2012.06946
+                - text: on Empirical Methods in Natural Language Pro- cessing, EMNLP 2020, Online, November 16-20, 2020 , pages 6151–6162. Association for Com- putational Linguistics.
+                - generic [ref=f15e1473]:
+                  - text: Mengzhou Xia, Zexuan Zhong, and Danqi Chen.
+                  - link "https://openreview.net/forum?id=O476oWmiNNp" [ref=f15e1474] [cursor=pointer]:
+                    - /url: https://openreview.net/forum?id=O476oWmiNNp
+                - generic [ref=f15e1475]:
+                  - text: 2022. Structured pruning learns compact and
+                  - link "https://doi.org/10.18653/v1/2022.acl-long.107" [ref=f15e1476] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/v1/2022.acl-long.107
+                - text: "accurate models. In Proceedings of the 60th Annual Meeting of the Association for Computa- tional Linguistics (Volume 1: Long Papers), ACL 2022, Dublin, Ireland, May 22-27, 2022 , pages 1513–1528. Association for Computational Lin- guistics."
+                - generic [ref=f15e1477]:
+                  - text: Ning Xie, Farley Lai, Derek Doran, and Asim Ka-
+                  - link "https://proceedings.mlr.press/v162/wang22al.html" [ref=f15e1478] [cursor=pointer]:
+                    - /url: https://proceedings.mlr.press/v162/wang22al.html
+                - text: dav. 2019.
+                - generic [ref=f15e1479]:
+                  - text: "Visual entailment:"
+                  - link "http://arxiv.org/abs/1901.06706" [ref=f15e1480] [cursor=pointer]:
+                    - /url: http://arxiv.org/abs/1901.06706
+                - generic [ref=f15e1481]:
+                  - text: A novel task
+                  - link "https://proceedings.mlr.press/v162/wang22al.html" [ref=f15e1482] [cursor=pointer]:
+                    - /url: https://proceedings.mlr.press/v162/wang22al.html
+                - text: for fine-grained image understanding. CoRR , abs/1901.06706. Ji Xin, Raphael Tang, Jaejun Lee, Yaoliang Yu, and
+                - generic [ref=f15e1483]:
+                  - text: "Jimmy Lin. 2020. Deebert: Dynamic early exiting"
+                  - link "https://doi.org/10.18653/v1/2020.acl-main.204" [ref=f15e1484] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/v1/2020.acl-main.204
+                  - link "https://doi.org/10.18653/v1/2020.acl-main.204" [ref=f15e1485] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/v1/2020.acl-main.204
+                - text: for accelerating BERT inference. In Proceedings of the 58th Annual Meeting of the Association
+                - generic [ref=f15e1486]:
+                  - text: for Computational Linguistics, ACL 2020, Online,
+                  - link "https://doi.org/10.18653/V1/2023.FINDINGS-ACL.873" [ref=f15e1487] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/V1/2023.FINDINGS-ACL.873
+                - text: July 5-10, 2020
+                - generic [ref=f15e1488]:
+                  - text: ", pages 2246–2251. Association"
+                  - link "https://doi.org/10.18653/V1/2023.FINDINGS-ACL.873" [ref=f15e1489] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/V1/2023.FINDINGS-ACL.873
+                - text: for Computational Linguistics. Canwen Xu, Wangchunshu Zhou, Tao Ge, Furu Wei, and Ming Zhou. 2020.
+                - link "https://doi.org/10.18653/v1/2020.emnlp-main.633" [ref=f15e1491] [cursor=pointer]:
+                  - /url: https://doi.org/10.18653/v1/2020.emnlp-main.633
+                - text: "Bert-of-theseus:"
+                - generic [ref=f15e1492]:
+                  - text: Compressing BERT by progressive module re-
+                  - link "https://doi.org/10.18653/v1/2020.emnlp-main.633" [ref=f15e1493] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/v1/2020.emnlp-main.633
+                - text: placing. In Proceedings of the 2020 Conference on Empirical Methods in Natural Language Pro- cessing, EMNLP 2020, Online, November 16-20, 2020 , pages 7859–7869. Association for Com- putational Linguistics. Jingjing Xu, Wangchunshu Zhou, Zhiyi Fu, Hao
+                - generic [ref=f15e1494]:
+                  - text: Zhou, and Lei Li. 2021. A survey on green deep
+                  - link "http://arxiv.org/abs/2111.05193" [ref=f15e1495] [cursor=pointer]:
+                    - /url: http://arxiv.org/abs/2111.05193
+                - text: learning. CoRR , abs/2111.05193. Xiao Xu, Chenfei Wu, Shachar Rosenman, Va- sudev Lal, Wanxiang Che, and Nan Duan. 2023.
+                - generic [ref=f15e1496]:
+                  - text: "Bridgetower: Building bridges between encoders"
+                  - link "https://proceedings.neurips.cc/paper/2020/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html" [ref=f15e1497] [cursor=pointer]:
+                    - /url: https://proceedings.neurips.cc/paper/2020/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html
+                  - link "https://doi.org/10.1609/AAAI.V37I9.26263" [ref=f15e1498] [cursor=pointer]:
+                    - /url: https://doi.org/10.1609/AAAI.V37I9.26263
+                - text: in vision-language representation learning.
+                - generic [ref=f15e1499]:
+                  - text: In
+                  - link "https://proceedings.neurips.cc/paper/2020/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html" [ref=f15e1500] [cursor=pointer]:
+                    - /url: https://proceedings.neurips.cc/paper/2020/hash/3f5ee243547dee91fbd053c1c4a845aa-Abstract.html
+                - text: Thirty-Seventh AAAI Conference on Artificial In- telligence, AAAI 2023, Thirty-Fifth Conference on Innovative Applications of Artificial Intelligence, IAAI 2023, Thirteenth Symposium on Educa- tional Advances in Artificial Intelligence, EAAI 2023, Washington, DC, USA, February 7-14, 2023 , pages 10637–10647. AAAI Press.
+                - generic [ref=f15e1501]:
+                  - text: Yifan Xu, Zhijie Zhang, Mengdan Zhang, Kekai
+                  - link "https://doi.org/10.18653/V1/2022.EMNLP-MAIN.608" [ref=f15e1502] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/V1/2022.EMNLP-MAIN.608
+                - text: Sheng, Ke Li, Weiming Dong, Liqing Zhang, Changsheng Xu, and Xing Sun. 2022.
+                - link "https://ojs.aaai.org/index.php/AAAI/article/view/20202" [ref=f15e1504] [cursor=pointer]:
+                  - /url: https://ojs.aaai.org/index.php/AAAI/article/view/20202
+                - text: Evo-
+                - generic [ref=f15e1505]:
+                  - text: "vit: Slow-fast token evolution for dynamic vision"
+                  - link "https://ojs.aaai.org/index.php/AAAI/article/view/20202" [ref=f15e1506] [cursor=pointer]:
+                    - /url: https://ojs.aaai.org/index.php/AAAI/article/view/20202
+                - text: transformer. In Thirty-Sixth AAAI Conference on Artificial Intelligence, AAAI 2022, Thirty-Fourth
+              - generic [ref=f15e230]:
+                - button [ref=f15e1262] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1263]
+                - generic [ref=f15e233] [cursor=pointer]: Translate Page
+                - generic [ref=f15e235]:
+                  - generic [ref=f15e236]: Auto
+                  - button "OFF" [ref=f15e1264] [cursor=pointer]
+            - region "Page ⁨14⁩" [ref=f15e1265]:
+              - generic [ref=f15e1547]:
+                - text: Conference on Innovative Applications of Artifi- cial Intelligence, IAAI 2022, The Twelveth Sym- posium on Educational Advances in Artificial In- telligence, EAAI 2022 Virtual Event, February 22 - March 1, 2022 , pages 2964–2972. AAAI Press. Deming Ye, Yankai Lin, Yufei Huang, and Maosong Sun. 2021.
+                - link "https://doi.org/10.18653/v1/2021.naacl-main.463" [ref=f15e1549] [cursor=pointer]:
+                  - /url: https://doi.org/10.18653/v1/2021.naacl-main.463
+                - text: "TR-BERT: dynamic token reduc- tion for accelerating BERT inference. In Pro- ceedings of the 2021 Conference of the North American Chapter of the Association for Com- putational Linguistics: Human Language Tech- nologies, NAACL-HLT 2021, Online, June 6-11, 2021 , pages 5798–5809. Association for Com- putational Linguistics. Hongxu Yin, Arash Vahdat, Jose M. Alvarez, Arun Mallya, Jan Kautz, and Pavlo Molchanov. 2022."
+                - generic [ref=f15e1550]:
+                  - text: "A-vit: Adaptive tokens for efficient vision trans-"
+                  - link "https://doi.org/10.1109/CVPR52688.2022.01054" [ref=f15e1551] [cursor=pointer]:
+                    - /url: https://doi.org/10.1109/CVPR52688.2022.01054
+                - text: "former. In IEEE/CVF Conference on Computer Vision and Pattern Recognition, CVPR 2022, New Orleans, LA, USA, June 18-24, 2022 , pages 10799–10808. IEEE. Jiahui Yu, Zirui Wang, Vijay Vasudevan, Legg Ye- ung, Mojtaba Seyedhosseini, and Yonghui Wu. 2022. Coca: Contrastive captioners are image- text foundation models. Trans. Mach. Learn. Res. , 2022. Yan Zeng, Xinsong Zhang, and Hang Li. 2022. Multi-grained vision language pre-training: Align- ing texts with visual concepts. In International Conference on Machine Learning, ICML 2022, 17-23 July 2022, Baltimore, Maryland, USA , vol- ume 162 of Proceedings of Machine Learning Research , pages 25994–26009. PMLR. Wangchunshu Zhou, Yuchen Eleanor Jiang, Ryan Cotterell, and Mrinmaya Sachan. 2023. Effi- cient prompting via dynamic in-context learning. CoRR , abs/2305.11170. Wangchunshu Zhou, Canwen Xu, Tao Ge, Julian J. McAuley, Ke Xu, and Furu Wei. 2020."
+                - link "https://proceedings.neurips.cc/paper/2020/hash/d4dd111a4fd973394238aca5c05bebe3-Abstract.html" [ref=f15e1553] [cursor=pointer]:
+                  - /url: https://proceedings.neurips.cc/paper/2020/hash/d4dd111a4fd973394238aca5c05bebe3-Abstract.html
+                - text: BERT
+                - generic [ref=f15e1554]:
+                  - text: "loses patience: Fast and robust inference with"
+                  - link [ref=f15e1555] [cursor=pointer]:
+                    - /url: "#figure.caption.5"
+                - text: "early exit. In Advances in Neural Information Processing Systems 33: Annual Conference on Neural Information Processing Systems 2020, NeurIPS 2020, December 6-12, 2020, virtual . A."
+                - generic [ref=f15e1556]:
+                  - text: Details of Similarity Calculation
+                  - link [ref=f15e1557] [cursor=pointer]:
+                    - /url: "#cite.NLVR2"
+                - text: To measure the redundancy in token representa- tions and attention heads of VLMs, we calculate the average cosine similarity between token repre- sentations and attention maps at each layer follow-
+                - generic [ref=f15e1558]:
+                  - text: ing previous work (Goyal et al., 2020; Wang et al.,
+                  - link [ref=f15e1559] [cursor=pointer]:
+                    - /url: "#cite.redundancy_in_vit"
+                - text: 2022a). 0 1 2 3 4 5
+                - generic [ref=f15e1560]:
+                  - text: index
+                  - link "https://doi.org/10.18653/v1/2021.naacl-main.463" [ref=f15e1561] [cursor=pointer]:
+                    - /url: https://doi.org/10.18653/v1/2021.naacl-main.463
+                - text: "0.4 0.6 0.8 1.0 Token Similarity textual visual 0 1 2 3 4 5 Layer Index 0.4 0.6 0.8 1.0 Head Similarity textual_self textual_cross visual_self visual_cross Figure 9: The similarity visualizations of the cross-"
+                - generic [ref=f15e1562]:
+                  - text: modal encoder in METER fine-tuned on NLVR2.
+                  - link "https://doi.org/10.1109/CVPR52688.2022.01054" [ref=f15e1563] [cursor=pointer]:
+                    - /url: https://doi.org/10.1109/CVPR52688.2022.01054
+                - text: "Token Similarity Given the corresponding token representations X ∈ R N × D , the averaged token representations similarity is computed by: S T = 2 N ( N − 1) N X i =1 N X j = i +1 X i · X"
+                - generic [ref=f15e1564]:
+                  - text: j
+                  - link "https://openreview.net/forum?id=Ee277P3AYC" [ref=f15e1565] [cursor=pointer]:
+                    - /url: https://openreview.net/forum?id=Ee277P3AYC
+                - text: ∥ X i ∥ 2 ∥ X j ∥
+                - generic [ref=f15e1566]:
+                  - text: "2"
+                  - link "https://openreview.net/forum?id=Ee277P3AYC" [ref=f15e1567] [cursor=pointer]:
+                    - /url: https://openreview.net/forum?id=Ee277P3AYC
+                - text: Head Similarity We use the similar metric to com- pute head similarity for attention maps. Given the attention map A ∈ R H × N × N
+                - link "https://proceedings.mlr.press/v162/zeng22c.html" [ref=f15e1569] [cursor=pointer]:
+                  - /url: https://proceedings.mlr.press/v162/zeng22c.html
+                - text: with H
+                - generic [ref=f15e1570]:
+                  - text: heads, the
+                  - link "https://proceedings.mlr.press/v162/zeng22c.html" [ref=f15e1571] [cursor=pointer]:
+                    - /url: https://proceedings.mlr.press/v162/zeng22c.html
+                - text: "averaged cosine similarity between different heads is calculated as: S A = 2 H ( H − 1) N H X i =1 H X j = i +1 N X k =1 A k i · A k j A k i 2 A k j 2 where A k i denotes the k -th token’s attention distri- bution in the i -th head. More Visualization We also present the visual- izations of different modules in VLMs on NLVR2"
+                - generic [ref=f15e1572]:
+                  - text: and VQA tasks in Figures 9, 10, and 11. Similar to
+                  - link "https://proceedings.neurips.cc/paper/2020/hash/d4dd111a4fd973394238aca5c05bebe3-Abstract.html" [ref=f15e1573] [cursor=pointer]:
+                    - /url: https://proceedings.neurips.cc/paper/2020/hash/d4dd111a4fd973394238aca5c05bebe3-Abstract.html
+                  - link [ref=f15e1574] [cursor=pointer]:
+                    - /url: "#figure.caption.37"
+                  - link [ref=f15e1575] [cursor=pointer]:
+                    - /url: "#figure.caption.38"
+                  - link [ref=f15e1576] [cursor=pointer]:
+                    - /url: "#figure.caption.39"
+                - generic [ref=f15e1577]:
+                  - text: Figure 3, significant redundancy can be observed
+                  - link "https://proceedings.neurips.cc/paper/2020/hash/d4dd111a4fd973394238aca5c05bebe3-Abstract.html" [ref=f15e1578] [cursor=pointer]:
+                    - /url: https://proceedings.neurips.cc/paper/2020/hash/d4dd111a4fd973394238aca5c05bebe3-Abstract.html
+                - text: in both token representations and attention heads within the VLM modules on various tasks. B. Details of Downstream Tasks Natural Language for Visual Reasoning (NLVR2 (Suhr et al., 2019)) is a visual reasoning task that aims to determine whether a textual statement describes a pair of images. For METER-based models, we construct two pairs of image-text, each consisting of the image and a
+                - generic [ref=f15e1579]:
+                  - text: textual statement. For models based on BLIP, we
+                  - link [ref=f15e1580] [cursor=pointer]:
+                    - /url: "#cite.power_bert"
+                - generic [ref=f15e1581]:
+                  - text: directly feed the two images and the text to the
+                  - link [ref=f15e1582] [cursor=pointer]:
+                    - /url: "#cite.redundancy_in_vit"
+                - text: encoder.
+              - generic [ref=f15e239]:
+                - button [ref=f15e1266] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1267]
+                - generic [ref=f15e242] [cursor=pointer]: Translate Page
+                - generic [ref=f15e244]:
+                  - generic [ref=f15e245]: Auto
+                  - button "OFF" [ref=f15e1268] [cursor=pointer]
+            - region "Page ⁨15⁩" [ref=f15e1269]:
+              - generic [ref=f15e248]:
+                - button [ref=f15e1270] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1271]
+                - generic [ref=f15e251] [cursor=pointer]: Translate Page
+                - generic [ref=f15e253]:
+                  - generic [ref=f15e254]: Auto
+                  - button "OFF" [ref=f15e1272] [cursor=pointer]
+            - region "Page ⁨16⁩" [ref=f15e1273]:
+              - generic [ref=f15e257]:
+                - button [ref=f15e1274] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1275]
+                - generic [ref=f15e260] [cursor=pointer]: Translate Page
+                - generic [ref=f15e262]:
+                  - generic [ref=f15e263]: Auto
+                  - button "OFF" [ref=f15e1276] [cursor=pointer]
+            - region "Page ⁨17⁩" [ref=f15e1277]:
+              - generic [ref=f15e266]:
+                - button [ref=f15e1278] [cursor=pointer]:
+                  - img "Translate Page" [ref=f15e1279]
+                - generic [ref=f15e269] [cursor=pointer]: Translate Page
+                - generic [ref=f15e271]:
+                  - generic [ref=f15e272]: Auto
+                  - button "OFF" [ref=f15e1280] [cursor=pointer]
+            - button [ref=f15e277] [cursor=pointer]
+            - button [ref=f15e280] [cursor=pointer]
+            - button [ref=f15e283] [cursor=pointer]
+            - button [ref=f15e286] [cursor=pointer]
+            - button [ref=f15e289] [cursor=pointer]
+            - button [ref=f15e294] [cursor=pointer]
+            - button [ref=f15e297] [cursor=pointer]
+            - button [ref=f15e300] [cursor=pointer]
+            - button [ref=f15e1607] [cursor=pointer]
+            - button [ref=f15e1612] [cursor=pointer]
+            - button [ref=f15e1615] [cursor=pointer]
+            - button [ref=f15e1620] [cursor=pointer]
+            - button [ref=f15e1625] [cursor=pointer]
+            - button [ref=f15e1630] [cursor=pointer]
+            - button [ref=f15e1633] [cursor=pointer]
+        - generic [ref=f15e1638]:
+          - button [ref=f15e1639] [cursor=pointer]:
+            - img "close" [ref=f15e1640]
+          - generic [ref=f15e1642]:
+            - generic [ref=f15e1643]:
+              - img "Discussion" [ref=f15e1645]
+              - generic [ref=f15e1646]: Discussion
+            - generic [ref=f15e1647]:
+              - img "Translation" [ref=f15e1649]
+              - generic [ref=f15e1650]: Translation
+            - generic [ref=f15e1651]:
+              - img "Explanation" [ref=f15e1653]
+              - generic [ref=f15e1654]: Explanation
+            - generic [ref=f15e1655]:
+              - img "Smart Citation" [ref=f15e1657]
+              - generic [ref=f15e1658]: Smart Citation
+            - generic [ref=f15e1659]:
+              - img "Auto Highlight" [ref=f15e1661]
+              - generic [ref=f15e1662]: Auto Highlight
+          - generic [ref=f15e1663]:
+            - generic [ref=f15e1664]:
+              - heading "Keep your research flow uninterrupted." [level=2] [ref=f15e1665]
+              - paragraph [ref=f15e1666]: You have reached the AI analysis limit of the free plan, and 5 core features such as translation, discussion, explanation, auto-highlight, and smart citation have been restricted.Upgrade to the Pro plan and regain an uninterrupted research flow.
+            - generic [ref=f15e1667]:
+              - button "Start Moonlight Pro with 1 week free" [ref=f15e1668] [cursor=pointer]
+              - generic [ref=f15e1670]: Or, want to get benefits with friends?
+              - button "Invite friends and get 1 month free pass" [ref=f15e1671] [cursor=pointer]
+      - generic:
+        - generic:
+          - complementary [ref=f15e302]:
+            - generic [ref=f15e304]:
+              - generic [ref=f15e305]:
+                - button "Moonlight" [ref=f15e1281] [cursor=pointer]
+                - button [ref=f15e1282] [cursor=pointer]:
+                  - img "Moonlight" [ref=f15e1283]
+              - generic [ref=f15e311]:
+                - generic [ref=f15e312]:
+                  - button "Open library" [ref=f15e1284] [cursor=pointer]
+                  - button "Save to library" [ref=f15e1285] [cursor=pointer]
+                  - button "Upload PDF" [ref=f15e1286] [cursor=pointer]
+                  - button "Related Papers" [ref=f15e1287] [cursor=pointer]
+                - button "Folders" [ref=f15e1288] [cursor=pointer]
+              - generic [ref=f15e347]:
+                - button "Refer friends" [ref=f15e1289] [cursor=pointer]
+                - button "Light mode" [ref=f15e1290] [cursor=pointer]
+          - banner [ref=f15e368]:
+            - button "Paper outline" [ref=f15e1291] [cursor=pointer]
+            - button "Paper Info" [ref=f15e1292] [cursor=pointer]
+            - button "Find" [ref=f15e1293] [cursor=pointer]
+            - button "Automatic Zoom" [ref=f15e1294] [cursor=pointer]
+            - button "Zoom Out" [ref=f15e1295] [cursor=pointer]
+            - button "Zoom In" [ref=f15e1296] [cursor=pointer]
+            - generic [ref=f15e391]:
+              - textbox [ref=f15e392]: "13"
+              - text: / 17
+            - button "Auto Highlight" [ref=f15e1297] [cursor=pointer]
+            - button "Image Explanation" [ref=f15e1298] [cursor=pointer]
+            - button "Auto Translate" [ref=f15e1299] [cursor=pointer]
+            - button "2 Limit Reached" [ref=f15e1300] [cursor=pointer]:
+              - generic [ref=f15e411]: "2"
+              - text: Limit Reached
+            - button "Settings" [ref=f15e1301] [cursor=pointer]
+            - button "Export options" [ref=f15e1302] [cursor=pointer]
+          - complementary "Right sidebar":
+            - generic "Right sidebar features" [ref=f15e1303]:
+              - button "Open right sidebar" [ref=f15e1304] [cursor=pointer]
+              - button "With AI" [ref=f15e1305] [cursor=pointer]
+              - button "Quiz" [ref=f15e1306] [cursor=pointer]
+              - button "Highlights" [ref=f15e1307] [cursor=pointer]
+              - button "Explanations" [ref=f15e1308] [cursor=pointer]
+              - button "Comments" [ref=f15e1309] [cursor=pointer]
+              - button "Note" [ref=f15e1310] [cursor=pointer]
+              - button "Citation Cards" [ref=f15e1311] [cursor=pointer]
+              - button "Move sidebar to the bottom" [ref=f15e1312] [cursor=pointer]
+  - alert [ref=f11e5]

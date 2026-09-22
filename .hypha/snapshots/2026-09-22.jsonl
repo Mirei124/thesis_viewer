@@ -1,0 +1,6 @@
+{"recorded_at":"2026-09-22T05:22:46.945Z","origin":"82B6:2:53be571f846e","scope":"ws","kind":"intent","id":"0001","field":"body_hash","from":null,"to":"52977b3addc027d3a31f98e6c52c5fe0974a2a25db300d4c4b41d51641b1776e","by":"cli"}
+{"recorded_at":"2026-09-22T05:22:46.945Z","origin":"82B6:2:53be571f846e","scope":"ws","kind":"intent","id":"0001","field":"id","from":null,"to":"0001","by":"cli"}
+{"recorded_at":"2026-09-22T05:22:46.945Z","origin":"82B6:2:53be571f846e","scope":"ws","kind":"intent","id":"0001","field":"status","from":null,"to":"todo","by":"cli"}
+{"recorded_at":"2026-09-22T05:31:05.925Z","origin":"82B6:4:9e22c8757351","scope":"ws","kind":"intent","id":"0001","field":"body_hash","from":"52977b3addc027d3a31f98e6c52c5fe0974a2a25db300d4c4b41d51641b1776e","to":"05f6332fd0163bc33f83778a7374178fe39ad7836364e31895b7f6c084450a3a","by":"apply"}
+{"recorded_at":"2026-09-22T05:31:06.067Z","origin":"82B6:2:e26eb2472f7b","scope":"ws","kind":"intent","id":"0001","field":"body_hash","from":"05f6332fd0163bc33f83778a7374178fe39ad7836364e31895b7f6c084450a3a","to":"fef0832de874c88fcbf11999738d69947de591881c7f2436944b8492c87752e7","by":"apply"}
+{"recorded_at":"2026-09-22T05:33:59.923Z","origin":"82B6:2:7798029a8654","scope":"ws","kind":"intent","id":"0001","field":"status","from":"todo","to":"in_progress","by":"cli"}

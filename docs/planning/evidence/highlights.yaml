@@ -1,0 +1,380 @@
+- generic [ref=f11e1]:
+  - iframe [ref=f11e4]:
+    - generic [ref=f15e1]:
+      - generic [ref=f15e6]:
+        - generic [ref=f15e7]:
+          - radiogroup [ref=f15e10]:
+            - radio "Thumbnails" [ref=f15e11] [cursor=pointer]
+            - radio "Document Outline" [checked] [ref=f15e12] [cursor=pointer]
+          - generic [ref=f15e14]:
+            - link "Introduction" [ref=f15e16] [cursor=pointer]:
+              - /url: "#section.1"
+            - link "Preliminary" [ref=f15e18] [cursor=pointer]:
+              - /url: "#section.2"
+            - link "Methodology" [ref=f15e20] [cursor=pointer]:
+              - /url: "#section.3"
+            - link "Experiments" [ref=f15e22] [cursor=pointer]:
+              - /url: "#section.4"
+            - link "Analysis" [ref=f15e24] [cursor=pointer]:
+              - /url: "#section.5"
+            - link "Related Work" [ref=f15e26] [cursor=pointer]:
+              - /url: "#section.6"
+            - link "Conclusion" [ref=f15e28] [cursor=pointer]:
+              - /url: "#section.7"
+            - link "Bibliographical References" [ref=f15e30] [cursor=pointer]:
+              - /url: "#section.8"
+            - link "Details of Similarity Calculation" [ref=f15e32] [cursor=pointer]:
+              - /url: "#appendix.A"
+            - link "Details of Downstream Tasks" [ref=f15e34] [cursor=pointer]:
+              - /url: "#appendix.B"
+            - link "Implementation Details" [ref=f15e36] [cursor=pointer]:
+              - /url: "#appendix.C"
+            - link "More Visualization Examples of Token Trimming" [ref=f15e38] [cursor=pointer]:
+              - /url: "#appendix.D"
+        - generic [ref=f15e41]:
+          - region "Page ⁨1⁩" [ref=f15e42]:
+            - generic [ref=f15e44]:
+              - text: "SmartTrim : Adaptive Tokens and Attention Pruning for Efficient Vision-Language Models Zekun Wang 1 ∗ , Jingchang Chen 1 ∗ , Wangchunshu Zhou 2 , Haichao Zhu Jiafeng Liang 1 , Liping Shan 3 , Ming Liu 1 , 4 , Dongliang Xu 3 , Qing Yang 3 , Bing Qin 1 , 4 1 Harbin Institute of Technology 2 ETH Zurich 3 Du Xiaoman (Beijing) Science Technology Co., Ltd 4 Peng Cheng Laboratory {zkwang, jcchen, mliu, qinb}@ir.hit.edu.cn Abstract Despite achieving remarkable performance on various vision-language tasks, Transformer-based Vision-Language Models (VLMs) suffer from redundancy in inputs and parameters, significantly hampering their efficiency in real-world applications. Moreover, the degree of redundancy in token representations and model parameters, such as attention heads, varies significantly for different inputs. In light of the challenges, we propose Smart- Trim , an adaptive acceleration framework for VLMs, which adjusts the computational overhead per instance. Specifically, we integrate lightweight modules into the original backbone to identify and prune redundant token representations and attention heads within each layer. Furthermore, we devise a self-distillation strategy to enhance the consistency between the predictions of the pruned model and its fully-capacity counterpart. Ex- perimental results across various vision-language tasks consistently demonstrate that SmartTrim accelerates the original model by 2 - 3 times with minimal performance degradation, highlighting the effectiveness and ef- ficiency compared to previous approaches. Code will be available at"
+              - generic [ref=f15e45]:
+                - text: https://github.com/kugwzk/SmartTrim
+                - link "https://github.com/kugwzk/SmartTrim" [ref=f15e46] [cursor=pointer]:
+                  - /url: https://github.com/kugwzk/SmartTrim
+              - text: ". Keywords: Vision-Language Model, Adaptive Inference, Pruning, Dynamic Network How many clocks do you see? Is there a glass? How many bananas are in the bowl?"
+              - generic [ref=f15e47]:
+                - text: What is the visible portion of the
+                - link [ref=f15e48] [cursor=pointer]:
+                  - /url: "#cite.efficientvlm"
+              - generic [ref=f15e49]:
+                - text: name of the railroad in yellow?
+                - link [ref=f15e50] [cursor=pointer]:
+                  - /url: "#cite.upop"
+              - text: "Easy Instances Hard Instances 18 20 22 24 26 28 30 32 FLOPs(G) Figure 1: FLOPs histogram of SmartTrim"
+              - generic [ref=f15e51]:
+                - text: on VQA.
+                - link [ref=f15e52] [cursor=pointer]:
+                  - /url: "#figure.caption.1"
+              - text: SmartTrim allocates diverse computational over- head based on cross-modal complexity, assigning fewer computations to easy instances (left) and more to hard ones (right). 1. Introduction
+              - generic [ref=f15e53]:
+                - text: Transformer-based (Vaswani et al., 2017) Vision-
+                - link [ref=f15e54] [cursor=pointer]:
+                  - /url: "#cite.transformer"
+              - text: Language Models (VLMs) have shown great suc- cess on various vision-language tasks with their del-
+              - generic [ref=f15e55]:
+                - text: icate model structures (Radford et al., 2021; Wang
+                - link [ref=f15e56] [cursor=pointer]:
+                  - /url: "#cite.clip"
+                - link [ref=f15e57] [cursor=pointer]:
+                  - /url: "#cite.beit3"
+              - generic [ref=f15e58]: et al., 2023b; Chen et al., 2023). Despite achieving
+              - text: superior performance, these models are computa-
+              - generic [ref=f15e59]:
+                - text: tionally expensive due to the long input sequences
+                - link [ref=f15e60] [cursor=pointer]:
+                  - /url: "#figure.caption.2"
+              - text: and large number of parameters, hindering their deployment in the production environment. In pursuit of efficient VLMs, a few acceleration
+              - generic [ref=f15e61]:
+                - text: approaches have been proposed, including knowl-
+                - link [ref=f15e62] [cursor=pointer]:
+                  - /url: "#cite.DistillVLM"
+              - generic [ref=f15e63]:
+                - text: edge distillation (Fang et al., 2021; Wang et al.,
+                - link [ref=f15e64] [cursor=pointer]:
+                  - /url: "#cite.efficientvlm"
+              - generic [ref=f15e65]:
+                - text: 2023a), parameter pruning (Gan et al., 2022; Shi
+                - link [ref=f15e66] [cursor=pointer]:
+                  - /url: "#cite.DBLP%3Aconf/aaai/GanCLC0WLW022"
+                - link [ref=f15e67] [cursor=pointer]:
+                  - /url: "#cite.upop"
+              - generic [ref=f15e68]:
+                - text: et al., 2023), and token pruning (Jiang et al., 2022;
+                - link [ref=f15e69] [cursor=pointer]:
+                  - /url: "#cite.TRIPS"
+                - link [ref=f15e70] [cursor=pointer]:
+                  - /url: "#cite.pumer"
+              - text: Cao et al., 2023). These methods reduce inference overhead, implying that a large proportion of pa- rameters and token representations are redundant. However, they adhere to a static computational ar- chitecture for all instances, overlooking the variation of complexities among different instances, leading
+              - generic [ref=f15e71]:
+                - text: to severe performance degradation at higher accel-
+                - link [ref=f15e72] [cursor=pointer]:
+                  - /url: "#cite.shallow_deep"
+              - generic [ref=f15e73]:
+                - text: eration ratios (Kaya et al., 2019; Liu et al., 2020). As
+                - link [ref=f15e74] [cursor=pointer]:
+                  - /url: "#cite.fastbert"
+              - text: demonstrated in Figure 1, the instances involving complex cross-modal interactions naturally require more computations to fully comprehend the intri- cate details of images and associated questions. Conversely, easy instances can be solved with less overhead. Consequently, enormous original VLMs may overthink simple instances, leading to wasted computation, while static accelerated models strug- gle with complex ones, incurring extensive perfor- mance degradation. To this end, we focus on adaptive acceleration on a per-input basis, which is orthogonal to static
+              - generic [ref=f15e75]:
+                - text: approaches and more flexible to meet different con-
+                - link [ref=f15e76] [cursor=pointer]:
+                  - /url: "#cite.beit3"
+                - link [ref=f15e77] [cursor=pointer]:
+                  - /url: "#cite.pali"
+              - text: "straints. In this work, we propose SmartTrim , an adaptive pruning framework for VLM (shown in Fig- ure 2), which streamlines the model from two as- pects with significant redundancy: token represen- arXiv:2305.15033v2 [cs.CL] 26 Feb 2024"
+            - generic [ref=f15e96]:
+              - button [ref=f15e97] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e98]
+              - generic [ref=f15e99] [cursor=pointer]: Translate Page
+              - generic [ref=f15e101]:
+                - generic [ref=f15e102]: Auto
+                - button "OFF" [ref=f15e103] [cursor=pointer]
+          - region "Page ⁨2⁩" [ref=f15e104]:
+            - generic [ref=f15e106]:
+              - text: "✂ MSA ✂ MCA ✂ FFN encoder Transformer layer 1 Transformer layer 2 ✂ MSA ✂ MCA ✂ FFN encoder Token trimmer … … … Transformer layer N ✂ ℒ !\" Input ( a ) Model Architecture ( b ) Self - Distillation ✂ ✂ textual tokens visual tokens cross - modal encoder × 𝐿 [CLS ] [CLS ] Figure 2: Overview of our SmartTrim framework, best viewed in color. (a) Model Architecture of SmartTrim . We incorporate the trimmers into layers of the uni-modal encoders and the cross-modal encoder to prune redundant tokens and heads. Given a set of image-text pairs, SmartTrim adjusts the computations for each instance based on the trimmer outputs. (b) Self-Distillation strategy. At each training step, the predictions of the pruned model are aligned to its fully-capacity counterpart. tation and attention heads. SmartTrim integrates the lightweight modules (called trimmers) into lay- ers of the original backbone to identify redundant tokens and heads guided by cross-modal informa- tion. Specifically, the XModal-aware token trimmers are introduced to determine which tokens to retain considering not only their representations but also their importance in cross-modal interactions. For head pruning, we introduce Modal-adaptive head trimmers in different attention modules to adaptively select which heads to activate. During training, we propose a self-distillation strategy, which encour- ages the predictions of the pruned model to align with its fully-capacity counterpart at the same step. The self-distillation scheme alleviates the need for a separately fine-tuned teacher model in conven- tional knowledge distillation. Furthermore, with a curriculum training scheduler, SmartTrim"
+              - generic [ref=f15e107]:
+                - text: has a
+                - link [ref=f15e108] [cursor=pointer]:
+                  - /url: "#cite.vilbert"
+              - text: "smoother and more stable optimization process. Compared to previous methods, our approach not only avoids additional expensive pre-training, but also provides more fine-grained control to better explore efficiency-performance trade-offs. We evaluate the proposed SmartTrim on two representative VLMs with different architectures:"
+              - generic [ref=f15e109]:
+                - text: METER (Dou et al., 2022), an encoder-based
+                - link [ref=f15e110] [cursor=pointer]:
+                  - /url: "#cite.blip"
+              - generic [ref=f15e111]: model; and BLIP (Li et al., 2022), an encoder-
+              - text: decoder-based model. Experimental results reveal that SmartTrim consistently outperforms previous methods on various datasets. Notably, SmartTrim achieves an impressive speed-up from 1 . 5 × to 4 × on the original model while incurring only a marginal performance drop ( 1% ~ 3% ). Further analysis indi- cates that SmartTrim
+              - generic [ref=f15e112]:
+                - text: effectively learns to adap-
+                - link [ref=f15e113] [cursor=pointer]:
+                  - /url: "#cite.DBLP%3Aconf/nips/MichelLN19"
+                - link [ref=f15e114] [cursor=pointer]:
+                  - /url: "#cite.power_bert"
+              - text: tively allocate computational budgets based on the complexity of cross-modal interactions. 2. Preliminary 2.1. Transformer-based VLM Uni-Modal Encoders The input image and text are tokenized into visual and textual tokens, re- spectively. The two sequences are fed into visual and textual encoders to extract the respective fea- tures, where each layer consists of a multi-head self-attention module (MSA) and a feed-forward network module (FFN). Cross-Modal Encoder To capture cross-modal
+              - generic [ref=f15e115]:
+                - text: interactions, the co-attention mechanism (Lu et al.,
+                - link [ref=f15e116] [cursor=pointer]:
+                  - /url: "#cite.vilbert"
+              - text: 2019) is employed in each layer of cross-modal encoder. Specifically, in addition to MSA and FFN, a multi-head cross-attention module (MCA) is in- troduced, where query features are projected from one modality ( e.g. , vision), while key and value features are obtained from another modality ( e.g. , language). 2.2.
+              - generic [ref=f15e117]:
+                - text: Empirical Analyses
+                - link [ref=f15e118] [cursor=pointer]:
+                  - /url: "#cite.meter"
+              - text: The long sequence in VLMs incurs substantial com- putational overhead as the complexity of attention modules scales quadratically with length. In ad- dition, hundreds of millions of parameters further burden the situation. Previous studies of uni-modal Transformers reveal that redundancy is present in
+              - generic [ref=f15e119]:
+                - text: token representations or attention heads (Michel
+                - link [ref=f15e120] [cursor=pointer]:
+                  - /url: "#cite.DBLP%3Aconf/nips/MichelLN19"
+              - generic [ref=f15e121]:
+                - text: et al., 2019; Goyal et al., 2020; Wang et al., 2022a).
+                - link [ref=f15e122] [cursor=pointer]:
+                  - /url: "#cite.redundancy_in_vit"
+              - text: To investigate whether redundancy also exists in
+            - generic [ref=f15e131]:
+              - button [ref=f15e132] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e133]
+              - generic [ref=f15e134] [cursor=pointer]: Translate Page
+              - generic [ref=f15e136]:
+                - generic [ref=f15e137]: Auto
+                - button "OFF" [ref=f15e138] [cursor=pointer]
+          - region "Page ⁨3⁩" [ref=f15e139]:
+            - generic [ref=f15e140]:
+              - button [ref=f15e141] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e142]
+              - generic [ref=f15e143] [cursor=pointer]: Translate Page
+              - generic [ref=f15e145]:
+                - generic [ref=f15e146]: Auto
+                - button "OFF" [ref=f15e147] [cursor=pointer]
+          - region "Page ⁨4⁩" [ref=f15e148]:
+            - generic [ref=f15e149]:
+              - button [ref=f15e150] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e151]
+              - generic [ref=f15e152] [cursor=pointer]: Translate Page
+              - generic [ref=f15e154]:
+                - generic [ref=f15e155]: Auto
+                - button "OFF" [ref=f15e156] [cursor=pointer]
+          - region "Page ⁨5⁩" [ref=f15e157]:
+            - generic [ref=f15e158]:
+              - button [ref=f15e159] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e160]
+              - generic [ref=f15e161] [cursor=pointer]: Translate Page
+              - generic [ref=f15e163]:
+                - generic [ref=f15e164]: Auto
+                - button "OFF" [ref=f15e165] [cursor=pointer]
+          - region "Page ⁨6⁩" [ref=f15e166]:
+            - generic [ref=f15e167]:
+              - button [ref=f15e168] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e169]
+              - generic [ref=f15e170] [cursor=pointer]: Translate Page
+              - generic [ref=f15e172]:
+                - generic [ref=f15e173]: Auto
+                - button "OFF" [ref=f15e174] [cursor=pointer]
+          - region "Page ⁨7⁩" [ref=f15e175]:
+            - generic [ref=f15e176]:
+              - button [ref=f15e177] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e178]
+              - generic [ref=f15e179] [cursor=pointer]: Translate Page
+              - generic [ref=f15e181]:
+                - generic [ref=f15e182]: Auto
+                - button "OFF" [ref=f15e183] [cursor=pointer]
+          - region "Page ⁨8⁩" [ref=f15e184]:
+            - generic [ref=f15e185]:
+              - button [ref=f15e186] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e187]
+              - generic [ref=f15e188] [cursor=pointer]: Translate Page
+              - generic [ref=f15e190]:
+                - generic [ref=f15e191]: Auto
+                - button "OFF" [ref=f15e192] [cursor=pointer]
+          - region "Page ⁨9⁩" [ref=f15e193]:
+            - generic [ref=f15e194]:
+              - button [ref=f15e195] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e196]
+              - generic [ref=f15e197] [cursor=pointer]: Translate Page
+              - generic [ref=f15e199]:
+                - generic [ref=f15e200]: Auto
+                - button "OFF" [ref=f15e201] [cursor=pointer]
+          - region "Page ⁨10⁩" [ref=f15e202]:
+            - generic [ref=f15e203]:
+              - button [ref=f15e204] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e205]
+              - generic [ref=f15e206] [cursor=pointer]: Translate Page
+              - generic [ref=f15e208]:
+                - generic [ref=f15e209]: Auto
+                - button "OFF" [ref=f15e210] [cursor=pointer]
+          - region "Page ⁨11⁩" [ref=f15e211]:
+            - generic [ref=f15e212]:
+              - button [ref=f15e213] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e214]
+              - generic [ref=f15e215] [cursor=pointer]: Translate Page
+              - generic [ref=f15e217]:
+                - generic [ref=f15e218]: Auto
+                - button "OFF" [ref=f15e219] [cursor=pointer]
+          - region "Page ⁨12⁩" [ref=f15e220]:
+            - generic [ref=f15e221]:
+              - button [ref=f15e222] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e223]
+              - generic [ref=f15e224] [cursor=pointer]: Translate Page
+              - generic [ref=f15e226]:
+                - generic [ref=f15e227]: Auto
+                - button "OFF" [ref=f15e228] [cursor=pointer]
+          - region "Page ⁨13⁩" [ref=f15e229]:
+            - generic [ref=f15e230]:
+              - button [ref=f15e231] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e232]
+              - generic [ref=f15e233] [cursor=pointer]: Translate Page
+              - generic [ref=f15e235]:
+                - generic [ref=f15e236]: Auto
+                - button "OFF" [ref=f15e237] [cursor=pointer]
+          - region "Page ⁨14⁩" [ref=f15e238]:
+            - generic [ref=f15e239]:
+              - button [ref=f15e240] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e241]
+              - generic [ref=f15e242] [cursor=pointer]: Translate Page
+              - generic [ref=f15e244]:
+                - generic [ref=f15e245]: Auto
+                - button "OFF" [ref=f15e246] [cursor=pointer]
+          - region "Page ⁨15⁩" [ref=f15e247]:
+            - generic [ref=f15e248]:
+              - button [ref=f15e249] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e250]
+              - generic [ref=f15e251] [cursor=pointer]: Translate Page
+              - generic [ref=f15e253]:
+                - generic [ref=f15e254]: Auto
+                - button "OFF" [ref=f15e255] [cursor=pointer]
+          - region "Page ⁨16⁩" [ref=f15e256]:
+            - generic [ref=f15e257]:
+              - button [ref=f15e258] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e259]
+              - generic [ref=f15e260] [cursor=pointer]: Translate Page
+              - generic [ref=f15e262]:
+                - generic [ref=f15e263]: Auto
+                - button "OFF" [ref=f15e264] [cursor=pointer]
+          - region "Page ⁨17⁩" [ref=f15e265]:
+            - generic [ref=f15e266]:
+              - button [ref=f15e267] [cursor=pointer]:
+                - img "Translate Page" [ref=f15e268]
+              - generic [ref=f15e269] [cursor=pointer]: Translate Page
+              - generic [ref=f15e271]:
+                - generic [ref=f15e272]: Auto
+                - button "OFF" [ref=f15e273] [cursor=pointer]
+          - button [ref=f15e277] [cursor=pointer]
+          - button [ref=f15e280] [cursor=pointer]
+          - button [ref=f15e283] [cursor=pointer]
+          - button [ref=f15e286] [cursor=pointer]
+          - button [ref=f15e289] [cursor=pointer]
+          - button [ref=f15e294] [cursor=pointer]
+          - button [ref=f15e297] [cursor=pointer]
+          - button [ref=f15e300] [cursor=pointer]
+      - generic:
+        - generic:
+          - complementary [ref=f15e302]:
+            - generic [ref=f15e304]:
+              - generic [ref=f15e305]:
+                - button "Moonlight" [ref=f15e307] [cursor=pointer]
+                - button [ref=f15e308] [cursor=pointer]:
+                  - img "Moonlight" [ref=f15e309]
+              - generic [ref=f15e311]:
+                - generic [ref=f15e312]:
+                  - button "Open library" [ref=f15e314] [cursor=pointer]
+                  - button "Save to library" [ref=f15e320] [cursor=pointer]
+                  - button "Upload PDF" [ref=f15e325] [cursor=pointer]
+                  - button "Related Papers" [ref=f15e333] [cursor=pointer]
+                - button "Folders" [ref=f15e342] [cursor=pointer]
+              - generic [ref=f15e347]:
+                - button "Refer friends" [ref=f15e350] [cursor=pointer]
+                - button "Light mode" [ref=f15e359] [cursor=pointer]
+          - banner [ref=f15e368]:
+            - button "Paper outline" [ref=f15e369] [cursor=pointer]
+            - button "Paper Info" [ref=f15e374] [cursor=pointer]
+            - button "Find" [ref=f15e378] [cursor=pointer]
+            - button "Automatic Zoom" [ref=f15e384] [cursor=pointer]
+            - button "Zoom Out" [ref=f15e387] [cursor=pointer]
+            - button "Zoom In" [ref=f15e389] [cursor=pointer]
+            - generic [ref=f15e391]:
+              - textbox [ref=f15e392]: "1"
+              - text: / 17
+            - button "Auto Highlight" [ref=f15e395] [cursor=pointer]
+            - button "Image Explanation" [ref=f15e400] [cursor=pointer]
+            - button "Auto Translate" [ref=f15e405] [cursor=pointer]
+            - button "2 Limit Reached" [ref=f15e410] [cursor=pointer]:
+              - generic [ref=f15e411]: "2"
+              - text: Limit Reached
+            - button "Settings" [ref=f15e413] [cursor=pointer]
+            - button "Export options" [ref=f15e418] [cursor=pointer]
+          - complementary "Right sidebar":
+            - generic [ref=f15e422]:
+              - separator "Resize right sidebar" [ref=f15e423]
+              - generic [ref=f15e922]:
+                - generic [ref=f15e923]:
+                  - generic [ref=f15e924]: Highlights
+                  - generic [ref=f15e925]:
+                    - button "Copy" [ref=f15e926] [cursor=pointer]
+                    - button "Export" [ref=f15e930] [cursor=pointer]
+                - generic [ref=f15e934]:
+                  - generic [ref=f15e935] [cursor=pointer]:
+                    - checkbox [checked] [ref=f15e937]
+                    - generic [ref=f15e939]: All
+                  - generic [ref=f15e940]:
+                    - checkbox [checked] [ref=f15e942]
+                    - checkbox [checked] [ref=f15e945]
+                    - checkbox [checked] [ref=f15e948]
+                    - checkbox [checked] [ref=f15e951]
+                    - checkbox [checked] [ref=f15e954]
+                - generic [ref=f15e956]:
+                  - generic [ref=f15e957]:
+                    - generic [ref=f15e958] [cursor=pointer]:
+                      - checkbox [ref=f15e960]
+                      - generic [ref=f15e962]: Auto Highlight
+                    - generic [ref=f15e963] [cursor=pointer]:
+                      - checkbox [ref=f15e965]
+                      - generic [ref=f15e967]: Label
+                  - generic [ref=f15e968]:
+                    - generic [ref=f15e969] [cursor=pointer]:
+                      - checkbox [ref=f15e971]
+                      - generic [ref=f15e973]: Novelty
+                    - generic [ref=f15e974] [cursor=pointer]:
+                      - checkbox [ref=f15e976]
+                      - generic [ref=f15e978]: Methods
+                    - generic [ref=f15e979] [cursor=pointer]:
+                      - checkbox [ref=f15e981]
+                      - generic [ref=f15e983]: Results
+                - generic [ref=f15e984]:
+                  - img "search" [ref=f15e985]
+                  - textbox "Search" [ref=f15e986]
+            - generic "Right sidebar features" [ref=f15e853]:
+              - button "Close right sidebar" [ref=f15e856] [cursor=pointer]
+              - button "With AI" [ref=f15e865] [cursor=pointer]
+              - button "Quiz" [ref=f15e872] [cursor=pointer]
+              - button "Highlights" [active] [ref=f15e879] [cursor=pointer]
+              - button "Explanations" [ref=f15e886] [cursor=pointer]
+              - button "Comments" [ref=f15e893] [cursor=pointer]
+              - button "Note" [ref=f15e900] [cursor=pointer]
+              - button "Citation Cards" [ref=f15e907] [cursor=pointer]
+              - button "Move sidebar to the bottom" [ref=f15e915] [cursor=pointer]
+  - alert [ref=f11e5]
