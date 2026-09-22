@@ -13,6 +13,11 @@ import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 import '../styles.css';
 import 'pdfjs-dist/web/pdf_viewer.css';
+import {
+  pageBlocksFromTextContent,
+  type PageExtraction,
+  type PdfPageTextBlock,
+} from '../lib/pdfPageBlocks';
 
 GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
@@ -110,6 +115,12 @@ type SearchIndexState =
   | { kind: 'unavailable'; message: string }
   | { kind: 'error'; message: string };
 type SearchMatch = { pageIndex: number; offset: number };
+type ExtractionCoverage = 'full' | 'partial' | 'unreadable';
+type ExtractionState =
+  | { kind: 'idle' }
+  | { kind: 'extracting'; extractedPageCount: number; pageCount: number; textPageCount: number; emptyPageCount: number; failedPageCount: number }
+  | { kind: 'ready'; coverage: ExtractionCoverage; extractedPageCount: number; pageCount: number; textPageCount: number; emptyPageCount: number; failedPageCount: number; blockCount: number; pages: PageExtraction[] }
+  | { kind: 'error'; message: string };
 
 function searchTextOccurrences(text: string, query: string, pageIndex: number): SearchMatch[] {
   const normalizedText = text.toLocaleLowerCase();
@@ -224,11 +235,13 @@ function ReaderPage() {
   const renderIdRef = useRef(0);
   const thumbnailRequestIdRef = useRef(0);
   const searchRequestIdRef = useRef(0);
+  const extractionRequestIdRef = useRef(0);
   const viewSessionRef = useRef(0);
   const viewInteractionRevisionRef = useRef(0);
   const viewRestoreReadyRef = useRef(false);
   const viewSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchPagesRef = useRef<string[]>([]);
+  const pageBlocksRef = useRef<PdfPageTextBlock[]>([]);
   const indexedSearchQueryRef = useRef('');
   const [state, setState] = useState<ReaderState>({ kind: 'idle' });
   const [urlValue, setUrlValue] = useState('');
@@ -242,6 +255,7 @@ function ReaderPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchMatches, setSearchMatches] = useState<SearchMatch[]>([]);
   const [activeSearchMatch, setActiveSearchMatch] = useState(-1);
+  const [extraction, setExtraction] = useState<ExtractionState>({ kind: 'idle' });
   const [documentContentKey, setDocumentContentKey] = useState<string | null>(null);
   const [viewStorageStatus, setViewStorageStatus] = useState('');
   const [viewRestoreEpoch, setViewRestoreEpoch] = useState(0);
@@ -252,6 +266,7 @@ function ReaderPage() {
     textLayerTaskRef.current?.cancel();
     thumbnailRequestIdRef.current += 1;
     searchRequestIdRef.current += 1;
+    extractionRequestIdRef.current += 1;
     if (viewSaveTimerRef.current) clearTimeout(viewSaveTimerRef.current);
     void loadingTaskRef.current?.destroy();
     void documentRef.current?.cleanup();
@@ -314,6 +329,7 @@ function ReaderPage() {
     textLayerTaskRef.current = null;
     thumbnailRequestIdRef.current += 1;
     searchRequestIdRef.current += 1;
+    extractionRequestIdRef.current += 1;
     viewSessionRef.current += 1;
     viewInteractionRevisionRef.current = 0;
     viewRestoreReadyRef.current = false;
@@ -321,10 +337,12 @@ function ReaderPage() {
     setDocumentContentKey(null);
     setViewStorageStatus('');
     searchPagesRef.current = [];
+    pageBlocksRef.current = [];
     setThumbnails({});
     setOutline({ kind: 'idle' });
     setOutlineNotice('');
     setSearchIndex({ kind: 'idle' });
+    setExtraction({ kind: 'idle' });
     setSearchQuery('');
     setSearchMatches([]);
     setActiveSearchMatch(-1);
@@ -362,52 +380,85 @@ function ReaderPage() {
     }
   }
 
-  async function buildSearchIndex(pdf: PDFDocumentProxy, requestId: number) {
+  async function extractPageBlocks(pdf: PDFDocumentProxy, requestId: number, documentVersion: string) {
+    const extractionRequestId = ++extractionRequestIdRef.current;
     const searchRequestId = ++searchRequestIdRef.current;
     const pageTexts = Array<string>(pdf.numPages).fill('');
+    const pages = Array<PageExtraction>(pdf.numPages);
     searchPagesRef.current = pageTexts;
+    pageBlocksRef.current = [];
     let indexedPageCount = 0;
     let failedPageCount = 0;
-    let searchablePageCount = 0;
+    let textPageCount = 0;
+    let emptyPageCount = 0;
 
     setSearchIndex({ kind: 'indexing', indexedPageCount, pageCount: pdf.numPages, failedPageCount, revision: 0 });
+    setExtraction({ kind: 'extracting', extractedPageCount: indexedPageCount, pageCount: pdf.numPages, textPageCount, emptyPageCount, failedPageCount });
 
     for (let pageIndex = 0; pageIndex < pdf.numPages; pageIndex += 1) {
-      if (searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
+      if (extractionRequestId !== extractionRequestIdRef.current || searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
       try {
         const page = await pdf.getPage(pageIndex + 1);
-        if (searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
+        if (extractionRequestId !== extractionRequestIdRef.current || searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
         const textContent = await page.getTextContent();
-        if (searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
-        const pageText = textContent.items
-          .map((item) => ('str' in item ? item.str : ''))
-          .join(' ')
-          .trim();
-        pageTexts[pageIndex] = pageText;
-        if (pageText.length > 0) searchablePageCount += 1;
-      } catch {
+        if (extractionRequestId !== extractionRequestIdRef.current || searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
+        const pageExtraction = pageBlocksFromTextContent(textContent, pageIndex, documentVersion);
+        pages[pageIndex] = pageExtraction;
+        pageTexts[pageIndex] = pageExtraction.searchableText;
+        pageBlocksRef.current.push(...pageExtraction.blocks);
+        if (pageExtraction.status === 'text') textPageCount += 1;
+        else emptyPageCount += 1;
+      } catch (error) {
         failedPageCount += 1;
+        pages[pageIndex] = {
+          pageIndex,
+          blocks: [],
+          searchableText: '',
+          textItemCount: 0,
+          status: 'failed',
+          error: error instanceof Error ? error.message : 'PDF.js could not extract this page.',
+        };
       }
 
       indexedPageCount += 1;
-      if (searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
+      if (extractionRequestId !== extractionRequestIdRef.current || searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
       const complete = indexedPageCount === pdf.numPages;
-      if (complete && searchablePageCount === 0) {
+      if (complete && textPageCount === 0) {
         setSearchIndex({
           kind: 'unavailable',
           message: failedPageCount > 0
             ? 'No searchable text could be extracted from this PDF. You can keep reading rendered pages, but full-document search is unavailable.'
             : 'This PDF has no selectable text, likely because it is a scan. You can keep reading rendered pages, but full-document search is unavailable.',
         });
-        return;
+      } else {
+        setSearchIndex({
+          kind: complete ? 'ready' : 'indexing',
+          indexedPageCount,
+          pageCount: pdf.numPages,
+          failedPageCount,
+          revision: indexedPageCount,
+        });
       }
-      setSearchIndex({
-        kind: complete ? 'ready' : 'indexing',
-        indexedPageCount,
-        pageCount: pdf.numPages,
-        failedPageCount,
-        revision: indexedPageCount,
-      });
+      if (complete) {
+        const coverage: ExtractionCoverage = textPageCount === pdf.numPages
+          ? 'full'
+          : textPageCount > 0
+            ? 'partial'
+            : 'unreadable';
+        setExtraction({
+          kind: 'ready',
+          coverage,
+          extractedPageCount: indexedPageCount,
+          pageCount: pdf.numPages,
+          textPageCount,
+          emptyPageCount,
+          failedPageCount,
+          blockCount: pageBlocksRef.current.length,
+          pages,
+        });
+      } else {
+        setExtraction({ kind: 'extracting', extractedPageCount: indexedPageCount, pageCount: pdf.numPages, textPageCount, emptyPageCount, failedPageCount });
+      }
       // Let browser input, page navigation, and rendering work between pages.
       await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
     }
@@ -610,9 +661,13 @@ function ReaderPage() {
       setPageInput('1');
       setState({ kind: 'ready', fileName, pageCount: pdf.numPages, ...initialView });
       setThumbnailSession(requestId);
-      void buildSearchIndex(pdf, requestId);
       const contentKey = await hashPromise;
       if (!isCurrent(requestId) || documentRef.current !== pdf) return;
+      // The extraction uses the content hash in every block ID. If hashing is
+      // unavailable, extraction remains inspectable for this session but is
+      // explicitly not a stable cross-open document version.
+      const documentVersion = contentKey ? `sha256:${contentKey}` : `unverified-session:${requestId}`;
+      void extractPageBlocks(pdf, requestId, documentVersion);
       if (!contentKey) {
         viewRestoreReadyRef.current = true;
         setViewStorageStatus('This browser could not identify the PDF content, so its view position cannot be restored or saved. Reading continues normally.');
@@ -844,6 +899,20 @@ function ReaderPage() {
       : `${resultSummary} in the indexed document.${extractionWarning}${activeSummary}`;
   }
 
+  function extractionStatus(): string {
+    if (extraction.kind === 'idle') return 'Page-block diagnostics become available after a PDF has loaded.';
+    if (extraction.kind === 'error') return extraction.message;
+    if (extraction.kind === 'extracting') {
+      return `Extracting local page blocks from ${extraction.extractedPageCount} of ${extraction.pageCount} pages: ${extraction.textPageCount} with text, ${extraction.emptyPageCount} with no text, ${extraction.failedPageCount} unreadable.`;
+    }
+    const coverage = extraction.coverage === 'full'
+      ? 'full text coverage'
+      : extraction.coverage === 'partial'
+        ? 'partial text coverage'
+        : 'unreadable text coverage';
+    return `${coverage}: ${extraction.textPageCount} of ${extraction.pageCount} pages have extractable text; ${extraction.emptyPageCount} have no text and ${extraction.failedPageCount} could not be extracted. ${extraction.blockCount} local page blocks were created.`;
+  }
+
   return (
     <main className="reader-page" aria-labelledby="page-title">
       <header className="reader-header">
@@ -911,6 +980,23 @@ function ReaderPage() {
           <output aria-live="polite" aria-label="Search status">{searchStatus()}</output>
           <button type="button" onClick={() => navigateSearchMatch(1)} disabled={isRendering || searchIndex.kind === 'unavailable' || searchIndex.kind === 'error' || searchMatches.length === 0}>Next match</button>
         </div>
+      </section>}
+      {state.kind === 'ready' && <section className="extraction-diagnostics" aria-labelledby="extraction-diagnostics-title">
+        <h2 id="extraction-diagnostics-title">Text extraction diagnostics</h2>
+        <p aria-live="polite">{extractionStatus()}</p>
+        <p className="extraction-caution">Blocks keep PDF.js source-item order and original item coordinates for page anchors. That source order is not a reliable paper reading order, especially for columns, tables, and formulas.</p>
+        {extraction.kind === 'ready' && <details>
+          <summary>Inspect page coverage</summary>
+          <ul className="extraction-page-list">
+            {extraction.pages.map((page) => <li key={page.pageIndex}>
+              Page {page.pageIndex + 1}: {page.status === 'text'
+                ? `${page.blocks.length} blocks with text`
+                : page.status === 'empty'
+                  ? 'no extractable text'
+                  : `text extraction failed${page.error ? ` (${page.error})` : ''}`}.
+            </li>)}
+          </ul>
+        </details>}
       </section>}
       <div className="reader-workspace">
         {state.kind === 'ready' && <aside className="reader-navigation" aria-label="PDF navigation">

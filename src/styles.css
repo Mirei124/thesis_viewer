@@ -86,6 +86,14 @@ p {
 .search-navigation button:hover:not(:disabled) { border-color: #1d4ed8; color: #1d4ed8; }
 .search-navigation button:disabled { cursor: not-allowed; opacity: 0.55; }
 .search-navigation output { flex: 1 1 14rem; color: #475569; font-size: 0.875rem; line-height: 1.4; text-align: center; }
+.extraction-diagnostics { margin-top: 1rem; padding: 0.75rem; border: 1px solid #d6dce8; border-radius: 0.75rem; background: #fff; }
+.extraction-diagnostics h2 { margin: 0; color: #1e293b; font-size: 1rem; }
+.extraction-diagnostics p { margin: 0.55rem 0 0; color: #475569; font-size: 0.875rem; line-height: 1.45; }
+.extraction-diagnostics details { margin-top: 0.65rem; color: #334155; font-size: 0.875rem; }
+.extraction-diagnostics summary { cursor: pointer; font-weight: 700; }
+.extraction-caution { border-left: 0.2rem solid #b45309; padding-left: 0.55rem; }
+.extraction-page-list { max-height: 12rem; overflow: auto; margin: 0.6rem 0 0; padding-left: 1.3rem; }
+.extraction-page-list li { margin: 0.25rem 0; }
 .reader-workspace { display: grid; grid-template-columns: minmax(13rem, 17rem) minmax(0, 1fr); gap: 1.25rem; margin-top: 1.25rem; align-items: start; }
 .reader-navigation { display: grid; gap: 1rem; }
 .navigation-panel { padding: 0.9rem; border: 1px solid #d6dce8; border-radius: 0.75rem; background: #fff; }
