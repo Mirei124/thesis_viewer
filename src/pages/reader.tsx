@@ -29,10 +29,10 @@ type OptionalPermissionsApi = {
 };
 
 function readerError(error: unknown): string {
-  if (error instanceof PasswordException) {
-    return 'This PDF is password protected. Password entry is not part of this rendering spike.';
+  if (error instanceof PasswordException || (error instanceof Error && error.name === 'PasswordException')) {
+    return 'This PDF is password protected. Password entry and decryption are unavailable; choose an unlocked copy to read it here.';
   }
-  if (error instanceof InvalidPDFException) {
+  if (error instanceof InvalidPDFException || (error instanceof Error && error.name === 'InvalidPDFException')) {
     return 'This file appears to be damaged or is not a readable PDF.';
   }
   if (error instanceof Error) {
@@ -71,6 +71,8 @@ const SCALE_STEP = 0.25;
 const THUMBNAIL_MAX_WIDTH = 144;
 const THUMBNAIL_MAX_HEIGHT = 200;
 const THUMBNAIL_SCALE = 0.24;
+const MAX_PDF_BYTES = 100 * 1024 * 1024;
+const MAX_PDF_PAGES = 500;
 
 type ViewState = Pick<Extract<ReaderState, { kind: 'ready' }>, 'pageIndex' | 'scale' | 'rotation'>;
 type PdfOutlineItem = NonNullable<Awaited<ReturnType<PDFDocumentProxy['getOutline']>>>[number];
@@ -84,6 +86,7 @@ type SearchIndexState =
   | { kind: 'idle' }
   | { kind: 'indexing'; indexedPageCount: number; pageCount: number; failedPageCount: number; revision: number }
   | { kind: 'ready'; indexedPageCount: number; pageCount: number; failedPageCount: number; revision: number }
+  | { kind: 'unavailable'; message: string }
   | { kind: 'error'; message: string };
 type SearchMatch = { pageIndex: number; offset: number };
 
@@ -97,6 +100,54 @@ function searchTextOccurrences(text: string, query: string, pageIndex: number): 
     offset = normalizedText.indexOf(normalizedQuery, offset + normalizedQuery.length);
   }
   return matches;
+}
+
+function byteLimitMessage(size?: number): string {
+  const received = size === undefined ? '' : ` (${Math.ceil(size / (1024 * 1024))} MiB received)`;
+  return `This PDF exceeds the 100 MiB reader limit${received}. Choose a PDF at or below 100 MiB; large-document analysis is unavailable in this reader.`;
+}
+
+async function readPdfResponse(response: Response, requestId: number, isCurrent: (requestId: number) => boolean): Promise<Uint8Array> {
+  const declaredLength = Number(response.headers.get('content-length'));
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_PDF_BYTES) {
+    throw new Error(byteLimitMessage(declaredLength));
+  }
+
+  if (!response.body) {
+    const bytes = new Uint8Array(await response.arrayBuffer());
+    if (bytes.byteLength > MAX_PDF_BYTES) throw new Error(byteLimitMessage(bytes.byteLength));
+    return bytes;
+  }
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!isCurrent(requestId)) {
+        await reader.cancel();
+        throw new DOMException('A newer import replaced this download.', 'AbortError');
+      }
+      size += value.byteLength;
+      if (size > MAX_PDF_BYTES) {
+        await reader.cancel();
+        throw new Error(byteLimitMessage(size));
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return bytes;
 }
 
 function OutlineItems({ items, depth, onNavigate }: {
@@ -240,6 +291,7 @@ function ReaderPage() {
     searchPagesRef.current = pageTexts;
     let indexedPageCount = 0;
     let failedPageCount = 0;
+    let searchablePageCount = 0;
 
     setSearchIndex({ kind: 'indexing', indexedPageCount, pageCount: pdf.numPages, failedPageCount, revision: 0 });
 
@@ -250,9 +302,12 @@ function ReaderPage() {
         if (searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
         const textContent = await page.getTextContent();
         if (searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
-        pageTexts[pageIndex] = textContent.items
+        const pageText = textContent.items
           .map((item) => ('str' in item ? item.str : ''))
-          .join(' ');
+          .join(' ')
+          .trim();
+        pageTexts[pageIndex] = pageText;
+        if (pageText.length > 0) searchablePageCount += 1;
       } catch {
         failedPageCount += 1;
       }
@@ -260,6 +315,15 @@ function ReaderPage() {
       indexedPageCount += 1;
       if (searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
       const complete = indexedPageCount === pdf.numPages;
+      if (complete && searchablePageCount === 0) {
+        setSearchIndex({
+          kind: 'unavailable',
+          message: failedPageCount > 0
+            ? 'No searchable text could be extracted from this PDF. You can keep reading rendered pages, but full-document search is unavailable.'
+            : 'This PDF has no selectable text, likely because it is a scan. You can keep reading rendered pages, but full-document search is unavailable.',
+        });
+        return;
+      }
       setSearchIndex({
         kind: complete ? 'ready' : 'indexing',
         indexedPageCount,
@@ -274,7 +338,7 @@ function ReaderPage() {
 
   useEffect(() => {
     const query = searchQuery.trim();
-    if (!query || searchIndex.kind === 'idle' || searchIndex.kind === 'error') {
+    if (!query || searchIndex.kind === 'idle' || searchIndex.kind === 'unavailable' || searchIndex.kind === 'error') {
       setSearchMatches([]);
       setActiveSearchMatch(-1);
       indexedSearchQueryRef.current = '';
@@ -450,6 +514,16 @@ function ReaderPage() {
         await loadingTask.destroy();
         return;
       }
+      if (pdf.numPages > MAX_PDF_PAGES) {
+        await loadingTask.destroy();
+        if (isCurrent(requestId)) {
+          setState({
+            kind: 'error',
+            message: `This PDF has ${pdf.numPages} pages, above the 500-page reader limit. Choose a PDF with 500 pages or fewer; large-document analysis is unavailable in this reader.`,
+          });
+        }
+        return;
+      }
       documentRef.current = pdf;
       const initialView: ViewState = { pageIndex: 0, scale: 1.35, rotation: 0 };
       void loadOutline(pdf, requestId);
@@ -467,6 +541,10 @@ function ReaderPage() {
 
   async function importLocalFile(file: File) {
     const requestId = beginImport();
+    if (file.size > MAX_PDF_BYTES) {
+      setState({ kind: 'error', message: byteLimitMessage(file.size) });
+      return;
+    }
     if (!await prepareImport(file.name, requestId)) return;
     try {
       const bytes = new Uint8Array(await file.arrayBuffer());
@@ -538,7 +616,7 @@ function ReaderPage() {
       }
 
       const contentType = response.headers.get('content-type')?.toLowerCase() ?? '';
-      const bytes = new Uint8Array(await response.arrayBuffer());
+      const bytes = await readPdfResponse(response, requestId, isCurrent);
       if (!isCurrent(requestId)) return;
       if (!isPdfSignature(bytes)) {
         const html = contentType.includes('text/html') || looksLikeHtml(bytes);
@@ -555,6 +633,10 @@ function ReaderPage() {
       if (!isCurrent(requestId)) return;
       if (error instanceof DOMException && error.name === 'AbortError') {
         setState({ kind: 'cancelled', message: 'URL import cancelled.' });
+        return;
+      }
+      if (error instanceof Error && error.message.startsWith('This PDF exceeds the 100 MiB reader limit')) {
+        setState({ kind: 'error', message: error.message });
         return;
       }
       const detail = error instanceof Error ? ` ${error.message}` : '';
@@ -619,7 +701,7 @@ function ReaderPage() {
   function searchStatus(): string {
     const query = searchQuery.trim();
     if (searchIndex.kind === 'idle') return 'Search becomes available after a PDF has loaded.';
-    if (searchIndex.kind === 'error') return searchIndex.message;
+    if (searchIndex.kind === 'unavailable' || searchIndex.kind === 'error') return searchIndex.message;
     const progress = `${searchIndex.indexedPageCount} of ${searchIndex.pageCount} pages`;
     const extractionWarning = searchIndex.failedPageCount > 0
       ? ` Text could not be extracted from ${searchIndex.failedPageCount} page${searchIndex.failedPageCount === 1 ? '' : 's'}.`
@@ -666,7 +748,7 @@ function ReaderPage() {
         {state.kind === 'idle' && 'No document is loaded. Choose a local PDF to render its first page.'}
         {state.kind === 'requesting-permission' && `Requesting permission to download from ${state.fileName}…`}
         {state.kind === 'loading' && `Loading ${state.fileName} with the extension-packaged PDF.js worker…`}
-        {state.kind === 'ready' && `${state.fileName}: page ${state.pageIndex + 1} of ${state.pageCount} at ${Math.round(state.scale * 100)}% zoom, rotated ${state.rotation}°. Text can be selected over the canvas.`}
+        {state.kind === 'ready' && `${state.fileName}: page ${state.pageIndex + 1} of ${state.pageCount} at ${Math.round(state.scale * 100)}% zoom, rotated ${state.rotation}°. The page is rendered locally; search is enabled only when PDF.js can extract text.`}
         {state.kind === 'cancelled' && state.message}
         {state.kind === 'error' && state.message}
       </section>
@@ -699,12 +781,13 @@ function ReaderPage() {
             onChange={(event) => setSearchQuery(event.target.value)}
             placeholder="Search all PDF pages"
             autoComplete="off"
+            disabled={searchIndex.kind === 'unavailable' || searchIndex.kind === 'error'}
           />
         </div>
         <div className="search-navigation" role="group" aria-label="Search result navigation">
-          <button type="button" onClick={() => navigateSearchMatch(-1)} disabled={isRendering || searchMatches.length === 0}>Previous match</button>
+          <button type="button" onClick={() => navigateSearchMatch(-1)} disabled={isRendering || searchIndex.kind === 'unavailable' || searchIndex.kind === 'error' || searchMatches.length === 0}>Previous match</button>
           <output aria-live="polite" aria-label="Search status">{searchStatus()}</output>
-          <button type="button" onClick={() => navigateSearchMatch(1)} disabled={isRendering || searchMatches.length === 0}>Next match</button>
+          <button type="button" onClick={() => navigateSearchMatch(1)} disabled={isRendering || searchIndex.kind === 'unavailable' || searchIndex.kind === 'error' || searchMatches.length === 0}>Next match</button>
         </div>
       </section>}
       <div className="reader-workspace">
@@ -750,7 +833,7 @@ function ReaderPage() {
           </div>
         </section>
       </div>
-      <p className="reader-boundary">This reader renders a selected local or HTTPS URL PDF one page at a time. It indexes PDF.js text from every page for session-only search, and includes PDF-provided outlines and nearby-page thumbnails. It does not save files, support passwords, annotations, HTML import, or AI features.</p>
+      <p className="reader-boundary">This reader accepts local or HTTPS PDFs up to 100 MiB and 500 pages, renders one page at a time, and searches PDF.js text only when text is available. It includes PDF-provided outlines and nearby-page thumbnails. It does not save files, accept passwords, perform OCR, annotate, import HTML, or use AI features.</p>
     </main>
   );
 }
