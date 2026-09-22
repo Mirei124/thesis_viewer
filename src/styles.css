@@ -70,6 +70,13 @@ p {
 .url-import .secondary-button { border-color: #64748b; background: #fff; color: #334155; }
 .url-import p { margin: 0.75rem 0 0; color: #475569; font-size: 0.9rem; }
 .reader-status { margin: 1.25rem 0 0; padding: 0.75rem 1rem; border-left: 0.25rem solid #2563eb; background: #eff6ff; line-height: 1.5; }
+.reader-controls { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; margin-top: 1.25rem; padding: 0.75rem; border: 1px solid #d6dce8; border-radius: 0.75rem; background: #fff; }
+.page-navigation, .page-navigation form, .view-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+.reader-controls button { cursor: pointer; border: 1px solid #64748b; border-radius: 0.4rem; background: #fff; color: #1e293b; font: inherit; padding: 0.45rem 0.65rem; }
+.reader-controls button:hover:not(:disabled) { border-color: #1d4ed8; color: #1d4ed8; }
+.reader-controls button:disabled { cursor: wait; opacity: 0.55; }
+.page-navigation input { width: 4rem; padding: 0.4rem; border: 1px solid #94a3b8; border-radius: 0.4rem; font: inherit; text-align: center; }
+.view-controls output { min-width: 3.5rem; color: #334155; font-variant-numeric: tabular-nums; text-align: center; }
 .reader-stage { display: grid; min-height: 12rem; place-items: start center; overflow: auto; margin-top: 1.25rem; padding: 1.5rem; border: 1px solid #d6dce8; border-radius: 0.75rem; background: #e2e8f0; }
 .pdf-page { position: relative; box-shadow: 0 0.25rem 1rem rgb(15 23 42 / 25%); }
 .pdf-page canvas { display: block; background: #fff; }
@@ -79,4 +86,5 @@ p {
 @media (max-width: 42rem) {
   .page-shell, .reader-page { padding: 1rem; }
   .reader-header { align-items: start; flex-direction: column; }
+  .reader-controls { align-items: start; flex-direction: column; }
 }

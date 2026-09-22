@@ -20,7 +20,7 @@ type ReaderState =
   | { kind: 'idle' }
   | { kind: 'requesting-permission'; fileName: string }
   | { kind: 'loading'; fileName: string }
-  | { kind: 'ready'; fileName: string; pageCount: number }
+  | { kind: 'ready'; fileName: string; pageCount: number; pageIndex: number; scale: number; rotation: number }
   | { kind: 'cancelled'; message: string }
   | { kind: 'error'; message: string };
 
@@ -65,23 +65,41 @@ function getOptionalPermissionsApi(): OptionalPermissionsApi | undefined {
   return extensionGlobal.browser?.permissions ?? extensionGlobal.chrome?.permissions;
 }
 
+const MIN_SCALE = 0.5;
+const MAX_SCALE = 3;
+const SCALE_STEP = 0.25;
+
+type ViewState = Pick<Extract<ReaderState, { kind: 'ready' }>, 'pageIndex' | 'scale' | 'rotation'>;
+
 function ReaderPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textLayerRef = useRef<HTMLDivElement>(null);
   const loadingTaskRef = useRef<PDFDocumentLoadingTask | null>(null);
   const documentRef = useRef<PDFDocumentProxy | null>(null);
+  const renderTaskRef = useRef<{ cancel: () => void } | null>(null);
+  const textLayerTaskRef = useRef<TextLayer | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const requestIdRef = useRef(0);
+  const renderIdRef = useRef(0);
   const [state, setState] = useState<ReaderState>({ kind: 'idle' });
   const [urlValue, setUrlValue] = useState('');
+  const [pageInput, setPageInput] = useState('1');
+  const [isRendering, setIsRendering] = useState(false);
 
   useEffect(() => () => {
     abortControllerRef.current?.abort();
+    renderTaskRef.current?.cancel();
+    textLayerTaskRef.current?.cancel();
     void loadingTaskRef.current?.destroy();
     void documentRef.current?.cleanup();
   }, []);
 
   async function clearPreviousDocument() {
+    renderIdRef.current += 1;
+    renderTaskRef.current?.cancel();
+    renderTaskRef.current = null;
+    textLayerTaskRef.current?.cancel();
+    textLayerTaskRef.current = null;
     await Promise.allSettled([
       loadingTaskRef.current?.destroy(),
       documentRef.current?.cleanup(),
@@ -99,6 +117,11 @@ function ReaderPage() {
 
   function beginImport() {
     requestIdRef.current += 1;
+    renderIdRef.current += 1;
+    renderTaskRef.current?.cancel();
+    renderTaskRef.current = null;
+    textLayerTaskRef.current?.cancel();
+    textLayerTaskRef.current = null;
     const requestId = requestIdRef.current;
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
@@ -114,26 +137,22 @@ function ReaderPage() {
     return true;
   }
 
-  async function renderFirstPage(bytes: Uint8Array, fileName: string, requestId: number) {
-    if (!isCurrent(requestId)) return;
+  function isCurrentRender(requestId: number, renderId: number) {
+    return isCurrent(requestId) && renderId === renderIdRef.current;
+  }
+
+  async function renderPage(pdf: PDFDocumentProxy, view: ViewState, requestId: number): Promise<boolean> {
+    const renderId = ++renderIdRef.current;
+    renderTaskRef.current?.cancel();
+    renderTaskRef.current = null;
+    textLayerTaskRef.current?.cancel();
+    textLayerTaskRef.current = null;
+    if (isCurrent(requestId)) setIsRendering(true);
 
     try {
-      if (!isPdfSignature(bytes)) {
-        setState({ kind: 'error', message: 'Choose a PDF file. The selected file does not have a PDF signature.' });
-        return;
-      }
-
-      const loadingTask = getDocument({ data: bytes });
-      loadingTaskRef.current = loadingTask;
-      const pdf = await loadingTask.promise;
-      if (!isCurrent(requestId)) {
-        await loadingTask.destroy();
-        return;
-      }
-      documentRef.current = pdf;
-      const page = await pdf.getPage(1);
-      if (!isCurrent(requestId)) return;
-      const viewport = page.getViewport({ scale: 1.35 });
+      const page = await pdf.getPage(view.pageIndex + 1);
+      if (!isCurrentRender(requestId, renderId)) return false;
+      const viewport = page.getViewport({ scale: view.scale, rotation: view.rotation });
       const canvas = canvasRef.current;
       const textLayer = textLayerRef.current;
       if (!canvas || !textLayer) throw new Error('The reader surface is no longer available.');
@@ -148,17 +167,63 @@ function ReaderPage() {
       canvas.style.height = `${Math.floor(viewport.height)}px`;
       textLayer.style.width = `${Math.floor(viewport.width)}px`;
       textLayer.style.height = `${Math.floor(viewport.height)}px`;
+      // PDF.js's viewer stylesheet uses these variables to calculate the
+      // visible text layer dimensions from its unrotated page coordinates.
+      // They must live on the real container (rather than a staging element)
+      // so its data-main-rotation transform applies with the canvas viewport.
+      textLayer.style.setProperty('--total-scale-factor', String(view.scale));
+      textLayer.style.setProperty('--scale-round-x', '1px');
+      textLayer.style.setProperty('--scale-round-y', '1px');
       textLayer.replaceChildren();
 
-      await page.render({
+      const renderTask = page.render({
         canvas,
         canvasContext: context,
         viewport,
         transform: outputScale === 1 ? undefined : [outputScale, 0, 0, outputScale, 0, 0],
-      }).promise;
-      await new TextLayer({ textContentSource: page.streamTextContent(), container: textLayer, viewport }).render();
+      });
+      renderTaskRef.current = renderTask;
+      await renderTask.promise;
+      if (!isCurrentRender(requestId, renderId)) return false;
+      const textLayerTask = new TextLayer({ textContentSource: page.streamTextContent(), container: textLayer, viewport });
+      textLayerTaskRef.current = textLayerTask;
+      await textLayerTask.render();
+      if (!isCurrentRender(requestId, renderId)) return false;
+      return true;
+    } catch (error) {
+      if (!isCurrentRender(requestId, renderId)) return false;
+      setState({ kind: 'error', message: readerError(error) });
+      return false;
+    } finally {
+      if (isCurrentRender(requestId, renderId)) {
+        renderTaskRef.current = null;
+        textLayerTaskRef.current = null;
+        setIsRendering(false);
+      }
+    }
+  }
+
+  async function loadPdf(bytes: Uint8Array, fileName: string, requestId: number) {
+    if (!isCurrent(requestId)) return;
+    try {
+      if (!isPdfSignature(bytes)) {
+        setState({ kind: 'error', message: 'Choose a PDF file. The selected file does not have a PDF signature.' });
+        return;
+      }
+
+      const loadingTask = getDocument({ data: bytes });
+      loadingTaskRef.current = loadingTask;
+      const pdf = await loadingTask.promise;
+      if (!isCurrent(requestId)) {
+        await loadingTask.destroy();
+        return;
+      }
+      documentRef.current = pdf;
+      const initialView: ViewState = { pageIndex: 0, scale: 1.35, rotation: 0 };
+      if (!await renderPage(pdf, initialView, requestId)) return;
       if (!isCurrent(requestId)) return;
-      setState({ kind: 'ready', fileName, pageCount: pdf.numPages });
+      setPageInput('1');
+      setState({ kind: 'ready', fileName, pageCount: pdf.numPages, ...initialView });
     } catch (error) {
       if (!isCurrent(requestId)) return;
       setState({ kind: 'error', message: readerError(error) });
@@ -171,7 +236,7 @@ function ReaderPage() {
     try {
       const bytes = new Uint8Array(await file.arrayBuffer());
       if (!isCurrent(requestId)) return;
-      await renderFirstPage(bytes, file.name, requestId);
+      await loadPdf(bytes, file.name, requestId);
     } catch (error) {
       if (isCurrent(requestId)) setState({ kind: 'error', message: readerError(error) });
     }
@@ -250,7 +315,7 @@ function ReaderPage() {
         });
         return;
       }
-      await renderFirstPage(bytes, url.pathname.split('/').pop() || url.hostname, requestId);
+      await loadPdf(bytes, url.pathname.split('/').pop() || url.hostname, requestId);
     } catch (error) {
       if (!isCurrent(requestId)) return;
       if (error instanceof DOMException && error.name === 'AbortError') {
@@ -269,6 +334,41 @@ function ReaderPage() {
     abortControllerRef.current = null;
     if (state.kind === 'loading') void clearPreviousDocument();
     setState({ kind: 'cancelled', message: 'URL import cancelled.' });
+  }
+
+  function changeView(nextView: ViewState) {
+    if (state.kind !== 'ready' || !documentRef.current) return;
+    setState({ ...state, ...nextView });
+    setPageInput(String(nextView.pageIndex + 1));
+    void renderPage(documentRef.current, nextView, requestIdRef.current);
+  }
+
+  function goToPage(pageIndex: number) {
+    if (state.kind !== 'ready' || pageIndex < 0 || pageIndex >= state.pageCount) return;
+    changeView({ pageIndex, scale: state.scale, rotation: state.rotation });
+  }
+
+  function submitPage(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (state.kind !== 'ready') return;
+    const pageNumber = Number(pageInput);
+    if (!Number.isInteger(pageNumber) || pageNumber < 1 || pageNumber > state.pageCount) {
+      setPageInput(String(state.pageIndex + 1));
+      return;
+    }
+    goToPage(pageNumber - 1);
+  }
+
+  function adjustScale(direction: -1 | 1) {
+    if (state.kind !== 'ready') return;
+    const scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, Math.round((state.scale + direction * SCALE_STEP) * 100) / 100));
+    if (scale !== state.scale) changeView({ pageIndex: state.pageIndex, scale, rotation: state.rotation });
+  }
+
+  function rotate(direction: -1 | 1) {
+    if (state.kind !== 'ready') return;
+    const rotation = (state.rotation + direction * 90 + 360) % 360;
+    changeView({ pageIndex: state.pageIndex, scale: state.scale, rotation });
   }
 
   return (
@@ -296,17 +396,36 @@ function ReaderPage() {
         {state.kind === 'idle' && 'No document is loaded. Choose a local PDF to render its first page.'}
         {state.kind === 'requesting-permission' && `Requesting permission to download from ${state.fileName}…`}
         {state.kind === 'loading' && `Loading ${state.fileName} with the extension-packaged PDF.js worker…`}
-        {state.kind === 'ready' && `${state.fileName}: page 1 of ${state.pageCount}. Text can be selected over the canvas.`}
+        {state.kind === 'ready' && `${state.fileName}: page ${state.pageIndex + 1} of ${state.pageCount} at ${Math.round(state.scale * 100)}% zoom, rotated ${state.rotation}°. Text can be selected over the canvas.`}
         {state.kind === 'cancelled' && state.message}
         {state.kind === 'error' && state.message}
       </section>
-      <section className="reader-stage" aria-label="PDF first page preview">
+      {state.kind === 'ready' && <section className="reader-controls" aria-label="PDF page controls">
+        <div className="page-navigation" role="group" aria-label="Page navigation">
+          <button type="button" onClick={() => goToPage(state.pageIndex - 1)} disabled={isRendering || state.pageIndex === 0}>Previous page</button>
+          <form onSubmit={submitPage}>
+            <label htmlFor="page-number">Page</label>
+            <input id="page-number" type="text" inputMode="numeric" pattern="[0-9]*" value={pageInput} onChange={(event) => setPageInput(event.target.value)} aria-describedby="page-count" disabled={isRendering} />
+            <span id="page-count">of {state.pageCount}</span>
+            <button type="submit" disabled={isRendering}>Go</button>
+          </form>
+          <button type="button" onClick={() => goToPage(state.pageIndex + 1)} disabled={isRendering || state.pageIndex === state.pageCount - 1}>Next page</button>
+        </div>
+        <div className="view-controls" role="group" aria-label="Zoom and rotation">
+          <button type="button" onClick={() => adjustScale(-1)} disabled={isRendering || state.scale <= MIN_SCALE}>Zoom out</button>
+          <output aria-label="Current zoom">{Math.round(state.scale * 100)}%</output>
+          <button type="button" onClick={() => adjustScale(1)} disabled={isRendering || state.scale >= MAX_SCALE}>Zoom in</button>
+          <button type="button" onClick={() => rotate(-1)} disabled={isRendering}>Rotate counterclockwise</button>
+          <button type="button" onClick={() => rotate(1)} disabled={isRendering}>Rotate clockwise</button>
+        </div>
+      </section>}
+      <section className="reader-stage" aria-label="PDF page preview">
         <div className="pdf-page" hidden={state.kind !== 'ready' && state.kind !== 'loading'}>
-          <canvas ref={canvasRef} aria-label="Rendered first PDF page" />
-          <div ref={textLayerRef} className="textLayer" aria-label="Selectable text from the first PDF page" />
+          <canvas ref={canvasRef} aria-label="Rendered PDF page" />
+          <div ref={textLayerRef} className="textLayer" aria-label="Selectable text from the rendered PDF page" />
         </div>
       </section>
-      <p className="reader-boundary">This spike renders only the first page of a selected local or HTTPS URL PDF. It does not save files, support passwords, navigation, zoom, search, outlines, thumbnails, annotations, HTML import, or AI features.</p>
+      <p className="reader-boundary">This reader renders a selected local or HTTPS URL PDF one page at a time. It does not save files, support passwords, outlines, thumbnails, search, annotations, HTML import, or AI features.</p>
     </main>
   );
 }
