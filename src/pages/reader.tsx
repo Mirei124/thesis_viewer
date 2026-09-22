@@ -80,6 +80,24 @@ type OutlineState =
   | { kind: 'ready'; items: PdfOutlineItem[] }
   | { kind: 'unavailable'; message: string };
 type Thumbnail = { kind: 'loading' } | { kind: 'ready'; src: string } | { kind: 'error' };
+type SearchIndexState =
+  | { kind: 'idle' }
+  | { kind: 'indexing'; indexedPageCount: number; pageCount: number; failedPageCount: number; revision: number }
+  | { kind: 'ready'; indexedPageCount: number; pageCount: number; failedPageCount: number; revision: number }
+  | { kind: 'error'; message: string };
+type SearchMatch = { pageIndex: number; offset: number };
+
+function searchTextOccurrences(text: string, query: string, pageIndex: number): SearchMatch[] {
+  const normalizedText = text.toLocaleLowerCase();
+  const normalizedQuery = query.toLocaleLowerCase();
+  const matches: SearchMatch[] = [];
+  let offset = normalizedText.indexOf(normalizedQuery);
+  while (offset !== -1) {
+    matches.push({ pageIndex, offset });
+    offset = normalizedText.indexOf(normalizedQuery, offset + normalizedQuery.length);
+  }
+  return matches;
+}
 
 function OutlineItems({ items, depth, onNavigate }: {
   items: PdfOutlineItem[];
@@ -118,6 +136,9 @@ function ReaderPage() {
   const requestIdRef = useRef(0);
   const renderIdRef = useRef(0);
   const thumbnailRequestIdRef = useRef(0);
+  const searchRequestIdRef = useRef(0);
+  const searchPagesRef = useRef<string[]>([]);
+  const indexedSearchQueryRef = useRef('');
   const [state, setState] = useState<ReaderState>({ kind: 'idle' });
   const [urlValue, setUrlValue] = useState('');
   const [pageInput, setPageInput] = useState('1');
@@ -126,12 +147,17 @@ function ReaderPage() {
   const [outlineNotice, setOutlineNotice] = useState('');
   const [thumbnails, setThumbnails] = useState<Record<number, Thumbnail>>({});
   const [thumbnailSession, setThumbnailSession] = useState(0);
+  const [searchIndex, setSearchIndex] = useState<SearchIndexState>({ kind: 'idle' });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchMatches, setSearchMatches] = useState<SearchMatch[]>([]);
+  const [activeSearchMatch, setActiveSearchMatch] = useState(-1);
 
   useEffect(() => () => {
     abortControllerRef.current?.abort();
     renderTaskRef.current?.cancel();
     textLayerTaskRef.current?.cancel();
     thumbnailRequestIdRef.current += 1;
+    searchRequestIdRef.current += 1;
     void loadingTaskRef.current?.destroy();
     void documentRef.current?.cleanup();
   }, []);
@@ -165,9 +191,16 @@ function ReaderPage() {
     textLayerTaskRef.current?.cancel();
     textLayerTaskRef.current = null;
     thumbnailRequestIdRef.current += 1;
+    searchRequestIdRef.current += 1;
+    searchPagesRef.current = [];
     setThumbnails({});
     setOutline({ kind: 'idle' });
     setOutlineNotice('');
+    setSearchIndex({ kind: 'idle' });
+    setSearchQuery('');
+    setSearchMatches([]);
+    setActiveSearchMatch(-1);
+    indexedSearchQueryRef.current = '';
     const requestId = requestIdRef.current;
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
@@ -200,6 +233,68 @@ function ReaderPage() {
       setOutline({ kind: 'unavailable', message: 'The PDF outline could not be read.' });
     }
   }
+
+  async function buildSearchIndex(pdf: PDFDocumentProxy, requestId: number) {
+    const searchRequestId = ++searchRequestIdRef.current;
+    const pageTexts = Array<string>(pdf.numPages).fill('');
+    searchPagesRef.current = pageTexts;
+    let indexedPageCount = 0;
+    let failedPageCount = 0;
+
+    setSearchIndex({ kind: 'indexing', indexedPageCount, pageCount: pdf.numPages, failedPageCount, revision: 0 });
+
+    for (let pageIndex = 0; pageIndex < pdf.numPages; pageIndex += 1) {
+      if (searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
+      try {
+        const page = await pdf.getPage(pageIndex + 1);
+        if (searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
+        const textContent = await page.getTextContent();
+        if (searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
+        pageTexts[pageIndex] = textContent.items
+          .map((item) => ('str' in item ? item.str : ''))
+          .join(' ');
+      } catch {
+        failedPageCount += 1;
+      }
+
+      indexedPageCount += 1;
+      if (searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
+      const complete = indexedPageCount === pdf.numPages;
+      setSearchIndex({
+        kind: complete ? 'ready' : 'indexing',
+        indexedPageCount,
+        pageCount: pdf.numPages,
+        failedPageCount,
+        revision: indexedPageCount,
+      });
+      // Let browser input, page navigation, and rendering work between pages.
+      await new Promise<void>((resolve) => window.setTimeout(resolve, 0));
+    }
+  }
+
+  useEffect(() => {
+    const query = searchQuery.trim();
+    if (!query || searchIndex.kind === 'idle' || searchIndex.kind === 'error') {
+      setSearchMatches([]);
+      setActiveSearchMatch(-1);
+      indexedSearchQueryRef.current = '';
+      return;
+    }
+
+    const matches = searchPagesRef.current.flatMap((text, pageIndex) => searchTextOccurrences(text, query, pageIndex));
+    setSearchMatches(matches);
+    const queryChanged = indexedSearchQueryRef.current !== query;
+    indexedSearchQueryRef.current = query;
+    setActiveSearchMatch((previous) => {
+      if (queryChanged) return -1;
+      const active = previous >= 0 ? searchMatches[previous] : undefined;
+      if (active) {
+        const sameMatch = matches.findIndex((match) => match.pageIndex === active.pageIndex && match.offset === active.offset);
+        if (sameMatch !== -1) return sameMatch;
+      }
+      return -1;
+    });
+  }, [searchQuery, searchIndex.kind, searchIndex.kind === 'indexing' || searchIndex.kind === 'ready' ? searchIndex.revision : 0]);
 
   async function navigateOutline(item: PdfOutlineItem) {
     const pdf = documentRef.current;
@@ -363,6 +458,7 @@ function ReaderPage() {
       setPageInput('1');
       setState({ kind: 'ready', fileName, pageCount: pdf.numPages, ...initialView });
       setThumbnailSession(requestId);
+      void buildSearchIndex(pdf, requestId);
     } catch (error) {
       if (!isCurrent(requestId)) return;
       setState({ kind: 'error', message: readerError(error) });
@@ -510,6 +606,41 @@ function ReaderPage() {
     changeView({ pageIndex: state.pageIndex, scale: state.scale, rotation });
   }
 
+  function navigateSearchMatch(direction: -1 | 1) {
+    if (state.kind !== 'ready' || searchMatches.length === 0) return;
+    const nextIndex = activeSearchMatch === -1
+      ? (direction === 1 ? 0 : searchMatches.length - 1)
+      : (activeSearchMatch + direction + searchMatches.length) % searchMatches.length;
+    const match = searchMatches[nextIndex];
+    setActiveSearchMatch(nextIndex);
+    goToPage(match.pageIndex);
+  }
+
+  function searchStatus(): string {
+    const query = searchQuery.trim();
+    if (searchIndex.kind === 'idle') return 'Search becomes available after a PDF has loaded.';
+    if (searchIndex.kind === 'error') return searchIndex.message;
+    const progress = `${searchIndex.indexedPageCount} of ${searchIndex.pageCount} pages`;
+    const extractionWarning = searchIndex.failedPageCount > 0
+      ? ` Text could not be extracted from ${searchIndex.failedPageCount} page${searchIndex.failedPageCount === 1 ? '' : 's'}.`
+      : '';
+    if (!query) {
+      return searchIndex.kind === 'indexing'
+        ? `Indexing searchable text from ${progress}. Reading controls remain available.`
+        : `Searchable text indexed from ${progress}.${extractionWarning}`;
+    }
+    const resultSummary = searchMatches.length === 0
+      ? 'No matches'
+      : `${searchMatches.length} match${searchMatches.length === 1 ? '' : 'es'} on ${new Set(searchMatches.map((match) => match.pageIndex)).size} page${new Set(searchMatches.map((match) => match.pageIndex)).size === 1 ? '' : 's'}`;
+    const activeMatch = searchMatches[activeSearchMatch];
+    const activeSummary = activeMatch
+      ? ` Viewing match ${activeSearchMatch + 1} on page ${activeMatch.pageIndex + 1}.`
+      : '';
+    return searchIndex.kind === 'indexing'
+      ? `${resultSummary} in ${progress}; indexing continues.${activeSummary}`
+      : `${resultSummary} in the indexed document.${extractionWarning}${activeSummary}`;
+  }
+
   return (
     <main className="reader-page" aria-labelledby="page-title">
       <header className="reader-header">
@@ -558,6 +689,24 @@ function ReaderPage() {
           <button type="button" onClick={() => rotate(1)} disabled={isRendering}>Rotate clockwise</button>
         </div>
       </section>}
+      {state.kind === 'ready' && <section className="search-controls" aria-label="Full document search">
+        <div className="search-input">
+          <label htmlFor="document-search">Find in document</label>
+          <input
+            id="document-search"
+            type="search"
+            value={searchQuery}
+            onChange={(event) => setSearchQuery(event.target.value)}
+            placeholder="Search all PDF pages"
+            autoComplete="off"
+          />
+        </div>
+        <div className="search-navigation" role="group" aria-label="Search result navigation">
+          <button type="button" onClick={() => navigateSearchMatch(-1)} disabled={isRendering || searchMatches.length === 0}>Previous match</button>
+          <output aria-live="polite" aria-label="Search status">{searchStatus()}</output>
+          <button type="button" onClick={() => navigateSearchMatch(1)} disabled={isRendering || searchMatches.length === 0}>Next match</button>
+        </div>
+      </section>}
       <div className="reader-workspace">
         {state.kind === 'ready' && <aside className="reader-navigation" aria-label="PDF navigation">
           <section className="navigation-panel" aria-labelledby="outline-title">
@@ -601,7 +750,7 @@ function ReaderPage() {
           </div>
         </section>
       </div>
-      <p className="reader-boundary">This reader renders a selected local or HTTPS URL PDF one page at a time. It includes PDF-provided outlines and nearby-page thumbnails, but does not save files, support passwords, search, annotations, HTML import, or AI features.</p>
+      <p className="reader-boundary">This reader renders a selected local or HTTPS URL PDF one page at a time. It indexes PDF.js text from every page for session-only search, and includes PDF-provided outlines and nearby-page thumbnails. It does not save files, support passwords, annotations, HTML import, or AI features.</p>
     </main>
   );
 }

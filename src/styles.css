@@ -77,6 +77,15 @@ p {
 .reader-controls button:disabled { cursor: wait; opacity: 0.55; }
 .page-navigation input { width: 4rem; padding: 0.4rem; border: 1px solid #94a3b8; border-radius: 0.4rem; font: inherit; text-align: center; }
 .view-controls output { min-width: 3.5rem; color: #334155; font-variant-numeric: tabular-nums; text-align: center; }
+.search-controls { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 0.75rem 1rem; margin-top: 1rem; padding: 0.75rem; border: 1px solid #d6dce8; border-radius: 0.75rem; background: #fff; }
+.search-input { display: grid; gap: 0.35rem; flex: 1 1 17rem; }
+.search-input label { color: #334155; font-weight: 700; }
+.search-input input { width: min(100%, 28rem); padding: 0.45rem 0.65rem; border: 1px solid #94a3b8; border-radius: 0.4rem; font: inherit; }
+.search-navigation { display: flex; flex: 1 1 24rem; flex-wrap: wrap; align-items: center; justify-content: end; gap: 0.5rem; }
+.search-navigation button { cursor: pointer; border: 1px solid #64748b; border-radius: 0.4rem; background: #fff; color: #1e293b; font: inherit; padding: 0.45rem 0.65rem; }
+.search-navigation button:hover:not(:disabled) { border-color: #1d4ed8; color: #1d4ed8; }
+.search-navigation button:disabled { cursor: not-allowed; opacity: 0.55; }
+.search-navigation output { flex: 1 1 14rem; color: #475569; font-size: 0.875rem; line-height: 1.4; text-align: center; }
 .reader-workspace { display: grid; grid-template-columns: minmax(13rem, 17rem) minmax(0, 1fr); gap: 1.25rem; margin-top: 1.25rem; align-items: start; }
 .reader-navigation { display: grid; gap: 1rem; }
 .navigation-panel { padding: 0.9rem; border: 1px solid #d6dce8; border-radius: 0.75rem; background: #fff; }
@@ -105,6 +114,9 @@ p {
   .page-shell, .reader-page { padding: 1rem; }
   .reader-header { align-items: start; flex-direction: column; }
   .reader-controls { align-items: start; flex-direction: column; }
+  .search-controls { align-items: stretch; flex-direction: column; }
+  .search-navigation { justify-content: start; }
+  .search-navigation output { text-align: left; }
   .reader-workspace { grid-template-columns: 1fr; }
   .thumbnail-list { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
