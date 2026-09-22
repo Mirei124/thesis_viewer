@@ -7,6 +7,7 @@ export default defineConfig({
     name: 'Thesis Viewer',
     description: 'A local-first paper reader extension.',
     version: '0.1.0',
+    optional_host_permissions: ['https://*/*'],
     options_ui: {
       page: 'options.html',
       open_in_tab: true,
