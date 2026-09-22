@@ -68,8 +68,44 @@ function getOptionalPermissionsApi(): OptionalPermissionsApi | undefined {
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 3;
 const SCALE_STEP = 0.25;
+const THUMBNAIL_MAX_WIDTH = 144;
+const THUMBNAIL_MAX_HEIGHT = 200;
+const THUMBNAIL_SCALE = 0.24;
 
 type ViewState = Pick<Extract<ReaderState, { kind: 'ready' }>, 'pageIndex' | 'scale' | 'rotation'>;
+type PdfOutlineItem = NonNullable<Awaited<ReturnType<PDFDocumentProxy['getOutline']>>>[number];
+type OutlineState =
+  | { kind: 'idle' }
+  | { kind: 'loading' }
+  | { kind: 'ready'; items: PdfOutlineItem[] }
+  | { kind: 'unavailable'; message: string };
+type Thumbnail = { kind: 'loading' } | { kind: 'ready'; src: string } | { kind: 'error' };
+
+function OutlineItems({ items, depth, onNavigate }: {
+  items: PdfOutlineItem[];
+  depth: number;
+  onNavigate: (item: PdfOutlineItem) => void;
+}) {
+  return (
+    <ul className="outline-list">
+      {items.map((item, index) => (
+        <li key={`${depth}-${index}-${item.title}`}>
+          <button
+            type="button"
+            className="outline-item"
+            style={{ paddingInlineStart: `${0.5 + depth}rem` }}
+            onClick={() => onNavigate(item)}
+            disabled={!item.dest}
+            title={item.dest ? `Go to ${item.title}` : 'This outline entry has no PDF destination.'}
+          >
+            {item.title || 'Untitled outline entry'}
+          </button>
+          {item.items.length > 0 && <OutlineItems items={item.items} depth={depth + 1} onNavigate={onNavigate} />}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 function ReaderPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -81,15 +117,21 @@ function ReaderPage() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const requestIdRef = useRef(0);
   const renderIdRef = useRef(0);
+  const thumbnailRequestIdRef = useRef(0);
   const [state, setState] = useState<ReaderState>({ kind: 'idle' });
   const [urlValue, setUrlValue] = useState('');
   const [pageInput, setPageInput] = useState('1');
   const [isRendering, setIsRendering] = useState(false);
+  const [outline, setOutline] = useState<OutlineState>({ kind: 'idle' });
+  const [outlineNotice, setOutlineNotice] = useState('');
+  const [thumbnails, setThumbnails] = useState<Record<number, Thumbnail>>({});
+  const [thumbnailSession, setThumbnailSession] = useState(0);
 
   useEffect(() => () => {
     abortControllerRef.current?.abort();
     renderTaskRef.current?.cancel();
     textLayerTaskRef.current?.cancel();
+    thumbnailRequestIdRef.current += 1;
     void loadingTaskRef.current?.destroy();
     void documentRef.current?.cleanup();
   }, []);
@@ -122,6 +164,10 @@ function ReaderPage() {
     renderTaskRef.current = null;
     textLayerTaskRef.current?.cancel();
     textLayerTaskRef.current = null;
+    thumbnailRequestIdRef.current += 1;
+    setThumbnails({});
+    setOutline({ kind: 'idle' });
+    setOutlineNotice('');
     const requestId = requestIdRef.current;
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
@@ -140,6 +186,97 @@ function ReaderPage() {
   function isCurrentRender(requestId: number, renderId: number) {
     return isCurrent(requestId) && renderId === renderIdRef.current;
   }
+
+  async function loadOutline(pdf: PDFDocumentProxy, requestId: number) {
+    setOutline({ kind: 'loading' });
+    try {
+      const items = await pdf.getOutline();
+      if (!isCurrent(requestId) || documentRef.current !== pdf) return;
+      setOutline(items && items.length > 0
+        ? { kind: 'ready', items }
+        : { kind: 'unavailable', message: 'This PDF does not provide an outline.' });
+    } catch {
+      if (!isCurrent(requestId) || documentRef.current !== pdf) return;
+      setOutline({ kind: 'unavailable', message: 'The PDF outline could not be read.' });
+    }
+  }
+
+  async function navigateOutline(item: PdfOutlineItem) {
+    const pdf = documentRef.current;
+    const requestId = requestIdRef.current;
+    if (!pdf || !item.dest || state.kind !== 'ready') return;
+    setOutlineNotice('Resolving outline destination…');
+    try {
+      const destination = typeof item.dest === 'string' ? await pdf.getDestination(item.dest) : item.dest;
+      if (!isCurrent(requestId) || documentRef.current !== pdf) return;
+      if (!destination?.[0] || typeof destination[0] !== 'object') {
+        setOutlineNotice(`“${item.title || 'This outline entry'}” has no page destination that this PDF can resolve.`);
+        return;
+      }
+      const pageIndex = await pdf.getPageIndex(destination[0]);
+      if (!isCurrent(requestId) || documentRef.current !== pdf) return;
+      if (!Number.isInteger(pageIndex) || pageIndex < 0 || pageIndex >= pdf.numPages) {
+        setOutlineNotice(`“${item.title || 'This outline entry'}” resolved to an invalid PDF page.`);
+        return;
+      }
+      setOutlineNotice('');
+      goToPage(pageIndex);
+    } catch {
+      if (isCurrent(requestId) && documentRef.current === pdf) {
+        setOutlineNotice(`Could not resolve the destination for “${item.title || 'this outline entry'}”.`);
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (state.kind !== 'ready' || !documentRef.current) return;
+    const pdf = documentRef.current;
+    const requestId = requestIdRef.current;
+    const thumbnailRequestId = ++thumbnailRequestIdRef.current;
+    const indices = [state.pageIndex - 1, state.pageIndex, state.pageIndex + 1]
+      .filter((pageIndex) => pageIndex >= 0 && pageIndex < state.pageCount);
+    let cancelled = false;
+    const renderTasks = new Set<{ cancel: () => void }>();
+
+    setThumbnails((previous) => Object.fromEntries(indices.map((pageIndex) => [
+      pageIndex,
+      previous[pageIndex] ?? { kind: 'loading' },
+    ])));
+
+    async function renderThumbnail(pageIndex: number) {
+      try {
+        const page = await pdf.getPage(pageIndex + 1);
+        if (cancelled || thumbnailRequestId !== thumbnailRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
+        const fullSize = page.getViewport({ scale: 1 });
+        const scale = Math.min(THUMBNAIL_SCALE, THUMBNAIL_MAX_WIDTH / fullSize.width, THUMBNAIL_MAX_HEIGHT / fullSize.height);
+        const viewport = page.getViewport({ scale });
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.ceil(viewport.width);
+        canvas.height = Math.ceil(viewport.height);
+        const context = canvas.getContext('2d');
+        if (!context) throw new Error('Canvas context unavailable');
+        const renderTask = page.render({ canvas, canvasContext: context, viewport });
+        renderTasks.add(renderTask);
+        await renderTask.promise;
+        renderTasks.delete(renderTask);
+        if (cancelled || thumbnailRequestId !== thumbnailRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
+        const src = canvas.toDataURL('image/png');
+        setThumbnails((previous) => ({ ...previous, [pageIndex]: { kind: 'ready', src } }));
+      } catch {
+        if (cancelled || thumbnailRequestId !== thumbnailRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
+        setThumbnails((previous) => ({ ...previous, [pageIndex]: { kind: 'error' } }));
+      }
+    }
+
+    for (const pageIndex of indices) {
+      if (!thumbnails[pageIndex] || thumbnails[pageIndex].kind === 'loading') void renderThumbnail(pageIndex);
+    }
+    return () => {
+      cancelled = true;
+      renderTasks.forEach((task) => task.cancel());
+    };
+  // `thumbnailSession` changes after each successfully loaded document, even when its filename and first page match the prior document.
+  }, [state.kind, state.kind === 'ready' ? state.pageIndex : -1, thumbnailSession]);
 
   async function renderPage(pdf: PDFDocumentProxy, view: ViewState, requestId: number): Promise<boolean> {
     const renderId = ++renderIdRef.current;
@@ -220,10 +357,12 @@ function ReaderPage() {
       }
       documentRef.current = pdf;
       const initialView: ViewState = { pageIndex: 0, scale: 1.35, rotation: 0 };
+      void loadOutline(pdf, requestId);
       if (!await renderPage(pdf, initialView, requestId)) return;
       if (!isCurrent(requestId)) return;
       setPageInput('1');
       setState({ kind: 'ready', fileName, pageCount: pdf.numPages, ...initialView });
+      setThumbnailSession(requestId);
     } catch (error) {
       if (!isCurrent(requestId)) return;
       setState({ kind: 'error', message: readerError(error) });
@@ -419,13 +558,50 @@ function ReaderPage() {
           <button type="button" onClick={() => rotate(1)} disabled={isRendering}>Rotate clockwise</button>
         </div>
       </section>}
-      <section className="reader-stage" aria-label="PDF page preview">
-        <div className="pdf-page" hidden={state.kind !== 'ready' && state.kind !== 'loading'}>
-          <canvas ref={canvasRef} aria-label="Rendered PDF page" />
-          <div ref={textLayerRef} className="textLayer" aria-label="Selectable text from the rendered PDF page" />
-        </div>
-      </section>
-      <p className="reader-boundary">This reader renders a selected local or HTTPS URL PDF one page at a time. It does not save files, support passwords, outlines, thumbnails, search, annotations, HTML import, or AI features.</p>
+      <div className="reader-workspace">
+        {state.kind === 'ready' && <aside className="reader-navigation" aria-label="PDF navigation">
+          <section className="navigation-panel" aria-labelledby="outline-title">
+            <h2 id="outline-title">Outline</h2>
+            {outline.kind === 'idle' || outline.kind === 'loading'
+              ? <p>Reading this PDF’s outline…</p>
+              : outline.kind === 'unavailable'
+                ? <p>{outline.message}</p>
+                : <nav aria-label="PDF outline"><OutlineItems items={outline.items} depth={0} onNavigate={navigateOutline} /></nav>}
+            {outlineNotice && <p className="navigation-notice" role="status">{outlineNotice}</p>}
+          </section>
+          <section className="navigation-panel" aria-labelledby="thumbnails-title">
+            <h2 id="thumbnails-title">Pages</h2>
+            <p className="thumbnail-hint">Previews are rendered only for this page and its immediate neighbors.</p>
+            <div className="thumbnail-list" aria-label="Nearby page thumbnails">
+              {[state.pageIndex - 1, state.pageIndex, state.pageIndex + 1]
+                .filter((pageIndex) => pageIndex >= 0 && pageIndex < state.pageCount)
+                .map((pageIndex) => {
+                  const thumbnail = thumbnails[pageIndex];
+                  return <button
+                    type="button"
+                    className="thumbnail-button"
+                    key={pageIndex}
+                    onClick={() => goToPage(pageIndex)}
+                    aria-current={pageIndex === state.pageIndex ? 'page' : undefined}
+                    aria-label={`Go to page ${pageIndex + 1}${pageIndex === state.pageIndex ? ', current page' : ''}`}
+                  >
+                    {thumbnail?.kind === 'ready'
+                      ? <img src={thumbnail.src} alt={`Thumbnail preview of page ${pageIndex + 1}`} />
+                      : <span className="thumbnail-placeholder">{thumbnail?.kind === 'error' ? 'Preview unavailable' : 'Rendering preview…'}</span>}
+                    <span>Page {pageIndex + 1}</span>
+                  </button>;
+                })}
+            </div>
+          </section>
+        </aside>}
+        <section className="reader-stage" aria-label="PDF page preview">
+          <div className="pdf-page" hidden={state.kind !== 'ready' && state.kind !== 'loading'}>
+            <canvas ref={canvasRef} aria-label="Rendered PDF page" />
+            <div ref={textLayerRef} className="textLayer" aria-label="Selectable text from the rendered PDF page" />
+          </div>
+        </section>
+      </div>
+      <p className="reader-boundary">This reader renders a selected local or HTTPS URL PDF one page at a time. It includes PDF-provided outlines and nearby-page thumbnails, but does not save files, support passwords, search, annotations, HTML import, or AI features.</p>
     </main>
   );
 }
