@@ -2,36 +2,36 @@
 
 [返回总体进度](../IMPLEMENTATION_PROGRESS.md)
 
-维护者：主 agent。当前批次：B011；执行 agent：`/root/b011_auto_sections`。
+维护者：主 agent。当前批次：B012；执行 agent：`/root/b012_offset_mapping`。
 
 ## 第一部分：总体实现进度
 
 - 项目目的：Chrome/Firefox 独立论文阅读扩展，本地解析、自配 API。
 - 总体任务／阶段：Hypha `0001`；M2 文档解析与证据基础。
-- 已完成并验收：B001–B010 已完成；M2 已有页级 block、anchor 与 coverage 诊断，但无章节模型。
-- 当前实现位置：`pdfPageBlocks` 保留 PDF.js 原始文本项与几何，明确不保证双栏阅读顺序；阅读页已有 outline 导航。
-- 当前批次：B011；从本地页级块生成保守的自动识别章节候选，用于缺失原生 outline 时的目录降级。
-- 与前后关系：后续引用/摘要可用章节 coverage，但本批不建立结构化论文语义、双栏重排或引用索引。
-- 状态：需返工；执行 agent：待派发。用户验证原生 outline 优先正确，但 Contents 页列表条目被误识别为自动章节，和正文候选重复。
+- 已完成并验收：B001–B011 已完成；B010 页级 block/anchor/coverage 与 B011 自动章节候选均在 Firefox 验证。
+- 当前实现位置：页级 block 保留 `rawText` 和原始几何；尚无 raw↔normalized offset 映射，搜索和后续证据不能可靠回跳到块内文本位置。
+- 当前批次：B012；为单个 block 创建可审计的规范化文本、双向 offset 映射与质量标记，供搜索命中和未来 evidence anchor 使用。
+- 与前后关系：不重建双栏段落顺序或语义章节；只保证单一 PDF.js 文本项的局部可追溯规范化。
+- 状态：实现中；执行 agent：`/root/b012_offset_mapping`。
 
 ## 第二部分：当前细节目标清单
 
 | ID | 小目标 | 完成条件／验证方式 | 状态／证据 |
 |---|---|---|---|
-| B011-01 | 标题候选与章节模型 | 基于文本项几何/格式和编号标题模式生成有页码锚点的候选；记录置信/质量，不硬套章节类型 | 需返工：Contents 目录页中的列表项被当成候选；须抑制目录页副本并保留后续正文实际标题 |
-| B011-02 | 自动目录降级 | 原生 outline 缺失时显示“自动识别”目录；点击正确跳页；无候选保留缩略图与页码 | 未开始 |
-| B011-03 | 边界与诊断 | 明确双栏/表格/公式可能误判，不将 Unknown 标成 Introduction/Methods 等；可检查候选来源 | 未开始 |
+| B012-01 | 规范化与映射类型 | 为 block 增加 normalizedText、raw↔normalized offset 映射与质量 flags；空白/连字符/Unicode 变化可追溯 | 未开始 |
+| B012-02 | 搜索命中定位集成 | 搜索使用或展示映射后的命中边界，能回到具体 page/block；无法精确映射时诚实降级 | 未开始 |
+| B012-03 | 单项边界与诊断 | 诊断显示映射版本/不确定项；不声称跨 item、跨列或跨页 offset 精确 | 未开始 |
 
-- 允许修改：解析相关 src、阅读页目录、样式、README、必要测试；不得修改总体追踪或 Hypha。
-- 本批不包含：双栏阅读顺序重建、章节语义分类、引用、持久化、模型、翻译、摘要、高亮、cite。
-- 必需交付：保守章节候选、目录降级、错误/空状态、typecheck/双端构建与多页 PDF 验证。
-- 验证要求：UI 明确“自动识别”；有原生 outline 时仍优先原生；未知/低质量候选不能伪装为可靠结构。
+- 允许修改：解析 src、阅读页最小诊断/搜索整合、样式、README、必要测试；不得改总体追踪或 Hypha。
+- 本批不包含：跨文本项合并、双栏重排、章节语义、引用匹配、持久化、模型、翻译、摘要、高亮。
+- 必需交付：可测试映射算法、block 数据更新、真实 PDF 多页检查、typecheck/双端构建。
+- 验证要求：保留 rawText；规范化不得无记录删除内容；无法定位时必须标 quality flag 及 page 级回退。
 - 返回格式：逐项状态、修改文件、检查、未测项、风险、用户操作。
 
 ## 第三部分：相关背景知识
 
-- 用户契约：目录优先读取 PDF outline；没有时使用已识别章节并标注自动识别，无法识别保留缩略图/页码。
-- 架构限制：原始 PDF 文本项顺序不等于双栏阅读顺序；标题未知保持 Unknown，不强行分类。
-- 现有入口：`src/lib/pdfPageBlocks.ts`、reader 的 outline/navigation；保留 B004 权限手势和 B005 后续渲染竞态保护。
-- 已验证：B010 coverage 与 block 在 Firefox 正常；用户验证自动候选可跳转且不会覆盖原生 outline，但发现 Contents 列表误报。
-- 必读：[架构第 4、5 节](../planning/02-architecture.md)、[实施第 1、3 节](../planning/05-implementation.md)、[B010](batches/B010.md)。
+- 架构契约：Block 需要 rawText、normalizedText、raw↔normalized offset 映射、anchor、quality flags；Evidence 必须明确 exact/paragraph/page 精度。
+- 限制：PDF.js 源项顺序不可靠，B012 不可把单项映射扩展为跨列阅读顺序。
+- 现有入口：`src/lib/pdfPageBlocks.ts`、B007 搜索索引、B010 extraction diagnostics；必须保留 B004 权限手势与异步竞态保护。
+- 已验证：B010/B011 在 Firefox 正常，且 Contents 误报已修复。
+- 必读：[架构第 4、5 节](../planning/02-architecture.md)、[实施第 2 节](../planning/05-implementation.md)、[B010](batches/B010.md)、[B011](batches/B011.md)。

@@ -14,7 +14,10 @@ import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import '../styles.css';
 import 'pdfjs-dist/web/pdf_viewer.css';
 import {
+  locateNormalizedRange,
+  normalizePdfTextItem,
   pageBlocksFromTextContent,
+  PDF_PAGE_BLOCK_EXTRACTION_VERSION,
   type PageExtraction,
   type PdfPageTextBlock,
 } from '../lib/pdfPageBlocks';
@@ -123,7 +126,15 @@ type SearchIndexState =
   | { kind: 'ready'; indexedPageCount: number; pageCount: number; failedPageCount: number; revision: number }
   | { kind: 'unavailable'; message: string }
   | { kind: 'error'; message: string };
-type SearchMatch = { pageIndex: number; offset: number };
+type SearchMatch = {
+  pageIndex: number;
+  blockId?: string;
+  normalizedStart?: number;
+  normalizedEnd?: number;
+  rawStart?: number;
+  rawEnd?: number;
+  precision: 'exact' | 'block' | 'page';
+};
 type ExtractionCoverage = 'full' | 'partial' | 'unreadable';
 type ExtractionState =
   | { kind: 'idle' }
@@ -131,14 +142,30 @@ type ExtractionState =
   | { kind: 'ready'; coverage: ExtractionCoverage; extractedPageCount: number; pageCount: number; textPageCount: number; emptyPageCount: number; failedPageCount: number; blockCount: number; pages: PageExtraction[] }
   | { kind: 'error'; message: string };
 
-function searchTextOccurrences(text: string, query: string, pageIndex: number): SearchMatch[] {
-  const normalizedText = text.toLocaleLowerCase();
-  const normalizedQuery = query.toLocaleLowerCase();
+function searchTextOccurrences(page: PageExtraction, query: string): SearchMatch[] {
+  const normalizedQuery = normalizePdfTextItem(query).normalizedText.toLocaleLowerCase();
+  if (!normalizedQuery) return [];
   const matches: SearchMatch[] = [];
-  let offset = normalizedText.indexOf(normalizedQuery);
-  while (offset !== -1) {
-    matches.push({ pageIndex, offset });
-    offset = normalizedText.indexOf(normalizedQuery, offset + normalizedQuery.length);
+  for (const block of page.blocks) {
+    const foldedText = block.normalizedText.toLocaleLowerCase();
+    const caseFoldChangedOffsets = foldedText.length !== block.normalizedText.length;
+    let offset = foldedText.indexOf(normalizedQuery);
+    while (offset !== -1) {
+      const normalizedEnd = offset + normalizedQuery.length;
+      const location = caseFoldChangedOffsets
+        ? { precision: 'page' as const }
+        : locateNormalizedRange(block, offset, normalizedEnd);
+      matches.push({
+        pageIndex: page.pageIndex,
+        blockId: location.precision === 'page' ? undefined : block.blockId,
+        normalizedStart: location.precision === 'page' ? undefined : offset,
+        normalizedEnd: location.precision === 'page' ? undefined : normalizedEnd,
+        rawStart: location.precision === 'exact' ? location.rawStart : undefined,
+        rawEnd: location.precision === 'exact' ? location.rawEnd : undefined,
+        precision: location.precision,
+      });
+      offset = foldedText.indexOf(normalizedQuery, offset + normalizedQuery.length);
+    }
   }
   return matches;
 }
@@ -249,7 +276,7 @@ function ReaderPage() {
   const viewInteractionRevisionRef = useRef(0);
   const viewRestoreReadyRef = useRef(false);
   const viewSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const searchPagesRef = useRef<string[]>([]);
+  const searchPagesRef = useRef<PageExtraction[]>([]);
   const pageBlocksRef = useRef<PdfPageTextBlock[]>([]);
   const indexedSearchQueryRef = useRef('');
   const [state, setState] = useState<ReaderState>({ kind: 'idle' });
@@ -394,7 +421,7 @@ function ReaderPage() {
   async function extractPageBlocks(pdf: PDFDocumentProxy, requestId: number, documentVersion: string) {
     const extractionRequestId = ++extractionRequestIdRef.current;
     const searchRequestId = ++searchRequestIdRef.current;
-    const pageTexts = Array<string>(pdf.numPages).fill('');
+    const pageTexts = Array<PageExtraction>(pdf.numPages);
     const pages = Array<PageExtraction>(pdf.numPages);
     searchPagesRef.current = pageTexts;
     pageBlocksRef.current = [];
@@ -416,7 +443,7 @@ function ReaderPage() {
         if (extractionRequestId !== extractionRequestIdRef.current || searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
         const pageExtraction = pageBlocksFromTextContent(textContent, pageIndex, documentVersion);
         pages[pageIndex] = pageExtraction;
-        pageTexts[pageIndex] = pageExtraction.searchableText;
+        pageTexts[pageIndex] = pageExtraction;
         pageBlocksRef.current.push(...pageExtraction.blocks);
         if (pageExtraction.status === 'text') textPageCount += 1;
         else emptyPageCount += 1;
@@ -430,6 +457,7 @@ function ReaderPage() {
           status: 'failed',
           error: error instanceof Error ? error.message : 'PDF.js could not extract this page.',
         };
+        pageTexts[pageIndex] = pages[pageIndex];
       }
 
       indexedPageCount += 1;
@@ -494,7 +522,7 @@ function ReaderPage() {
       return;
     }
 
-    const matches = searchPagesRef.current.flatMap((text, pageIndex) => searchTextOccurrences(text, query, pageIndex));
+    const matches = searchPagesRef.current.flatMap((page) => page ? searchTextOccurrences(page, query) : []);
     setSearchMatches(matches);
     const queryChanged = indexedSearchQueryRef.current !== query;
     indexedSearchQueryRef.current = query;
@@ -502,7 +530,7 @@ function ReaderPage() {
       if (queryChanged) return -1;
       const active = previous >= 0 ? searchMatches[previous] : undefined;
       if (active) {
-        const sameMatch = matches.findIndex((match) => match.pageIndex === active.pageIndex && match.offset === active.offset);
+        const sameMatch = matches.findIndex((match) => match.pageIndex === active.pageIndex && match.blockId === active.blockId && match.normalizedStart === active.normalizedStart);
         if (sameMatch !== -1) return sameMatch;
       }
       return -1;
@@ -919,7 +947,11 @@ function ReaderPage() {
       : `${searchMatches.length} match${searchMatches.length === 1 ? '' : 'es'} on ${new Set(searchMatches.map((match) => match.pageIndex)).size} page${new Set(searchMatches.map((match) => match.pageIndex)).size === 1 ? '' : 's'}`;
     const activeMatch = searchMatches[activeSearchMatch];
     const activeSummary = activeMatch
-      ? ` Viewing match ${activeSearchMatch + 1} on page ${activeMatch.pageIndex + 1}.`
+      ? ` Viewing match ${activeSearchMatch + 1} on page ${activeMatch.pageIndex + 1}${activeMatch.precision === 'exact'
+        ? ` at raw item offsets ${activeMatch.rawStart}–${activeMatch.rawEnd}`
+        : activeMatch.precision === 'block'
+          ? ' at the matching PDF.js text item; normalization prevents an exact raw-offset claim'
+          : '; case folding or an incomplete map limits this result to page-level navigation'}.`
       : '';
     return searchIndex.kind === 'indexing'
       ? `${resultSummary} in ${progress}; indexing continues.${activeSummary}`
@@ -937,7 +969,8 @@ function ReaderPage() {
       : extraction.coverage === 'partial'
         ? 'partial text coverage'
         : 'unreadable text coverage';
-    return `${coverage}: ${extraction.textPageCount} of ${extraction.pageCount} pages have extractable text; ${extraction.emptyPageCount} have no text and ${extraction.failedPageCount} could not be extracted. ${extraction.blockCount} local page blocks were created.`;
+    const transformedBlocks = pageBlocksRef.current.filter((block) => block.qualityFlags.some((flag) => flag.startsWith('normalized-') || flag === 'offset-map-ambiguous')).length;
+    return `${coverage}: ${extraction.textPageCount} of ${extraction.pageCount} pages have extractable text; ${extraction.emptyPageCount} have no text and ${extraction.failedPageCount} could not be extracted. ${extraction.blockCount} local page blocks were created with ${PDF_PAGE_BLOCK_EXTRACTION_VERSION} mapping; ${transformedBlocks} blocks have normalization changes or uncertain interior offsets.`;
   }
 
   return (
@@ -1012,6 +1045,7 @@ function ReaderPage() {
         <h2 id="extraction-diagnostics-title">Text extraction diagnostics</h2>
         <p aria-live="polite">{extractionStatus()}</p>
         <p className="extraction-caution">Blocks keep PDF.js source-item order and original item coordinates for page anchors. That source order is not a reliable paper reading order, especially for columns, tables, and formulas.</p>
+        <p className="extraction-caution">Offset mapping is versioned and applies inside one PDF.js text item only. Search never claims a cross-item, cross-column, or cross-page exact offset; transformed or uncertain items fall back to block or page navigation.</p>
         {extraction.kind === 'ready' && <details>
           <summary>Inspect page coverage</summary>
           <ul className="extraction-page-list">
