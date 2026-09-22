@@ -28,6 +28,17 @@ type OptionalPermissionsApi = {
   request: (permissions: { origins: string[] }) => Promise<boolean>;
 };
 
+type LocalStorageArea = {
+  get: (key: string) => Promise<Record<string, unknown>>;
+  set: (items: Record<string, unknown>) => Promise<void>;
+};
+
+type SavedView = {
+  pageIndex: number;
+  scale: number;
+  rotation: number;
+};
+
 function readerError(error: unknown): string {
   if (error instanceof PasswordException || (error instanceof Error && error.name === 'PasswordException')) {
     return 'This PDF is password protected. Password entry and decryption are unavailable; choose an unlocked copy to read it here.';
@@ -65,6 +76,14 @@ function getOptionalPermissionsApi(): OptionalPermissionsApi | undefined {
   return extensionGlobal.browser?.permissions ?? extensionGlobal.chrome?.permissions;
 }
 
+function getLocalStorageArea(): LocalStorageArea | undefined {
+  const extensionGlobal = globalThis as typeof globalThis & {
+    browser?: { storage?: { local?: LocalStorageArea } };
+    chrome?: { storage?: { local?: LocalStorageArea } };
+  };
+  return extensionGlobal.browser?.storage?.local ?? extensionGlobal.chrome?.storage?.local;
+}
+
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 3;
 const SCALE_STEP = 0.25;
@@ -73,6 +92,8 @@ const THUMBNAIL_MAX_HEIGHT = 200;
 const THUMBNAIL_SCALE = 0.24;
 const MAX_PDF_BYTES = 100 * 1024 * 1024;
 const MAX_PDF_PAGES = 500;
+const VIEW_STORAGE_PREFIX = 'pdf-view:';
+const VIEW_SAVE_DEBOUNCE_MS = 500;
 
 type ViewState = Pick<Extract<ReaderState, { kind: 'ready' }>, 'pageIndex' | 'scale' | 'rotation'>;
 type PdfOutlineItem = NonNullable<Awaited<ReturnType<PDFDocumentProxy['getOutline']>>>[number];
@@ -105,6 +126,21 @@ function searchTextOccurrences(text: string, query: string, pageIndex: number): 
 function byteLimitMessage(size?: number): string {
   const received = size === undefined ? '' : ` (${Math.ceil(size / (1024 * 1024))} MiB received)`;
   return `This PDF exceeds the 100 MiB reader limit${received}. Choose a PDF at or below 100 MiB; large-document analysis is unavailable in this reader.`;
+}
+
+async function contentHash(bytes: Uint8Array): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', bytes.slice().buffer);
+  return Array.from(new Uint8Array(digest), (value) => value.toString(16).padStart(2, '0')).join('');
+}
+
+function savedView(value: unknown, pageCount: number): SavedView | undefined {
+  if (!value || typeof value !== 'object') return undefined;
+  const candidate = value as Partial<SavedView>;
+  const { pageIndex, scale, rotation } = candidate;
+  if (typeof pageIndex !== 'number' || !Number.isInteger(pageIndex) || pageIndex < 0 || pageIndex >= pageCount) return undefined;
+  if (typeof scale !== 'number' || !Number.isFinite(scale) || scale < MIN_SCALE || scale > MAX_SCALE) return undefined;
+  if (rotation !== 0 && rotation !== 90 && rotation !== 180 && rotation !== 270) return undefined;
+  return { pageIndex, scale, rotation };
 }
 
 async function readPdfResponse(response: Response, requestId: number, isCurrent: (requestId: number) => boolean): Promise<Uint8Array> {
@@ -188,6 +224,10 @@ function ReaderPage() {
   const renderIdRef = useRef(0);
   const thumbnailRequestIdRef = useRef(0);
   const searchRequestIdRef = useRef(0);
+  const viewSessionRef = useRef(0);
+  const viewInteractionRevisionRef = useRef(0);
+  const viewRestoreReadyRef = useRef(false);
+  const viewSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchPagesRef = useRef<string[]>([]);
   const indexedSearchQueryRef = useRef('');
   const [state, setState] = useState<ReaderState>({ kind: 'idle' });
@@ -202,6 +242,9 @@ function ReaderPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [searchMatches, setSearchMatches] = useState<SearchMatch[]>([]);
   const [activeSearchMatch, setActiveSearchMatch] = useState(-1);
+  const [documentContentKey, setDocumentContentKey] = useState<string | null>(null);
+  const [viewStorageStatus, setViewStorageStatus] = useState('');
+  const [viewRestoreEpoch, setViewRestoreEpoch] = useState(0);
 
   useEffect(() => () => {
     abortControllerRef.current?.abort();
@@ -209,9 +252,37 @@ function ReaderPage() {
     textLayerTaskRef.current?.cancel();
     thumbnailRequestIdRef.current += 1;
     searchRequestIdRef.current += 1;
+    if (viewSaveTimerRef.current) clearTimeout(viewSaveTimerRef.current);
     void loadingTaskRef.current?.destroy();
     void documentRef.current?.cleanup();
   }, []);
+
+  useEffect(() => {
+    if (state.kind !== 'ready' || !documentContentKey || !viewRestoreReadyRef.current) return;
+    const storage = getLocalStorageArea();
+    if (!storage) {
+      setViewStorageStatus('View position cannot be saved because extension local storage is unavailable. Reading continues normally.');
+      return;
+    }
+    if (viewSaveTimerRef.current) clearTimeout(viewSaveTimerRef.current);
+    const savedSession = viewSessionRef.current;
+    const view: SavedView = { pageIndex: state.pageIndex, scale: state.scale, rotation: state.rotation };
+    viewSaveTimerRef.current = setTimeout(() => {
+      void (async () => {
+        try {
+          await storage.set({ [`${VIEW_STORAGE_PREFIX}${documentContentKey}`]: view });
+          if (savedSession === viewSessionRef.current) setViewStorageStatus('View position saved locally for this PDF.');
+        } catch {
+          if (savedSession === viewSessionRef.current) {
+            setViewStorageStatus('View position could not be saved locally. Reading continues normally.');
+          }
+        }
+      })();
+    }, VIEW_SAVE_DEBOUNCE_MS);
+    return () => {
+      if (viewSaveTimerRef.current) clearTimeout(viewSaveTimerRef.current);
+    };
+  }, [documentContentKey, state, viewRestoreEpoch]);
 
   async function clearPreviousDocument() {
     renderIdRef.current += 1;
@@ -243,6 +314,12 @@ function ReaderPage() {
     textLayerTaskRef.current = null;
     thumbnailRequestIdRef.current += 1;
     searchRequestIdRef.current += 1;
+    viewSessionRef.current += 1;
+    viewInteractionRevisionRef.current = 0;
+    viewRestoreReadyRef.current = false;
+    if (viewSaveTimerRef.current) clearTimeout(viewSaveTimerRef.current);
+    setDocumentContentKey(null);
+    setViewStorageStatus('');
     searchPagesRef.current = [];
     setThumbnails({});
     setOutline({ kind: 'idle' });
@@ -507,6 +584,7 @@ function ReaderPage() {
         return;
       }
 
+      const hashPromise = contentHash(bytes).catch(() => undefined);
       const loadingTask = getDocument({ data: bytes });
       loadingTaskRef.current = loadingTask;
       const pdf = await loadingTask.promise;
@@ -533,6 +611,48 @@ function ReaderPage() {
       setState({ kind: 'ready', fileName, pageCount: pdf.numPages, ...initialView });
       setThumbnailSession(requestId);
       void buildSearchIndex(pdf, requestId);
+      const contentKey = await hashPromise;
+      if (!isCurrent(requestId) || documentRef.current !== pdf) return;
+      if (!contentKey) {
+        viewRestoreReadyRef.current = true;
+        setViewStorageStatus('This browser could not identify the PDF content, so its view position cannot be restored or saved. Reading continues normally.');
+        setViewRestoreEpoch((epoch) => epoch + 1);
+        return;
+      }
+      setDocumentContentKey(contentKey);
+      const restoreSession = viewSessionRef.current;
+      const restoreRevision = viewInteractionRevisionRef.current;
+      const storage = getLocalStorageArea();
+      if (!storage) {
+        viewRestoreReadyRef.current = true;
+        setViewStorageStatus('View position cannot be restored or saved because extension local storage is unavailable. Reading continues normally.');
+        setViewRestoreEpoch((epoch) => epoch + 1);
+        return;
+      }
+      setViewStorageStatus('Restoring any saved view position…');
+      try {
+        const values = await storage.get(`${VIEW_STORAGE_PREFIX}${contentKey}`);
+        if (!isCurrent(requestId) || documentRef.current !== pdf || restoreSession !== viewSessionRef.current || restoreRevision !== viewInteractionRevisionRef.current) return;
+        const restoredView = savedView(values[`${VIEW_STORAGE_PREFIX}${contentKey}`], pdf.numPages);
+        if (restoredView) {
+          if (!await renderPage(pdf, restoredView, requestId)) return;
+          if (!isCurrent(requestId) || documentRef.current !== pdf || restoreSession !== viewSessionRef.current || restoreRevision !== viewInteractionRevisionRef.current) return;
+          setPageInput(String(restoredView.pageIndex + 1));
+          setState({ kind: 'ready', fileName, pageCount: pdf.numPages, ...restoredView });
+          setViewStorageStatus('Saved view position restored locally for this PDF.');
+        } else {
+          setViewStorageStatus('No saved view position exists for this PDF yet.');
+        }
+      } catch {
+        if (isCurrent(requestId) && documentRef.current === pdf && restoreSession === viewSessionRef.current) {
+          setViewStorageStatus('View position could not be restored locally. Reading continues normally.');
+        }
+      } finally {
+        if (isCurrent(requestId) && documentRef.current === pdf && restoreSession === viewSessionRef.current) {
+          viewRestoreReadyRef.current = true;
+          setViewRestoreEpoch((epoch) => epoch + 1);
+        }
+      }
     } catch (error) {
       if (!isCurrent(requestId)) return;
       setState({ kind: 'error', message: readerError(error) });
@@ -655,6 +775,7 @@ function ReaderPage() {
 
   function changeView(nextView: ViewState) {
     if (state.kind !== 'ready' || !documentRef.current) return;
+    viewInteractionRevisionRef.current += 1;
     setState({ ...state, ...nextView });
     setPageInput(String(nextView.pageIndex + 1));
     void renderPage(documentRef.current, nextView, requestIdRef.current);
@@ -752,6 +873,7 @@ function ReaderPage() {
         {state.kind === 'cancelled' && state.message}
         {state.kind === 'error' && state.message}
       </section>
+      {state.kind === 'ready' && viewStorageStatus && <p className="view-storage-status" role="status">{viewStorageStatus}</p>}
       {state.kind === 'ready' && <section className="reader-controls" aria-label="PDF page controls">
         <div className="page-navigation" role="group" aria-label="Page navigation">
           <button type="button" onClick={() => goToPage(state.pageIndex - 1)} disabled={isRendering || state.pageIndex === 0}>Previous page</button>
