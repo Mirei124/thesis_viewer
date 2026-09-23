@@ -18,5 +18,6 @@
 | 2026-09-22 | [B010](batches/B010.md) | 页级文本块、anchor 与 coverage 诊断 | 用户验证 Firefox coverage、搜索与阅读回归；长文第 477 页有 15 个文本 block | M2：最小章节识别 |
 | 2026-09-22 | [B011](batches/B011.md) | 自动章节候选与 Contents 抑制 | 用户验证自动目录正文跳转、Contents 抑制和原生 outline 优先正常 | M2：坐标／offset 映射 |
 | 2026-09-23 | [B012](batches/B012.md) | 单项 raw／normalized offset 映射与搜索定位 | 用户验证 31 页 coverage、4,710 个 v2 block 和功能正常；转换路径尚未遇到样本 | M2：本地引用索引 |
+| 2026-09-23 | [B013](batches/B013.md) | 本地参考文献与编号引用索引 | 用户验证 Video-MME 的 matched 标记及 Ghostscript 的 unresolved 降级均正常 | M3：高亮与 cite 浮窗 |
 
 完整任务包与验收记录归档到 `batches/Bxxx.md`，本表链接相应文件。后续每批记录至少包含：批次 ID、目标、子 agent ID、涉及文件、目标完成情况、验证证据、主 agent 验收结论、遗留问题与下一步。涉及范围变更时注明用户依据和被移出的工作去向；不能直接删除未完成事项。

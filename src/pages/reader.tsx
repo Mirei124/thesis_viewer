@@ -25,6 +25,10 @@ import {
   pdfSectionCandidatesFromPages,
   type PdfSectionCandidate,
 } from '../lib/pdfSectionCandidates';
+import {
+  pdfLocalCitationIndexFromPages,
+  type PdfLocalCitationIndex,
+} from '../lib/pdfCitationIndex';
 
 GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
@@ -118,6 +122,11 @@ type AutoSectionState =
   | { kind: 'idle' }
   | { kind: 'identifying' }
   | { kind: 'ready'; candidates: PdfSectionCandidate[] }
+  | { kind: 'error'; message: string };
+type CitationIndexState =
+  | { kind: 'idle' }
+  | { kind: 'indexing' }
+  | { kind: 'ready'; index: PdfLocalCitationIndex }
   | { kind: 'error'; message: string };
 type Thumbnail = { kind: 'loading' } | { kind: 'ready'; src: string } | { kind: 'error' };
 type SearchIndexState =
@@ -286,6 +295,7 @@ function ReaderPage() {
   const [outline, setOutline] = useState<OutlineState>({ kind: 'idle' });
   const [outlineNotice, setOutlineNotice] = useState('');
   const [autoSections, setAutoSections] = useState<AutoSectionState>({ kind: 'idle' });
+  const [citationIndex, setCitationIndex] = useState<CitationIndexState>({ kind: 'idle' });
   const [thumbnails, setThumbnails] = useState<Record<number, Thumbnail>>({});
   const [thumbnailSession, setThumbnailSession] = useState(0);
   const [searchIndex, setSearchIndex] = useState<SearchIndexState>({ kind: 'idle' });
@@ -379,6 +389,7 @@ function ReaderPage() {
     setOutline({ kind: 'idle' });
     setOutlineNotice('');
     setAutoSections({ kind: 'idle' });
+    setCitationIndex({ kind: 'idle' });
     setSearchIndex({ kind: 'idle' });
     setExtraction({ kind: 'idle' });
     setSearchQuery('');
@@ -433,6 +444,7 @@ function ReaderPage() {
     setSearchIndex({ kind: 'indexing', indexedPageCount, pageCount: pdf.numPages, failedPageCount, revision: 0 });
     setExtraction({ kind: 'extracting', extractedPageCount: indexedPageCount, pageCount: pdf.numPages, textPageCount, emptyPageCount, failedPageCount });
     setAutoSections({ kind: 'identifying' });
+    setCitationIndex({ kind: 'indexing' });
 
     for (let pageIndex = 0; pageIndex < pdf.numPages; pageIndex += 1) {
       if (extractionRequestId !== extractionRequestIdRef.current || searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
@@ -503,6 +515,15 @@ function ReaderPage() {
         } catch {
           if (extractionRequestId === extractionRequestIdRef.current && isCurrent(requestId) && documentRef.current === pdf) {
             setAutoSections({ kind: 'error', message: 'Automatic section candidates could not be inspected. Page navigation remains available.' });
+          }
+        }
+        try {
+          const index = pdfLocalCitationIndexFromPages(pages, documentVersion);
+          if (extractionRequestId !== extractionRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
+          setCitationIndex({ kind: 'ready', index });
+        } catch {
+          if (extractionRequestId === extractionRequestIdRef.current && isCurrent(requestId) && documentRef.current === pdf) {
+            setCitationIndex({ kind: 'error', message: 'Local References and numbered citation candidates could not be indexed. Reading and search remain available.' });
           }
         }
       } else {
@@ -1058,6 +1079,28 @@ function ReaderPage() {
             </li>)}
           </ul>
         </details>}
+      </section>}
+      {state.kind === 'ready' && <section className="extraction-diagnostics" aria-labelledby="citation-diagnostics-title">
+        <h2 id="citation-diagnostics-title">Local References and citation diagnostics</h2>
+        {citationIndex.kind === 'idle' || citationIndex.kind === 'indexing'
+          ? <p aria-live="polite">Indexing conservative local References and numbered bracket markers after page extraction…</p>
+          : citationIndex.kind === 'error'
+            ? <p className="extraction-caution" role="status">{citationIndex.message}</p>
+            : <>
+              <p aria-live="polite">{citationIndex.index.references.length} local numbered Reference candidate{citationIndex.index.references.length === 1 ? '' : 's'}; {citationIndex.index.occurrences.length} numbered bracket occurrence{citationIndex.index.occurrences.length === 1 ? '' : 's'}: {citationIndex.index.matchedOccurrenceCount} matched, {citationIndex.index.ambiguousOccurrenceCount} ambiguous, {citationIndex.index.unresolvedOccurrenceCount} unresolved.</p>
+              {citationIndex.index.diagnostics.map((diagnostic) => <p key={diagnostic} className="extraction-caution">{diagnostic}</p>)}
+              <details>
+                <summary>Inspect local Reference and citation candidates</summary>
+                <ul className="extraction-page-list">
+                  {citationIndex.index.referenceHeading && <li>Heuristic heading on Page {citationIndex.index.referenceHeading.anchor.pageIndex + 1}: {citationIndex.index.referenceHeading.rawText}</li>}
+                  {citationIndex.index.references.slice(0, 50).map((reference) => <li key={reference.refId}>Reference [{reference.number}] candidate on Page {reference.anchor.pageIndex + 1}: {reference.rawText}</li>)}
+                  {citationIndex.index.references.length > 50 && <li>{citationIndex.index.references.length - 50} more Reference candidates are not shown here.</li>}
+                  {citationIndex.index.occurrences.slice(0, 100).map((occurrence) => <li key={occurrence.occurrenceId}>Marker {occurrence.displayMarker} on Page {occurrence.anchor.pageIndex + 1}: {occurrence.status}; {occurrence.basis.join(', ')}.</li>)}
+                  {citationIndex.index.occurrences.length > 100 && <li>{citationIndex.index.occurrences.length - 100} more marker occurrences are not shown here.</li>}
+                  {citationIndex.index.references.length === 0 && citationIndex.index.occurrences.length === 0 && <li>No eligible single-item numbered Reference entries or bracket markers were found.</li>}
+                </ul>
+              </details>
+            </>}
       </section>}
       <div className="reader-workspace">
         {state.kind === 'ready' && <aside className="reader-navigation" aria-label="PDF navigation">
