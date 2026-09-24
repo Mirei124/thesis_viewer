@@ -119,7 +119,22 @@ p {
 .reader-stage { display: grid; min-width: 0; min-height: 12rem; place-items: start center; overflow: auto; padding: 1.5rem; border: 1px solid #d6dce8; border-radius: 0.75rem; background: #e2e8f0; }
 .pdf-page { position: relative; box-shadow: 0 0.25rem 1rem rgb(15 23 42 / 25%); }
 .pdf-page canvas { display: block; background: #fff; }
-.pdf-page .textLayer { z-index: 1; }
+.highlight-layer { position: absolute; z-index: 1; inset: 0; pointer-events: none; overflow: hidden; }
+.pdf-highlight { position: absolute; border-radius: 0.12rem; mix-blend-mode: multiply; opacity: 0.48; }
+.pdf-highlight-yellow, .highlight-color-yellow { background: #facc15; }
+.pdf-highlight-green, .highlight-color-green { background: #4ade80; }
+.pdf-highlight-blue, .highlight-color-blue { background: #60a5fa; }
+.pdf-highlight-pink, .highlight-color-pink { background: #f472b6; }
+.pdf-highlight.is-active { outline: 2px solid #1d4ed8; outline-offset: -1px; opacity: 0.62; }
+.pdf-page .textLayer { z-index: 2; }
+.highlight-toolbar { position: fixed; z-index: 10; display: flex; align-items: center; gap: 0.35rem; max-width: min(calc(100vw - 1rem), 32rem); transform: translate(-50%, -100%); padding: 0.4rem; border: 1px solid #94a3b8; border-radius: 0.55rem; background: #fff; box-shadow: 0 0.3rem 1rem rgb(15 23 42 / 22%); }
+.highlight-toolbar-label { overflow: hidden; max-width: 10rem; color: #334155; font-size: 0.78rem; font-variant-numeric: tabular-nums; text-overflow: ellipsis; white-space: nowrap; }
+.highlight-toolbar button { cursor: pointer; font: inherit; }
+.highlight-create-button, .highlight-delete-button { border: 1px solid #64748b; border-radius: 0.35rem; background: #fff; color: #1e293b; font-size: 0.78rem; font-weight: 700; padding: 0.32rem 0.45rem; }
+.highlight-create-button { border-color: #ca8a04; background: #fef9c3; }
+.highlight-delete-button { border-color: #dc2626; color: #b91c1c; }
+.highlight-color-button { width: 1.25rem; height: 1.25rem; border: 2px solid transparent; border-radius: 50%; padding: 0; }
+.highlight-color-button:hover, .highlight-color-button:focus-visible, .highlight-color-button.is-current { outline: 2px solid #1d4ed8; outline-offset: 1px; }
 .reader-boundary { color: #475569; font-size: 0.9rem; }
 
 @media (max-width: 42rem) {

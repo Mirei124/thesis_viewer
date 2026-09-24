@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from 'react';
+import { type ChangeEvent, type FormEvent, type KeyboardEvent, type MouseEvent, useEffect, useRef, useState } from 'react';
 import {
   GlobalWorkerOptions,
   getDocument,
@@ -8,6 +8,7 @@ import {
   TextLayer,
   type PDFDocumentLoadingTask,
   type PDFDocumentProxy,
+  type PageViewport,
 } from 'pdfjs-dist';
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
@@ -54,6 +55,46 @@ type SavedView = {
   scale: number;
   rotation: number;
 };
+
+type PdfHighlightRect = {
+  left: number;
+  bottom: number;
+  right: number;
+  top: number;
+};
+
+type PdfHighlightColor = 'yellow' | 'green' | 'blue' | 'pink';
+
+type SessionHighlight = {
+  id: string;
+  /** The document version is session-scoped until B015 persistence. */
+  documentVersion: string;
+  pageIndex: number;
+  quote: string;
+  rects: PdfHighlightRect[];
+  color: PdfHighlightColor;
+  createdAt: number;
+};
+
+type SelectionDraft = {
+  pageIndex: number;
+  quote: string;
+  rects: PdfHighlightRect[];
+  toolbarLeft: number;
+  toolbarTop: number;
+};
+
+type RenderedHighlightViewport = {
+  pageIndex: number;
+  viewport: PageViewport;
+};
+
+const HIGHLIGHT_COLORS: Array<{ value: PdfHighlightColor; label: string }> = [
+  { value: 'yellow', label: 'Yellow' },
+  { value: 'green', label: 'Green' },
+  { value: 'blue', label: 'Blue' },
+  { value: 'pink', label: 'Pink' },
+];
 
 function readerError(error: unknown): string {
   if (error instanceof PasswordException || (error instanceof Error && error.name === 'PasswordException')) {
@@ -271,6 +312,8 @@ function OutlineItems({ items, depth, onNavigate }: {
 function ReaderPage() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textLayerRef = useRef<HTMLDivElement>(null);
+  const pdfPageRef = useRef<HTMLDivElement>(null);
+  const highlightToolbarRef = useRef<HTMLDivElement>(null);
   const loadingTaskRef = useRef<PDFDocumentLoadingTask | null>(null);
   const documentRef = useRef<PDFDocumentProxy | null>(null);
   const renderTaskRef = useRef<{ cancel: () => void } | null>(null);
@@ -306,6 +349,10 @@ function ReaderPage() {
   const [documentContentKey, setDocumentContentKey] = useState<string | null>(null);
   const [viewStorageStatus, setViewStorageStatus] = useState('');
   const [viewRestoreEpoch, setViewRestoreEpoch] = useState(0);
+  const [sessionHighlights, setSessionHighlights] = useState<SessionHighlight[]>([]);
+  const [selectionDraft, setSelectionDraft] = useState<SelectionDraft | null>(null);
+  const [activeHighlightId, setActiveHighlightId] = useState<string | null>(null);
+  const [renderedHighlightViewport, setRenderedHighlightViewport] = useState<RenderedHighlightViewport | null>(null);
 
   useEffect(() => () => {
     abortControllerRef.current?.abort();
@@ -361,11 +408,131 @@ function ReaderPage() {
     const canvas = canvasRef.current;
     canvas?.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
     textLayerRef.current?.replaceChildren();
+    setRenderedHighlightViewport(null);
   }
 
   function isCurrent(requestId: number) {
     return requestId === requestIdRef.current;
   }
+
+  function clearBrowserSelection() {
+    window.getSelection()?.removeAllRanges();
+  }
+
+  function captureTextLayerSelection() {
+    if (state.kind !== 'ready' || !renderedHighlightViewport || renderedHighlightViewport.pageIndex !== state.pageIndex) return;
+    const selection = window.getSelection();
+    const textLayer = textLayerRef.current;
+    const pageElement = pdfPageRef.current;
+    if (!selection || selection.rangeCount === 0 || selection.isCollapsed || !textLayer || !pageElement) return;
+    const range = selection.getRangeAt(0);
+    const commonNode = range.commonAncestorContainer;
+    const commonElement = commonNode.nodeType === Node.ELEMENT_NODE ? commonNode as Element : commonNode.parentElement;
+    if (!commonElement || !textLayer.contains(commonElement)) return;
+    const quote = selection.toString().trim();
+    if (!quote) return;
+
+    const pageBounds = pageElement.getBoundingClientRect();
+    const rects = Array.from(range.getClientRects())
+      .filter((rect) => rect.width > 0 && rect.height > 0)
+      .map((rect): PdfHighlightRect => {
+        const [firstX, firstY] = renderedHighlightViewport.viewport.convertToPdfPoint(rect.left - pageBounds.left, rect.top - pageBounds.top);
+        const [secondX, secondY] = renderedHighlightViewport.viewport.convertToPdfPoint(rect.right - pageBounds.left, rect.bottom - pageBounds.top);
+        return {
+          left: Math.min(firstX, secondX),
+          right: Math.max(firstX, secondX),
+          bottom: Math.min(firstY, secondY),
+          top: Math.max(firstY, secondY),
+        };
+      });
+    if (rects.length === 0) return;
+    const toolbarBounds = range.getBoundingClientRect();
+    setSelectionDraft({
+      pageIndex: state.pageIndex,
+      quote,
+      rects,
+      toolbarLeft: toolbarBounds.left + toolbarBounds.width / 2,
+      toolbarTop: Math.max(8, toolbarBounds.top - 10),
+    });
+    setActiveHighlightId(null);
+  }
+
+  function createHighlight(color: PdfHighlightColor) {
+    if (!selectionDraft || state.kind !== 'ready' || selectionDraft.pageIndex !== state.pageIndex) return;
+    const documentVersion = documentContentKey ? `sha256:${documentContentKey}` : `unverified-session:${requestIdRef.current}`;
+    const id = globalThis.crypto?.randomUUID?.() ?? `session-highlight-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    setSessionHighlights((previous) => [...previous, {
+      id,
+      documentVersion,
+      pageIndex: selectionDraft.pageIndex,
+      quote: selectionDraft.quote,
+      rects: selectionDraft.rects,
+      color,
+      createdAt: Date.now(),
+    }]);
+    setSelectionDraft(null);
+    clearBrowserSelection();
+    setActiveHighlightId(id);
+  }
+
+  function updateActiveHighlightColor(color: PdfHighlightColor) {
+    if (!activeHighlightId) return;
+    setSessionHighlights((previous) => previous.map((highlight) => highlight.id === activeHighlightId ? { ...highlight, color } : highlight));
+  }
+
+  function deleteActiveHighlight() {
+    if (!activeHighlightId) return;
+    setSessionHighlights((previous) => previous.filter((highlight) => highlight.id !== activeHighlightId));
+    setActiveHighlightId(null);
+  }
+
+  function dismissHighlightControls() {
+    setSelectionDraft(null);
+    setActiveHighlightId(null);
+    clearBrowserSelection();
+  }
+
+  function onPdfPageClick(event: MouseEvent<HTMLDivElement>) {
+    if (state.kind !== 'ready' || !renderedHighlightViewport || renderedHighlightViewport.pageIndex !== state.pageIndex) return;
+    const selection = window.getSelection();
+    if (selection && !selection.isCollapsed && selection.toString().trim()) return;
+    const pageElement = pdfPageRef.current;
+    if (!pageElement) return;
+    const bounds = pageElement.getBoundingClientRect();
+    const [pdfX, pdfY] = renderedHighlightViewport.viewport.convertToPdfPoint(event.clientX - bounds.left, event.clientY - bounds.top);
+    const hit = [...sessionHighlights].reverse().find((highlight) => highlight.pageIndex === state.pageIndex && highlight.rects.some((rect) => (
+      pdfX >= rect.left && pdfX <= rect.right && pdfY >= rect.bottom && pdfY <= rect.top
+    )));
+    if (!hit) return;
+    setSelectionDraft(null);
+    clearBrowserSelection();
+    setActiveHighlightId(hit.id);
+  }
+
+  function onTextLayerKeyUp(event: KeyboardEvent<HTMLDivElement>) {
+    if (event.key === 'Escape') {
+      dismissHighlightControls();
+      return;
+    }
+    captureTextLayerSelection();
+  }
+
+  useEffect(() => {
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target instanceof Node ? event.target : null;
+      if (target && (pdfPageRef.current?.contains(target) || highlightToolbarRef.current?.contains(target))) return;
+      if (selectionDraft || activeHighlightId) dismissHighlightControls();
+    };
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') dismissHighlightControls();
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [selectionDraft, activeHighlightId]);
 
   function beginImport() {
     requestIdRef.current += 1;
@@ -396,6 +563,10 @@ function ReaderPage() {
     setSearchMatches([]);
     setActiveSearchMatch(-1);
     indexedSearchQueryRef.current = '';
+    setSessionHighlights([]);
+    setSelectionDraft(null);
+    setActiveHighlightId(null);
+    setRenderedHighlightViewport(null);
     const requestId = requestIdRef.current;
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
@@ -647,6 +818,7 @@ function ReaderPage() {
     renderTaskRef.current = null;
     textLayerTaskRef.current?.cancel();
     textLayerTaskRef.current = null;
+    setRenderedHighlightViewport(null);
     if (isCurrent(requestId)) setIsRendering(true);
 
     try {
@@ -689,6 +861,7 @@ function ReaderPage() {
       textLayerTaskRef.current = textLayerTask;
       await textLayerTask.render();
       if (!isCurrentRender(requestId, renderId)) return false;
+      setRenderedHighlightViewport({ pageIndex: view.pageIndex, viewport });
       return true;
     } catch (error) {
       if (!isCurrentRender(requestId, renderId)) return false;
@@ -907,6 +1080,9 @@ function ReaderPage() {
   function changeView(nextView: ViewState) {
     if (state.kind !== 'ready' || !documentRef.current) return;
     viewInteractionRevisionRef.current += 1;
+    setSelectionDraft(null);
+    setActiveHighlightId(null);
+    clearBrowserSelection();
     setState({ ...state, ...nextView });
     setPageInput(String(nextView.pageIndex + 1));
     void renderPage(documentRef.current, nextView, requestIdRef.current);
@@ -993,6 +1169,27 @@ function ReaderPage() {
     const transformedBlocks = pageBlocksRef.current.filter((block) => block.qualityFlags.some((flag) => flag.startsWith('normalized-') || flag === 'offset-map-ambiguous')).length;
     return `${coverage}: ${extraction.textPageCount} of ${extraction.pageCount} pages have extractable text; ${extraction.emptyPageCount} have no text and ${extraction.failedPageCount} could not be extracted. ${extraction.blockCount} local page blocks were created with ${PDF_PAGE_BLOCK_EXTRACTION_VERSION} mapping; ${transformedBlocks} blocks have normalization changes or uncertain interior offsets.`;
   }
+
+  const activeHighlight = activeHighlightId ? sessionHighlights.find((highlight) => highlight.id === activeHighlightId) ?? null : null;
+  const canProjectHighlights = state.kind === 'ready'
+    && renderedHighlightViewport?.pageIndex === state.pageIndex;
+  const visibleHighlights = canProjectHighlights
+    ? sessionHighlights.filter((highlight) => highlight.pageIndex === state.pageIndex)
+    : [];
+  const highlightToolbarPosition = selectionDraft
+    ? { left: selectionDraft.toolbarLeft, top: selectionDraft.toolbarTop }
+    : activeHighlight && canProjectHighlights && renderedHighlightViewport
+      ? (() => {
+          const rect = activeHighlight.rects[0];
+          const [firstX, firstY] = renderedHighlightViewport.viewport.convertToViewportPoint(rect.left, rect.bottom);
+          const [secondX, secondY] = renderedHighlightViewport.viewport.convertToViewportPoint(rect.right, rect.top);
+          const pageBounds = pdfPageRef.current?.getBoundingClientRect();
+          return {
+            left: (pageBounds?.left ?? 0) + (Math.min(firstX, secondX) + Math.max(firstX, secondX)) / 2,
+            top: Math.max(8, (pageBounds?.top ?? 0) + Math.min(firstY, secondY) - 10),
+          };
+        })()
+      : null;
 
   return (
     <main className="reader-page" aria-labelledby="page-title">
@@ -1163,13 +1360,69 @@ function ReaderPage() {
           </section>
         </aside>}
         <section className="reader-stage" aria-label="PDF page preview">
-          <div className="pdf-page" hidden={state.kind !== 'ready' && state.kind !== 'loading'}>
+          <div ref={pdfPageRef} className="pdf-page" hidden={state.kind !== 'ready' && state.kind !== 'loading'} onClick={onPdfPageClick}>
             <canvas ref={canvasRef} aria-label="Rendered PDF page" />
-            <div ref={textLayerRef} className="textLayer" aria-label="Selectable text from the rendered PDF page" />
+            <div className="highlight-layer" aria-hidden="true">
+              {visibleHighlights.flatMap((highlight) => highlight.rects.map((rect, index) => {
+                if (!renderedHighlightViewport) return null;
+                const [firstX, firstY] = renderedHighlightViewport.viewport.convertToViewportPoint(rect.left, rect.bottom);
+                const [secondX, secondY] = renderedHighlightViewport.viewport.convertToViewportPoint(rect.right, rect.top);
+                return <span
+                  key={`${highlight.id}-${index}`}
+                  className={`pdf-highlight pdf-highlight-${highlight.color}${highlight.id === activeHighlightId ? ' is-active' : ''}`}
+                  style={{
+                    left: `${Math.min(firstX, secondX)}px`,
+                    top: `${Math.min(firstY, secondY)}px`,
+                    width: `${Math.abs(secondX - firstX)}px`,
+                    height: `${Math.abs(secondY - firstY)}px`,
+                  }}
+                />;
+              }))}
+            </div>
+            <div
+              ref={textLayerRef}
+              className="textLayer"
+              aria-label="Selectable text from the rendered PDF page"
+              onMouseUp={captureTextLayerSelection}
+              onKeyUp={onTextLayerKeyUp}
+            />
           </div>
         </section>
       </div>
-      <p className="reader-boundary">This reader accepts local or HTTPS PDFs up to 100 MiB and 500 pages, renders one page at a time, and searches PDF.js text only when text is available. It includes PDF-provided outlines and nearby-page thumbnails. It does not save files, accept passwords, perform OCR, annotate, import HTML, or use AI features.</p>
+      {highlightToolbarPosition && (selectionDraft || activeHighlight) && <div
+        ref={highlightToolbarRef}
+        className="highlight-toolbar"
+        role="toolbar"
+        aria-label={selectionDraft ? 'Create text highlight' : 'Edit text highlight'}
+        style={{ left: `${highlightToolbarPosition.left}px`, top: `${highlightToolbarPosition.top}px` }}
+      >
+        {selectionDraft ? <>
+          <span className="highlight-toolbar-label">{selectionDraft.quote.length} selected characters</span>
+          <button type="button" className="highlight-create-button" onMouseDown={(event) => event.preventDefault()} onClick={() => createHighlight('yellow')}>Highlight</button>
+          {HIGHLIGHT_COLORS.filter((color) => color.value !== 'yellow').map((color) => <button
+            type="button"
+            key={color.value}
+            className={`highlight-color-button highlight-color-${color.value}`}
+            aria-label={`Create ${color.label.toLowerCase()} highlight`}
+            title={`Create ${color.label.toLowerCase()} highlight`}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => createHighlight(color.value)}
+          />)}
+        </> : activeHighlight && <>
+          <span className="highlight-toolbar-label">Edit highlight</span>
+          {HIGHLIGHT_COLORS.map((color) => <button
+            type="button"
+            key={color.value}
+            className={`highlight-color-button highlight-color-${color.value}${activeHighlight.color === color.value ? ' is-current' : ''}`}
+            aria-label={`Change highlight to ${color.label.toLowerCase()}`}
+            title={`Change highlight to ${color.label.toLowerCase()}`}
+            onMouseDown={(event) => event.preventDefault()}
+            onClick={() => updateActiveHighlightColor(color.value)}
+          />)}
+          <button type="button" className="highlight-delete-button" onMouseDown={(event) => event.preventDefault()} onClick={deleteActiveHighlight}>Delete</button>
+        </>}
+      </div>}
+      <p className="reader-boundary">This reader accepts local or HTTPS PDFs up to 100 MiB and 500 pages, renders one page at a time, and searches PDF.js text only when text is available. It includes PDF-provided outlines, nearby-page thumbnails, and manual current-session highlights. Highlights are not saved yet, do not cross pages, and do not add notes, citations, OCR, HTML import, or AI features.</p>
     </main>
   );
 }
