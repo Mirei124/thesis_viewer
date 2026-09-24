@@ -7,6 +7,7 @@
 ## Knowledge
 
 - know/b008-normal-pdf-regression-passed-with-boundary-cases-deferred | Applies to B008 Firefox regression: normal PDF controls passed; no-text, password, damaged, and over-limit inputs remain untested until encountered. | and, applies, b008, boundary, cases, controls, damaged, deferred, encountered, firefox, inputs, no-text
+- know/b016-cite-popover-accepted-with-residual-marker-offset | Applies to B016 citation marker overlay: core cite popover functionality is accepted; some markers retain minor left offset and require later visual regression work. | accepted, and, applies, b016, citation, cite, core, functionality, is, later, left, marker
 - know/firefox-automatic-section-contents-suppression-validated | Applies to B011 after suppressing Contents-page candidates, retaining body headings, and preserving native-outline priority. | after, and, applies, automatic, b011, body, candidates, contents, contents-page, firefox, headings, native-outline
 - know/firefox-block-offset-mapping-validated | Applies to B012 Firefox validation of v2 page block mapping, local coverage diagnostics, search and reader regression on Agraph. | agraph, and, applies, b012, block, coverage, diagnostics, firefox, local, mapping, of, offset
 - know/firefox-extension-pdf-rendering-validated | Applies to B003 Firefox MV3 runtime validation of the current reader build. | applies, b003, build, current, extension, firefox, mv3, of, pdf, reader, rendering, runtime

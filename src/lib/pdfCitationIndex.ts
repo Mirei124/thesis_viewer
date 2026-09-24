@@ -22,6 +22,8 @@ export type PdfReferenceCandidate = {
   confidence: 'low';
   qualityWarnings: ReferenceQualityWarning[];
   matchingStatus: 'candidate';
+  /** An http(s) URL written verbatim in this one local PDF.js reference item. */
+  sourceUrl?: string;
 };
 
 export type CitationMatchStatus = 'matched' | 'ambiguous' | 'unresolved';
@@ -57,6 +59,20 @@ const referenceHeadingPattern = /^(?:(?:\d+(?:\.\d+){0,5}\.?|[IVXLCDM]{1,8}\.)\s
 const referenceEntryPattern = /^\s*\[\s*(\d{1,5})\s*\]\s+\S/;
 const numberedCitationPattern = /\[\s*\d{1,5}\s*(?:(?:[,;]|[-–])\s*\d{1,5}\s*)*\]/g;
 const MAX_RANGE_WIDTH = 25;
+
+function localHttpSourceUrl(rawText: string): string | undefined {
+  // Do not turn a DOI, title, or other inferred field into a link. This is
+  // deliberately limited to an http(s) URL that is present in the one local
+  // text item used as the reference candidate.
+  const url = rawText.match(/https?:\/\/[^\s<>"']+/i)?.[0]?.replace(/[),.;\]}]+$/u, '');
+  if (!url) return undefined;
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? parsed.href : undefined;
+  } catch {
+    return undefined;
+  }
+}
 
 function flattenPages(pages: PageExtraction[]): PdfPageTextBlock[] {
   return pages.flatMap((page) => page.blocks)
@@ -123,6 +139,7 @@ export function pdfLocalCitationIndexFromPages(pages: PageExtraction[], document
       confidence: 'low',
       qualityWarnings: ['references-heading-is-heuristic', 'single-pdfjs-item-entry', 'pdfjs-source-order-not-reading-order'],
       matchingStatus: 'candidate',
+      sourceUrl: localHttpSourceUrl(block.rawText),
     }];
   });
   const referencesByNumber = new Map<number, PdfReferenceCandidate[]>();

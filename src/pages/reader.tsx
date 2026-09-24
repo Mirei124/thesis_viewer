@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client';
-import { type ChangeEvent, type FormEvent, type KeyboardEvent, type MouseEvent, useEffect, useRef, useState } from 'react';
+import { type ChangeEvent, type FormEvent, type KeyboardEvent, type MouseEvent, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
   GlobalWorkerOptions,
   getDocument,
@@ -28,7 +28,9 @@ import {
 } from '../lib/pdfSectionCandidates';
 import {
   pdfLocalCitationIndexFromPages,
+  type PdfCitationOccurrence,
   type PdfLocalCitationIndex,
+  type PdfReferenceCandidate,
 } from '../lib/pdfCitationIndex';
 import {
   clearPdfHighlights,
@@ -93,6 +95,18 @@ type SelectionDraft = {
 type RenderedHighlightViewport = {
   pageIndex: number;
   viewport: PageViewport;
+};
+
+type ActiveCitation = {
+  occurrence: PdfCitationOccurrence;
+  references: PdfReferenceCandidate[];
+  left: number;
+  top: number;
+};
+
+type CitationHitRegion = {
+  occurrenceId: string;
+  rects: Array<{ left: number; top: number; width: number; height: number }>;
 };
 
 const HIGHLIGHT_COLORS: Array<{ value: PdfHighlightColor; label: string }> = [
@@ -320,6 +334,9 @@ function ReaderPage() {
   const textLayerRef = useRef<HTMLDivElement>(null);
   const pdfPageRef = useRef<HTMLDivElement>(null);
   const highlightToolbarRef = useRef<HTMLDivElement>(null);
+  const citationPopoverRef = useRef<HTMLDivElement>(null);
+  const citationOverlayRef = useRef<HTMLDivElement>(null);
+  const citationTriggerRef = useRef<HTMLElement | null>(null);
   const loadingTaskRef = useRef<PDFDocumentLoadingTask | null>(null);
   const documentRef = useRef<PDFDocumentProxy | null>(null);
   const renderTaskRef = useRef<{ cancel: () => void } | null>(null);
@@ -366,6 +383,8 @@ function ReaderPage() {
   const [selectionDraft, setSelectionDraft] = useState<SelectionDraft | null>(null);
   const [activeHighlightId, setActiveHighlightId] = useState<string | null>(null);
   const [renderedHighlightViewport, setRenderedHighlightViewport] = useState<RenderedHighlightViewport | null>(null);
+  const [activeCitation, setActiveCitation] = useState<ActiveCitation | null>(null);
+  const [citationHitRegions, setCitationHitRegions] = useState<CitationHitRegion[]>([]);
 
   useEffect(() => () => {
     abortControllerRef.current?.abort();
@@ -430,6 +449,95 @@ function ReaderPage() {
 
   function clearBrowserSelection() {
     window.getSelection()?.removeAllRanges();
+  }
+
+  function dismissCitationPopover(returnFocus = true) {
+    const trigger = citationTriggerRef.current;
+    citationTriggerRef.current = null;
+    setActiveCitation(null);
+    if (returnFocus && trigger?.isConnected) {
+      window.setTimeout(() => trigger.focus(), 0);
+    }
+  }
+
+  function citationForId(occurrenceId: string): { occurrence: PdfCitationOccurrence; references: PdfReferenceCandidate[] } | null {
+    if (citationIndex.kind !== 'ready') return null;
+    const occurrence = citationIndex.index.occurrences.find((item) => item.occurrenceId === occurrenceId);
+    if (!occurrence) return null;
+    const references = occurrence.refIds.flatMap((refId) => {
+      const reference = citationIndex.index.references.find((item) => item.refId === refId);
+      return reference ? [reference] : [];
+    });
+    return { occurrence, references };
+  }
+
+  function openCitation(occurrenceId: string, trigger: HTMLElement) {
+    const citation = citationForId(occurrenceId);
+    if (!citation) return;
+    const bounds = trigger.getBoundingClientRect();
+    citationTriggerRef.current = trigger;
+    setSelectionDraft(null);
+    setActiveHighlightId(null);
+    const viewportPadding = 8;
+    const anticipatedWidth = Math.min(400, Math.max(0, window.innerWidth - viewportPadding * 2));
+    // Keep the card adjacent to the marker when it fits. At the right edge,
+    // align its right edge with the marker instead of letting it overflow.
+    const preferredLeft = bounds.left + anticipatedWidth <= window.innerWidth - viewportPadding
+      ? bounds.left
+      : bounds.right - anticipatedWidth;
+    setActiveCitation({
+      ...citation,
+      left: Math.max(viewportPadding, Math.min(preferredLeft, window.innerWidth - anticipatedWidth - viewportPadding)),
+      top: Math.max(viewportPadding, bounds.bottom + viewportPadding),
+    });
+  }
+
+  function measureVisibleCitationMarkers() {
+    if (citationIndex.kind !== 'ready' || state.kind !== 'ready' || renderedHighlightViewport?.pageIndex !== state.pageIndex) {
+      setCitationHitRegions([]);
+      return;
+    }
+    const textLayer = textLayerRef.current;
+    const pageElement = pdfPageRef.current;
+    if (!textLayer || !pageElement) return;
+    const occurrences = citationIndex.index.occurrences.filter((occurrence) => occurrence.anchor.pageIndex === state.pageIndex);
+    if (occurrences.length === 0) {
+      setCitationHitRegions([]);
+      return;
+    }
+    const blocksById = new Map(pageBlocksRef.current.map((block) => [block.blockId, block]));
+    const directSpans = Array.from(textLayer.children).filter((child): child is HTMLSpanElement => child instanceof HTMLSpanElement);
+    const spansByBlockId = new Map<string, HTMLSpanElement>();
+    const usedSpans = new Set<HTMLSpanElement>();
+    for (const occurrence of occurrences) {
+      const block = blocksById.get(occurrence.sourceBlockId);
+      if (!block || spansByBlockId.has(block.blockId)) continue;
+      const expected = directSpans[block.sourceOrder];
+      const span = expected?.textContent === block.rawText && !usedSpans.has(expected)
+        ? expected
+        : directSpans.find((candidate) => !usedSpans.has(candidate) && candidate.textContent === block.rawText);
+      if (span) {
+        spansByBlockId.set(block.blockId, span);
+        usedSpans.add(span);
+      }
+    }
+    const pageBounds = pageElement.getBoundingClientRect();
+    const regions = occurrences.flatMap((occurrence): CitationHitRegion[] => {
+      const span = spansByBlockId.get(occurrence.sourceBlockId);
+      if (!span) return [];
+      const textNode = Array.from(span.childNodes).find((node): node is Text => node instanceof Text
+        && node.data.length >= occurrence.rawEnd
+        && node.data.slice(occurrence.rawStart, occurrence.rawEnd) === occurrence.displayMarker);
+      if (!textNode) return [];
+      const range = document.createRange();
+      range.setStart(textNode, occurrence.rawStart);
+      range.setEnd(textNode, occurrence.rawEnd);
+      const rects = Array.from(range.getClientRects())
+        .filter((rect) => rect.width > 0 && rect.height > 0)
+        .map((rect) => ({ left: rect.left - pageBounds.left, top: rect.top - pageBounds.top, width: rect.width, height: rect.height }));
+      return rects.length > 0 ? [{ occurrenceId: occurrence.occurrenceId, rects }] : [];
+    });
+    setCitationHitRegions(regions);
   }
 
   function captureTextLayerSelection() {
@@ -606,6 +714,17 @@ function ReaderPage() {
     const pageElement = pdfPageRef.current;
     if (!pageElement) return;
     const bounds = pageElement.getBoundingClientRect();
+    const citationHit = citationHitRegions.find((region) => region.rects.some((rect) => (
+      event.clientX - bounds.left >= rect.left
+      && event.clientX - bounds.left <= rect.left + rect.width
+      && event.clientY - bounds.top >= rect.top
+      && event.clientY - bounds.top <= rect.top + rect.height
+    )));
+    if (citationHit) {
+      const trigger = citationOverlayRef.current?.querySelector<HTMLElement>(`[data-citation-id="${CSS.escape(citationHit.occurrenceId)}"]`);
+      if (trigger) openCitation(citationHit.occurrenceId, trigger);
+      return;
+    }
     const [pdfX, pdfY] = renderedHighlightViewport.viewport.convertToPdfPoint(event.clientX - bounds.left, event.clientY - bounds.top);
     const hit = [...sessionHighlights].reverse().find((highlight) => highlight.pageIndex === state.pageIndex && highlight.rects.some((rect) => (
       pdfX >= rect.left && pdfX <= rect.right && pdfY >= rect.bottom && pdfY <= rect.top
@@ -618,20 +737,45 @@ function ReaderPage() {
 
   function onTextLayerKeyUp(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === 'Escape') {
-      dismissHighlightControls();
+      if (activeCitation) dismissCitationPopover();
+      else dismissHighlightControls();
       return;
     }
     captureTextLayerSelection();
   }
 
   useEffect(() => {
+    measureVisibleCitationMarkers();
+  }, [citationIndex, renderedHighlightViewport, state.kind, state.kind === 'ready' ? state.pageIndex : -1]);
+
+  useEffect(() => {
+    if (activeCitation) citationPopoverRef.current?.focus();
+  }, [activeCitation]);
+
+  useLayoutEffect(() => {
+    if (!activeCitation) return;
+    const popover = citationPopoverRef.current;
+    if (!popover) return;
+    const padding = 8;
+    const bounds = popover.getBoundingClientRect();
+    const left = Math.max(padding, Math.min(bounds.left, window.innerWidth - bounds.width - padding));
+    const top = Math.max(padding, Math.min(bounds.top, window.innerHeight - bounds.height - padding));
+    if (Math.abs(left - bounds.left) < 0.5 && Math.abs(top - bounds.top) < 0.5) return;
+    setActiveCitation((current) => current ? { ...current, left, top } : null);
+  }, [activeCitation]);
+
+  useEffect(() => {
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target instanceof Node ? event.target : null;
+      if (target && (citationPopoverRef.current?.contains(target) || (target instanceof Element && target.closest('[data-citation-id]')))) return;
+      if (activeCitation) dismissCitationPopover();
       if (target && (pdfPageRef.current?.contains(target) || highlightToolbarRef.current?.contains(target))) return;
       if (selectionDraft || activeHighlightId) dismissHighlightControls();
     };
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
-      if (event.key === 'Escape') dismissHighlightControls();
+      if (event.key !== 'Escape') return;
+      if (activeCitation) dismissCitationPopover();
+      else dismissHighlightControls();
     };
     document.addEventListener('pointerdown', onPointerDown);
     document.addEventListener('keydown', onKeyDown);
@@ -639,7 +783,7 @@ function ReaderPage() {
       document.removeEventListener('pointerdown', onPointerDown);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [selectionDraft, activeHighlightId]);
+  }, [selectionDraft, activeHighlightId, activeCitation]);
 
   function beginImport() {
     requestIdRef.current += 1;
@@ -681,6 +825,9 @@ function ReaderPage() {
     setSelectionDraft(null);
     setActiveHighlightId(null);
     setRenderedHighlightViewport(null);
+    setCitationHitRegions([]);
+    citationTriggerRef.current = null;
+    setActiveCitation(null);
     const requestId = requestIdRef.current;
     abortControllerRef.current?.abort();
     abortControllerRef.current = null;
@@ -933,6 +1080,7 @@ function ReaderPage() {
     textLayerTaskRef.current?.cancel();
     textLayerTaskRef.current = null;
     setRenderedHighlightViewport(null);
+    setCitationHitRegions([]);
     if (isCurrent(requestId)) setIsRendering(true);
 
     try {
@@ -1198,6 +1346,7 @@ function ReaderPage() {
     viewInteractionRevisionRef.current += 1;
     setSelectionDraft(null);
     setActiveHighlightId(null);
+    dismissCitationPopover(false);
     clearBrowserSelection();
     setState({ ...state, ...nextView });
     setPageInput(String(nextView.pageIndex + 1));
@@ -1207,6 +1356,17 @@ function ReaderPage() {
   function goToPage(pageIndex: number) {
     if (state.kind !== 'ready' || pageIndex < 0 || pageIndex >= state.pageCount) return;
     changeView({ pageIndex, scale: state.scale, rotation: state.rotation });
+  }
+
+  function goToCitationReference(reference: PdfReferenceCandidate) {
+    dismissCitationPopover(false);
+    goToPage(reference.anchor.pageIndex);
+  }
+
+  function goToCitationReferences() {
+    if (citationIndex.kind !== 'ready' || !citationIndex.index.referenceHeading) return;
+    dismissCitationPopover(false);
+    goToPage(citationIndex.index.referenceHeading.anchor.pageIndex);
   }
 
   function submitPage(event: FormEvent<HTMLFormElement>) {
@@ -1499,6 +1659,25 @@ function ReaderPage() {
                 />;
               }))}
             </div>
+            <div ref={citationOverlayRef} className="citation-hit-layer" aria-label="Local numbered citations">
+              {citationHitRegions.flatMap((region) => {
+                const citation = citationForId(region.occurrenceId);
+                if (!citation) return [];
+                return region.rects.map((rect, index) => <button
+                  type="button"
+                  key={`${region.occurrenceId}-${index}`}
+                  className="citation-hit-region"
+                  data-citation-id={region.occurrenceId}
+                  aria-label={`Open local citation ${citation.occurrence.displayMarker}; ${citation.occurrence.status}`}
+                  title={`Open local citation ${citation.occurrence.displayMarker}`}
+                  style={{ left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px` }}
+                  onClick={(clickEvent) => {
+                    clickEvent.stopPropagation();
+                    openCitation(region.occurrenceId, clickEvent.currentTarget);
+                  }}
+                />);
+              })}
+            </div>
             <div
               ref={textLayerRef}
               className="textLayer"
@@ -1509,6 +1688,41 @@ function ReaderPage() {
           </div>
         </section>
       </div>
+      {activeCitation && <div
+        ref={citationPopoverRef}
+        className="citation-popover"
+        role="dialog"
+        aria-modal="false"
+        aria-labelledby="citation-popover-title"
+        tabIndex={-1}
+        style={{ left: `${activeCitation.left}px`, top: `${activeCitation.top}px` }}
+      >
+        <div className="citation-popover-header">
+          <h2 id="citation-popover-title">Local citation {activeCitation.occurrence.displayMarker}</h2>
+          <button type="button" onClick={() => dismissCitationPopover()} aria-label="Close local citation">Close</button>
+        </div>
+        <p className={`citation-status citation-status-${activeCitation.occurrence.status}`}>{activeCitation.occurrence.status}</p>
+        <p>{activeCitation.occurrence.caution}</p>
+        <p className="citation-basis">Basis: {activeCitation.occurrence.basis.join(', ')}.</p>
+        {activeCitation.references.length > 0
+          ? <ol className="citation-reference-list">
+            {activeCitation.references.map((reference) => <li key={reference.refId}>
+              <p><strong>Reference [{reference.number}] candidate</strong> · Page {reference.anchor.pageIndex + 1}</p>
+              <blockquote>{reference.rawText}</blockquote>
+              <p className="citation-basis">Local candidate only: {reference.qualityWarnings.join(', ')}.</p>
+              <div className="citation-actions">
+                <button type="button" onClick={() => goToCitationReference(reference)}>Go to reference on Page {reference.anchor.pageIndex + 1}</button>
+                {reference.sourceUrl
+                  ? <a href={reference.sourceUrl} target="_blank" rel="noopener noreferrer">Open URL written in this entry</a>
+                  : <span>No http(s) URL was found in this local entry.</span>}
+              </div>
+            </li>)}
+          </ol>
+          : <p className="citation-unresolved">No matching local Reference candidate was indexed for this marker. The marker remains {activeCitation.occurrence.status}; no bibliography fields were inferred.</p>}
+        {citationIndex.kind === 'ready' && citationIndex.index.referenceHeading
+          ? <button type="button" className="citation-references-button" onClick={goToCitationReferences}>Go to local References on Page {citationIndex.index.referenceHeading.anchor.pageIndex + 1}</button>
+          : <p className="citation-unresolved">No local References heading is available to jump to.</p>}
+      </div>}
       {highlightToolbarPosition && (selectionDraft || activeHighlight) && <div
         ref={highlightToolbarRef}
         className="highlight-toolbar"
