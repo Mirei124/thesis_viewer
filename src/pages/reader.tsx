@@ -30,6 +30,13 @@ import {
   pdfLocalCitationIndexFromPages,
   type PdfLocalCitationIndex,
 } from '../lib/pdfCitationIndex';
+import {
+  clearPdfHighlights,
+  deletePdfHighlight,
+  loadPdfHighlights,
+  putPdfHighlight,
+  type StoredPdfHighlight,
+} from '../lib/pdfHighlightRepository';
 
 GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
@@ -67,7 +74,6 @@ type PdfHighlightColor = 'yellow' | 'green' | 'blue' | 'pink';
 
 type SessionHighlight = {
   id: string;
-  /** The document version is session-scoped until B015 persistence. */
   documentVersion: string;
   pageIndex: number;
   quote: string;
@@ -328,6 +334,12 @@ function ReaderPage() {
   const viewInteractionRevisionRef = useRef(0);
   const viewRestoreReadyRef = useRef(false);
   const viewSaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const highlightStorageSessionRef = useRef(0);
+  const highlightMutationQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const highlightDeletedIdsRef = useRef(new Set<string>());
+  const highlightClearRequestedRef = useRef(false);
+  const highlightRevisionRef = useRef(0);
+  const highlightDocumentKeyRef = useRef<string | null>(null);
   const searchPagesRef = useRef<PageExtraction[]>([]);
   const pageBlocksRef = useRef<PdfPageTextBlock[]>([]);
   const indexedSearchQueryRef = useRef('');
@@ -350,6 +362,7 @@ function ReaderPage() {
   const [viewStorageStatus, setViewStorageStatus] = useState('');
   const [viewRestoreEpoch, setViewRestoreEpoch] = useState(0);
   const [sessionHighlights, setSessionHighlights] = useState<SessionHighlight[]>([]);
+  const [highlightStorageStatus, setHighlightStorageStatus] = useState('');
   const [selectionDraft, setSelectionDraft] = useState<SelectionDraft | null>(null);
   const [activeHighlightId, setActiveHighlightId] = useState<string | null>(null);
   const [renderedHighlightViewport, setRenderedHighlightViewport] = useState<RenderedHighlightViewport | null>(null);
@@ -461,7 +474,7 @@ function ReaderPage() {
     if (!selectionDraft || state.kind !== 'ready' || selectionDraft.pageIndex !== state.pageIndex) return;
     const documentVersion = documentContentKey ? `sha256:${documentContentKey}` : `unverified-session:${requestIdRef.current}`;
     const id = globalThis.crypto?.randomUUID?.() ?? `session-highlight-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-    setSessionHighlights((previous) => [...previous, {
+    const highlight: SessionHighlight = {
       id,
       documentVersion,
       pageIndex: selectionDraft.pageIndex,
@@ -469,7 +482,11 @@ function ReaderPage() {
       rects: selectionDraft.rects,
       color,
       createdAt: Date.now(),
-    }]);
+    };
+    highlightRevisionRef.current += 1;
+    setSessionHighlights((previous) => [...previous, highlight]);
+    if (documentContentKey) void saveHighlight(highlight, highlightStorageSessionRef.current);
+    else setHighlightStorageStatus('This browser could not identify the PDF content, so this highlight remains available only while this reader stays open.');
     setSelectionDraft(null);
     clearBrowserSelection();
     setActiveHighlightId(id);
@@ -477,13 +494,103 @@ function ReaderPage() {
 
   function updateActiveHighlightColor(color: PdfHighlightColor) {
     if (!activeHighlightId) return;
-    setSessionHighlights((previous) => previous.map((highlight) => highlight.id === activeHighlightId ? { ...highlight, color } : highlight));
+    const current = sessionHighlights.find((highlight) => highlight.id === activeHighlightId);
+    if (!current || current.color === color) return;
+    const updated = { ...current, color };
+    highlightRevisionRef.current += 1;
+    setSessionHighlights((previous) => previous.map((highlight) => highlight.id === activeHighlightId ? updated : highlight));
+    if (documentContentKey) void saveHighlight(updated, highlightStorageSessionRef.current);
   }
 
   function deleteActiveHighlight() {
     if (!activeHighlightId) return;
+    const deletedId = activeHighlightId;
+    highlightRevisionRef.current += 1;
+    highlightDeletedIdsRef.current.add(deletedId);
     setSessionHighlights((previous) => previous.filter((highlight) => highlight.id !== activeHighlightId));
     setActiveHighlightId(null);
+    if (documentContentKey) void removeHighlight(deletedId, highlightStorageSessionRef.current);
+  }
+
+  function toStoredHighlight(highlight: SessionHighlight): StoredPdfHighlight {
+    return {
+      id: highlight.id,
+      documentVersion: highlight.documentVersion,
+      anchor: { pageIndex: highlight.pageIndex, rects: highlight.rects },
+      quote: highlight.quote,
+      color: highlight.color,
+      createdAt: highlight.createdAt,
+    };
+  }
+
+  function fromStoredHighlight(highlight: StoredPdfHighlight): SessionHighlight {
+    return {
+      id: highlight.id,
+      documentVersion: highlight.documentVersion,
+      pageIndex: highlight.anchor.pageIndex,
+      rects: highlight.anchor.rects,
+      quote: highlight.quote,
+      color: highlight.color,
+      createdAt: highlight.createdAt,
+    };
+  }
+
+  function queueHighlightMutation(session: number, operation: () => Promise<void>, success: string) {
+    setHighlightStorageStatus('Saving highlights locally…');
+    const next = highlightMutationQueueRef.current.catch(() => undefined).then(operation);
+    highlightMutationQueueRef.current = next;
+    void next.then(() => {
+      if (session === highlightStorageSessionRef.current) setHighlightStorageStatus(success);
+    }).catch(() => {
+      if (session === highlightStorageSessionRef.current) {
+        setHighlightStorageStatus('Highlights could not be saved locally. They remain available in this reader until it closes.');
+      }
+    });
+  }
+
+  function saveHighlight(highlight: SessionHighlight, session: number) {
+    queueHighlightMutation(session, () => putPdfHighlight(toStoredHighlight(highlight)), 'Highlights are saved locally for this PDF.');
+  }
+
+  function removeHighlight(id: string, session: number) {
+    queueHighlightMutation(session, () => deletePdfHighlight(id), 'Highlight deletion was saved locally.');
+  }
+
+  function clearCurrentDocumentHighlights() {
+    if (!documentContentKey) return;
+    const session = highlightStorageSessionRef.current;
+    highlightRevisionRef.current += 1;
+    highlightClearRequestedRef.current = true;
+    setSessionHighlights([]);
+    setActiveHighlightId(null);
+    setSelectionDraft(null);
+    queueHighlightMutation(session, () => clearPdfHighlights(`sha256:${documentContentKey}`), 'All saved highlights for this PDF were cleared locally.');
+  }
+
+  async function restoreSavedHighlights(contentKey: string, session: number) {
+    const documentVersion = `sha256:${contentKey}`;
+    const restoreRevision = highlightRevisionRef.current;
+    setHighlightStorageStatus('Restoring saved highlights…');
+    try {
+      const stored = await loadPdfHighlights(documentVersion);
+      if (session !== highlightStorageSessionRef.current || highlightDocumentKeyRef.current !== contentKey) return;
+      const restored = stored
+        .filter((highlight) => !highlightDeletedIdsRef.current.has(highlight.id))
+        .map(fromStoredHighlight);
+      if (!highlightClearRequestedRef.current) {
+        setSessionHighlights((previous) => {
+          if (highlightRevisionRef.current === restoreRevision) return restored;
+          const merged = new Map(restored.map((highlight) => [highlight.id, highlight]));
+          previous.forEach((highlight) => merged.set(highlight.id, highlight));
+          return [...merged.values()];
+        });
+      }
+      setHighlightStorageStatus(restored.length === 0 ? 'No saved highlights exist for this PDF yet.' : `${restored.length} saved highlight${restored.length === 1 ? '' : 's'} restored locally for this PDF.`);
+    } catch {
+      if (session === highlightStorageSessionRef.current && highlightDocumentKeyRef.current === contentKey) {
+        setHighlightStorageStatus('Saved highlights could not be restored locally. New highlights remain available in this reader.');
+      }
+    }
   }
 
   function dismissHighlightControls() {
@@ -547,6 +654,12 @@ function ReaderPage() {
     viewSessionRef.current += 1;
     viewInteractionRevisionRef.current = 0;
     viewRestoreReadyRef.current = false;
+    highlightStorageSessionRef.current += 1;
+    highlightMutationQueueRef.current = Promise.resolve();
+    highlightDeletedIdsRef.current = new Set();
+    highlightClearRequestedRef.current = false;
+    highlightRevisionRef.current = 0;
+    highlightDocumentKeyRef.current = null;
     if (viewSaveTimerRef.current) clearTimeout(viewSaveTimerRef.current);
     setDocumentContentKey(null);
     setViewStorageStatus('');
@@ -564,6 +677,7 @@ function ReaderPage() {
     setActiveSearchMatch(-1);
     indexedSearchQueryRef.current = '';
     setSessionHighlights([]);
+    setHighlightStorageStatus('');
     setSelectionDraft(null);
     setActiveHighlightId(null);
     setRenderedHighlightViewport(null);
@@ -924,6 +1038,8 @@ function ReaderPage() {
         return;
       }
       setDocumentContentKey(contentKey);
+      highlightDocumentKeyRef.current = contentKey;
+      void restoreSavedHighlights(contentKey, highlightStorageSessionRef.current);
       const restoreSession = viewSessionRef.current;
       const restoreRevision = viewInteractionRevisionRef.current;
       const storage = getLocalStorageArea();
@@ -1221,6 +1337,10 @@ function ReaderPage() {
         {state.kind === 'error' && state.message}
       </section>
       {state.kind === 'ready' && viewStorageStatus && <p className="view-storage-status" role="status">{viewStorageStatus}</p>}
+      {state.kind === 'ready' && <section className="highlight-storage-controls" aria-label="Saved highlights">
+        <p role="status">{highlightStorageStatus || 'Highlights will be saved locally after this PDF is identified.'}</p>
+        <button type="button" onClick={clearCurrentDocumentHighlights} disabled={!documentContentKey}>Clear saved highlights for this PDF</button>
+      </section>}
       {state.kind === 'ready' && <section className="reader-controls" aria-label="PDF page controls">
         <div className="page-navigation" role="group" aria-label="Page navigation">
           <button type="button" onClick={() => goToPage(state.pageIndex - 1)} disabled={isRendering || state.pageIndex === 0}>Previous page</button>
@@ -1422,7 +1542,7 @@ function ReaderPage() {
           <button type="button" className="highlight-delete-button" onMouseDown={(event) => event.preventDefault()} onClick={deleteActiveHighlight}>Delete</button>
         </>}
       </div>}
-      <p className="reader-boundary">This reader accepts local or HTTPS PDFs up to 100 MiB and 500 pages, renders one page at a time, and searches PDF.js text only when text is available. It includes PDF-provided outlines, nearby-page thumbnails, and manual current-session highlights. Highlights are not saved yet, do not cross pages, and do not add notes, citations, OCR, HTML import, or AI features.</p>
+      <p className="reader-boundary">This reader accepts local or HTTPS PDFs up to 100 MiB and 500 pages, renders one page at a time, and searches PDF.js text only when text is available. It includes PDF-provided outlines, nearby-page thumbnails, and manual PDF-coordinate highlights saved locally by PDF content version. Highlights do not cross pages and do not add notes, citations, OCR, HTML import, AI features, cloud sync, PDF files, or extracted full text.</p>
     </main>
   );
 }

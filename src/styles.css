@@ -70,6 +70,10 @@ p {
 .url-import .secondary-button { border-color: #64748b; background: #fff; color: #334155; }
 .url-import p { margin: 0.75rem 0 0; color: #475569; font-size: 0.9rem; }
 .reader-status { margin: 1.25rem 0 0; padding: 0.75rem 1rem; border-left: 0.25rem solid #2563eb; background: #eff6ff; line-height: 1.5; }
+.highlight-storage-controls { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.65rem 1rem; margin-top: 0.75rem; padding: 0.65rem 0.8rem; border: 1px solid #d6dce8; border-radius: 0.6rem; background: #fff; }
+.highlight-storage-controls p { flex: 1 1 20rem; margin: 0; color: #475569; font-size: 0.875rem; line-height: 1.4; }
+.highlight-storage-controls button { cursor: pointer; border: 1px solid #b91c1c; border-radius: 0.4rem; background: #fff; color: #b91c1c; font: inherit; font-size: 0.85rem; font-weight: 700; padding: 0.42rem 0.6rem; }
+.highlight-storage-controls button:disabled { cursor: not-allowed; opacity: 0.55; }
 .reader-controls { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; margin-top: 1.25rem; padding: 0.75rem; border: 1px solid #d6dce8; border-radius: 0.75rem; background: #fff; }
 .page-navigation, .page-navigation form, .view-controls { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
 .reader-controls button { cursor: pointer; border: 1px solid #64748b; border-radius: 0.4rem; background: #fff; color: #1e293b; font: inherit; padding: 0.45rem 0.65rem; }
