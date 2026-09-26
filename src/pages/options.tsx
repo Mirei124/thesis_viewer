@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client';
 
-import { AppShell } from '../components/AppShell';
+import { ModelSettings } from '../components/ModelSettings';
 import '../styles.css';
 
-createRoot(document.getElementById('root')!).render(<AppShell page="options" />);
+createRoot(document.getElementById('root')!).render(<ModelSettings />);

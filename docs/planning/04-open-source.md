@@ -8,8 +8,6 @@
 |---|---|---|---|
 | [WXT](https://github.com/wxt-dev/wxt) | 扩展入口、构建、浏览器差异 | MIT | 一套源码分别输出 Chrome/Firefox；两端明确选择 MV3 |
 | [PDF.js](https://github.com/mozilla/pdf.js) | PDF 渲染、文字提取、目录、搜索、页内定位 | Apache-2.0 | 直接使用 pdfjs-dist 与 viewer 组件，自有 UI；worker/字体/cmaps 本地打包；不提供可靠科研语义解析/OCR |
-| [Mozilla Readability](https://github.com/mozilla/readability) | 通用 HTML 正文回退抽取 | Apache-2.0 | 对克隆文档运行，优先论文专用 adapter；可能丢失公式、表格和章节结构，不能作为所有学术网页唯一解析器 |
-| [DOMPurify](https://github.com/cure53/DOMPurify) | 导入 HTML 安全清理 | Apache-2.0 或 MPL-2.0 | 采用其允许的许可路径；保留受控 MathML，禁止脚本和事件属性；与正文提取分开 |
 | [Dexie](https://github.com/Dexie/Dexie.js) | IndexedDB 对象、事务、迁移 | Apache-2.0 | 保存 PDF Blob、文档、文本块、注释、生成版本；仅用本地核心，不启用云服务 |
 | [react-markdown](https://github.com/remarkjs/react-markdown) | AI 输出及笔记预览 | MIT | 不启用原始 HTML；引用 chip 由应用解析，模型不能生成可执行链接 |
 | [KaTeX](https://github.com/KaTeX/KaTeX) | 公式排版 | MIT | 配合 remark-math/rehype-katex，本地字体，关闭信任模式；乱码公式降级为原文引用 |
@@ -17,6 +15,8 @@
 | [MiniSearch](https://github.com/lucaong/minisearch) | 可选本地关键词检索 | MIT | 不属首版必需依赖；PDF 全文查找用 PDF.js。后续问答再评估中文分词；全局总结不依赖 top-k 替代通读 |
 
 UI 建议 React + TypeScript；样式、状态管理和具体组件拆分由实施 agent 决定。无需为了使用 React 额外引入 PDF 渲染封装。
+
+`Readability` 与 `DOMPurify` 曾为 HTML 论文导入候选；用户已将网页入口收窄为实际返回 PDF 的 URL，二者不纳入本项目依赖或后续默认工作。
 
 PDF.js 接口依据：[PDFDocumentProxy](https://mozilla.github.io/pdf.js/api/draft/module-pdfjsLib-PDFDocumentProxy.html) 提供页、目录和 destination 等访问；[PDFPageProxy](https://mozilla.github.io/pdf.js/api/draft/module-pdfjsLib-PDFPageProxy.html) 提供文本与 annotations。它们不直接返回已消歧的科研参考文献条目，cite 匹配层需要本项目定义。
 

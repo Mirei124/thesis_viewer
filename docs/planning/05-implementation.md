@@ -12,8 +12,8 @@
 | M3 高亮与 cite 浮窗 | M2 | 选区菜单、持久化高亮、引用匹配与浮窗、已有本地摘要关联 | 跨行选区缩放/旋转/重开位置准确；点击 cite 不先离开正文；多引文和无链接引文有匹配/候选/失败状态；无自动网络调用 |
 | M4 模型接口与翻译 | M2 | 配置地址/模型/密钥、能力配置、任务取消/错误/缓存、选词/选句翻译 | 以 mock 验证正常/流式/错误/取消/竞态；真实 API 由用户提供时验证；网页内容脚本拿不到密钥 |
 | M5 论文概览流水线 | M2+M4 | 证据提取/账本合并、三行摘要、六部分详细摘要、校验/一次修复/重生成版本 | 结构符合 03-prompts；创新与贡献分离；包含模型/数据集/baseline/消融；证据可回跳；长论文完整覆盖而非截断 |
-| M6 HTML 全文与落地页 | M2+M5 | 学术 adapter、Readability 回退、安全快照、HTML anchor、abstract-only 状态 | arXiv HTML/通用 article 可导入；网页摘要不冒充全文；PDF 和 HTML 共享概述契约但不混用坐标 |
-| M7 双浏览器回归与交付 | M3–M6 | 实际扩展安装、失败路径、存储迁移、性能检查、打包与使用说明 | 输出两端产物、已测版本矩阵、已知限制、验收记录；未测试项如实列出 |
+| M6 网页入口范围收窄 | M0 | 仅保留实际返回 PDF 的 URL 导入；不实现 HTML 论文或落地页采集 | 已有 URL PDF 权限、下载、签名校验与渲染链路回归；HTML 响应明确拒绝 |
+| M7 双浏览器回归与交付 | M3–M5 | 实际扩展安装、失败路径、存储迁移、性能检查、打包与使用说明 | 输出两端产物、已测版本矩阵、已知限制、验收记录；未测试项如实列出 |
 
 阶段不是并行 agent 指令。执行者可自行组织代码工作，但应先解决 M0 的平台与生命周期风险，再投入复杂摘要 UI。任何更改已确认范围/生成目标的决定需回到用户，不由实施者把不便实现的核心功能悄悄挪到后续。
 
@@ -21,9 +21,9 @@
 
 不用强制具体类名，但需要以下独立职责与输入输出：
 
-- `ImportSource -> DocumentDraft + OriginalAsset + ImportWarnings`：下载/网页快照/文件选择只负责获取，不调用模型。
+- `ImportSource -> DocumentDraft + OriginalAsset + ImportWarnings`：本地文件选择或 URL PDF 下载只负责获取，不调用模型；HTML 响应不得进入解析。
 - `DocumentDraft -> StructuredDocument + Coverage + ReferenceIndex`：本地解析可取消、可报告页级进度。
-- `Anchor -> NavigationResult`：PDF/HTML 两个视图实现同一定位结果，明确 exact/paragraph/page/unresolved。
+- `Anchor -> NavigationResult`：PDF 视图实现定位结果，明确 exact/paragraph/page/unresolved。
 - `CitationOccurrence -> ReferenceCandidates`：结果含置信依据、原始条目及跳转位置；不暗中在线搜索。
 - `Selection + NeighborContext + TranslationOptions -> TranslationResult`：选区快照/任务 ID 必须参与防竞态。
 - `StructuredDocument + PromptProfile + ModelConfig -> GenerationJob`：任务持久化、可取消、可恢复已完成阶段。
@@ -40,8 +40,7 @@
 | 自制带 named/explicit destination 的 PDF | 链接与坐标确定性 | 单引文、多引文浮窗能返回正确条目；章节/图表链接保持原导航 |
 | 自制无链接编号和作者年份参考文献 PDF | 不依赖 PDF 内部链接 | 确定匹配正确；同姓同年歧义展示候选；未知不猜 |
 | 扫描件、加密、损坏、超限 PDF | 错误边界 | 扫描可阅读但不虚构文本；密码错误可重试；损坏/超限不发模型 |
-| 只有摘要的 HTML | 输入覆盖 | 三行不超出摘要；方法/消融显示材料不足 |
-| 含 MathML 和表格的论文 HTML | 网页保真与清理 | 关键结构可读；无脚本执行；公式无法恢复时有原文入口 |
+| 返回 HTML 的 URL（含 arXiv HTML、落地页） | 入口边界 | 明确显示非 PDF 输入错误；不采集 DOM、不生成摘要、不申请额外网页权限 |
 | 长文与少量乱码页 | 分块覆盖 | 所有合格正文块被处理；缺页清楚标出；没有只总结前几页 |
 | mock 401/429/500/超时/截断 JSON/坏引用 | 模型可靠性 | 错误清晰，有限重试，取消生效，坏结果不替换缓存 |
 | 打开两份文档/两个同文档标签 | 隔离与去重 | 不串文档摘要、不重复并发任务、不用旧翻译覆盖新选区 |
@@ -63,7 +62,7 @@ Firefox：使用 [web-ext lint / run](https://extensionworkshop.com/documentatio
 
 ## 5. 完成定义
 
-- [ ] 两端真实扩展可打开 PDF/论文 HTML，配置自定义模型，核心行为一致。
+- [ ] 两端真实扩展可打开本地 PDF 和实际返回 PDF 的 HTTPS 链接，配置自定义模型，核心行为一致；HTML 论文页明确不支持。
 - [ ] 不依赖 Moonlight 账号、接口或暴露的 PDF.js 全局对象。
 - [ ] 三行摘要采用引言末尾三条 contributions 风格，突出互补的实质贡献、少写背景，不固定套问题/方法/结果；详细摘要覆盖用户指定章节维度。
 - [ ] 创新与贡献区分；实验模型、数据集、baseline 和消融有效性说清；局限推断有依据且不猜作者意图。

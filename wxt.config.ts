@@ -7,8 +7,10 @@ export default defineConfig({
     name: 'Thesis Viewer',
     description: 'A local-first paper reader extension.',
     version: '0.1.0',
-    permissions: ['storage'],
-    optional_host_permissions: ['https://*/*'],
+    permissions: ['storage', 'webNavigation'],
+    // HTTPS hosts are requested at the moment a user starts a provider task.
+    // Local HTTP is deliberately limited to explicit loopback development APIs.
+    optional_host_permissions: ['https://*/*', 'http://localhost/*', 'http://127.0.0.1/*'],
     options_ui: {
       page: 'options.html',
       open_in_tab: true,

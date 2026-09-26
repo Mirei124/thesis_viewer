@@ -4,7 +4,7 @@
 
 ## 1. 产品边界
 
-首版必须提供：Chrome/Firefox 扩展；独立论文阅读页；本地 PDF/在线 PDF/论文 HTML 导入；基本 PDF 阅读；三行摘要；详细摘要；手动高亮；正文参考文献 cite 浮窗；划词/句子翻译；API 设置与本地恢复。
+首版必须提供：Chrome/Firefox 扩展；独立论文阅读页；本地 PDF 或实际返回 PDF 的在线链接导入；基本 PDF 阅读；三行摘要；详细摘要；手动高亮；正文参考文献 cite 浮窗；划词/句子翻译；API 设置与本地恢复。HTML 论文页与落地页（包括 `arxiv.org/html`）不在范围内。
 
 “任意论文”表示不依赖 Moonlight 或某个论文站的账号/接口。并不承诺恢复扫描件的文字、访问无权限全文或无损解析所有版式。遇到这些输入必须展示真实可用范围，允许继续阅读或换源。
 
@@ -18,11 +18,10 @@
 flowchart LR
   Entry[扩展按钮 / 链接菜单 / 文件导入] --> Router[后台入口与权限路由]
   Router --> Reader[独立扩展阅读页]
-  Capture[按需网页采集脚本] --> Reader
   Reader --> Import[导入与文档识别]
-  Import --> Parse[本地 PDF / HTML 解析]
+  Import --> Parse[本地 PDF 解析]
   Parse --> Doc[统一文档与证据锚点]
-  Doc --> View[PDF 或 HTML 阅读视图]
+  Doc --> View[PDF 阅读视图]
   Doc --> Jobs[摘要 / 翻译任务]
   Jobs --> Provider[兼容 API 适配器]
   Provider --> Remote[用户指定模型服务]
@@ -52,11 +51,9 @@ flowchart LR
 |---|---|---|
 | 本地 PDF | 阅读页文件选择/拖放 → 校验签名及大小 → 本地保存 → 解析 | 密码交互；损坏文件错误；无文本仍可阅读但禁用基于全文的摘要 |
 | 在线 PDF | 当前标签 URL 或链接右键 → 申请来源权限 → 阅读页下载 → 校验实际内容 | HTML 登录页不得当 PDF；下载失败提示本地文件导入，不承诺使用网站登录态成功 |
-| HTML 论文全文 | 按需抓当前已渲染 DOM → 学术 adapter 优先 → Readability 回退 → 安全清理 → 固化快照 | 抽取不足让用户选正文范围或换 PDF；保留来源链接 |
-| 只有摘要的落地页 | 可导入并显示 `abstract-only`；若识别到 PDF 候选则由用户选择 | 不自动用标题搜索到的其他版本替换；不能声称已分析方法/实验 |
 | 浏览器内建 PDF 页面 | 利用当前 tab URL 尝试在独立阅读页重新获取 | 不注入系统 PDF viewer；file/blob URL 不可取时让用户选择原文件 |
 
-PDF 和 HTML 是两种视图，共用摘要、翻译、高亮与证据模型。HTML 首版仅支持已加载可提取正文，不在后台爬站。优先实现 arXiv HTML/标准 article，再做通用回退；论文版本和来源在 UI 可见。
+在线入口只接受实际返回 PDF 的内容；HTML、摘要页与网页端论文阅读器一律显示非 PDF 输入错误，不做 DOM 采集、网页快照或 PDF 候选自动发现。
 
 大文件使用初始限制 100 MiB 或 500 页（工程默认，可按 profiling 下调并记录）；超限在发模型前提示。文本分批抽取，不一次渲染全部页面。PDF 密码只在内存保留。
 
@@ -67,9 +64,9 @@ PDF 和 HTML 是两种视图，共用摘要、翻译、高亮与证据模型。H
 | Document | id、sourceType、sourceURL?、title/authors/year/doi/arxivId?、contentHash、version、originalBlobId?、extractionVersion、coverage、createdAt |
 | Coverage | `full-text / partial / abstract-only / unreadable`；各章节可用性、缺页/抽取警告；另记实际送入模型的块/章节集合；由应用计算，模型不可自行升级 |
 | Block | 稳定 blockId、文档版本、pageIndex?、sectionPath、type、rawText、normalizedText、raw↔normalized offset 映射、readingOrder、anchor、quality flags |
-| Anchor | PDF：零基 pageIndex + PDF 原坐标矩形组 + 原文 quote；HTML：快照 blockId + offsets + quote。显示页码为 pageIndex+1，不混用印刷页码 |
+| Anchor | PDF：零基 pageIndex + PDF 原坐标矩形组 + 原文 quote。显示页码为 pageIndex+1，不混用印刷页码 |
 | Reference | refId、原始书目文本、title/authors/year/doi/url 可空、目标锚点、解析依据与匹配状态；缺失字段不得补造 |
-| CitationOccurrence | occurrenceId、出现位置、显示标记、refIds[]、PDF destination?/HTML href?、matched/ambiguous/unresolved |
+| CitationOccurrence | occurrenceId、出现位置、显示标记、refIds[]、PDF destination?、matched/ambiguous/unresolved |
 | Highlight | id、docVersion、anchor(s)、颜色、quote、createdAt；与 AI 证据高亮分开 |
 | Evidence | evidenceId、blockId、quote、offsets、定位精度 `exact/paragraph/page`；页面与坐标由应用派生 |
 | Generation | id、kind、docVersion、inputHash、modelConfigFingerprint（不含密钥）、promptVersion、optionsHash、状态、结构化结果、evidenceIds、coverage |
@@ -79,7 +76,7 @@ PDF 原始文本项的顺序不必等于双栏阅读顺序。解析必须重建�
 
 至少区分 Abstract、Introduction、Methods、Experiments/Results、Discussion/Limitations、Conclusion、References、Appendix。标题未知时保持 Unknown，不硬套分类。理论/综述/定性论文沿用语义槽位，实验字段“不适用”而非“作者遗漏”。
 
-缓存键由文档内容版本、抽取版本、提示词版本、模型/端点标识、语言与选项共同决定。PDF 与 HTML 同 DOI 仅关联，不直接共享坐标或盲目复用生成；正文 hash 变化必须重新校验。手动重生成保留上个成功版本，新版成功后切换。
+缓存键由文档内容版本、抽取版本、提示词版本、模型/端点标识、语言与选项共同决定。正文 hash 变化必须重新校验。手动重生成保留上个成功版本，新版成功后切换。
 
 ## 5. 阅读与布局
 
@@ -97,13 +94,13 @@ PDF 原始文本项的顺序不必等于双栏阅读顺序。解析必须重建�
 
 选中文字 → 浮动工具条（高亮、翻译、复制）；高亮默认黄色，可选另外 3 色。点击已有高亮可换色/删除。支持跨行/跨页选择；缩放、旋转、重开后位置一致。高亮简单列表可按页跳转，不引入笔记管理或自动分类。
 
-坐标持久化使用 PDF 原坐标，不保存屏幕像素；HTML 使用快照 offsets。选区操作捕获稳定文本和 anchor，浮窗获得焦点后不能丢失原选区。摘要临时证据框不写入用户高亮。
+坐标持久化使用 PDF 原坐标，不保存屏幕像素。选区操作捕获稳定文本和 anchor，浮窗获得焦点后不能丢失原选区。摘要临时证据框不写入用户高亮。
 
 ## 7. 正文 cite 浮窗（用户已确认本地方案）
 
 点击正文论文引用标记，打开锚定浮窗，不先跳到文末。显示原始引用条目、可提取标题/作者/年份、DOI/原文链接；仅当本地已有可信关联摘要时显示摘要。不得自动联网补全或生成被引论文摘要。
 
-匹配优先级：PDF link annotation 的 named/explicit destination 或 HTML 引用锚点 → 文末对应参考文献块 → 无链接时编号/作者年份规则。编号区间如 `[3–5]` 和多篇 `(Smith, 2020; Li, 2021)` 显示列表。destination 命中段落不等于完整书目已解析，应展示对应原文片段并保留不确定性。
+匹配优先级：PDF link annotation 的 named/explicit destination → 文末对应参考文献块 → 无链接时编号/作者年份规则。编号区间如 `[3–5]` 和多篇 `(Smith, 2020; Li, 2021)` 显示列表。destination 命中段落不等于完整书目已解析，应展示对应原文片段并保留不确定性。
 
 没有明确 destination 的 PDF 引用识别是独立解析能力，不能从 PDF.js 直接获得完整映射。作者同姓同年、重复编号等出现歧义时显示候选；不确定时显示“未能可靠匹配”，提供文末参考文献跳转/搜索。若定位到非书目（公式/图表/章节），保持原 PDF 跳转，不错误弹论文卡。
 
@@ -131,7 +128,7 @@ PDF 原始文本项的顺序不必等于双栏阅读顺序。解析必须重建�
 
 ## 10. 安全与适配验收约束
 
-模型输出和导入 HTML 都不可信：不执行原始 HTML/脚本、不允许模型自造 URL 成为 privileged 请求、校验证据 ID 属于当前文档。论文正文里的“忽略指令”等仅当内容处理。
+模型输出不可信：不允许模型自造 URL 成为 privileged 请求、校验证据 ID 属于当前文档。论文正文里的“忽略指令”等仅当内容处理。在线导入不会执行或解析返回的 HTML。
 
 权限优先 `activeTab`、`scripting`、`storage`、`contextMenus` 与按需来源/API host permissions；不默认启用所有网页常驻注入、cookies、webRequest 或浏览历史权限。阅读器入口消息校验来源和 payload，不接受网页请求任意联网。CSP 下所有脚本/worker/字体/公式资源打包本地。
 

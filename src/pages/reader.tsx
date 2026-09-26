@@ -33,12 +33,59 @@ import {
   type PdfReferenceCandidate,
 } from '../lib/pdfCitationIndex';
 import {
+  locateEvidenceCandidate,
+  pdfEvidenceLedgerFromPages,
+  type EvidenceLedger,
+} from '../lib/evidenceLedger';
+import {
+  parseThreeLineOverview,
+  threeLineEvidencePacket,
+  threeLineOverviewMessages,
+  validateThreeLineOverview,
+  type ThreeLineOverview,
+} from '../lib/threeLineOverview';
+import {
+  DETAILED_SECTION_IDS,
+  assembleDetailedOverview,
+  parseDetailedSectionResponse,
+  progressiveDetailedSectionMessages,
+  unavailableDetailedSection,
+  validateProgressiveDetailedSectionResponse,
+  type DetailedOverview,
+  type DetailedSectionId,
+  type DetailedOverviewSection,
+} from '../lib/detailedOverview';
+import { appendProgressiveEvidenceStage, createProgressiveEvidenceSession } from '../lib/evidencePacket';
+import { createEvidencePassages } from '../lib/evidencePassages';
+import { createPassageRetrievalIndex, selectRankedPassagesForPurpose } from '../lib/retrievalIndex';
+import {
   clearPdfHighlights,
   deletePdfHighlight,
   loadPdfHighlights,
   putPdfHighlight,
   type StoredPdfHighlight,
 } from '../lib/pdfHighlightRepository';
+import { requestApiHostPermission } from '../lib/apiPermissions';
+import { CompatibleProviderError, requestCompatibleCompletion, type CompatibleUsage } from '../lib/compatibleProvider';
+import { loadApiKey, loadModelConfig, type ModelConfig } from '../lib/modelConfig';
+import { parseTranslationResponse, translationMessages, type TranslationResult } from '../lib/translationResponse';
+import { TRANSLATION_PROMPT_VERSION, translationSourceForSelection } from '../lib/translationContext';
+import { cacheTranslation, loadCachedTranslation, type TranslationCacheInput } from '../lib/translationCache';
+import {
+  createTranslationJob,
+  interruptActiveTranslationJobs,
+  loadSuccessfulTranslationJobs,
+  updateTranslationJob,
+  type StoredTranslationJob,
+} from '../lib/translationJobRepository';
+import {
+  classifyUrlPdfResponse,
+  isPdfSignature,
+  permissionPattern,
+  urlPdfRejectionMessage,
+} from '../lib/urlPdfImport';
+import { isArxivDirectPdfUrl } from '../lib/arxivPdfInterception';
+import { useThemePreference } from '../components/ThemePreferenceControl';
 
 GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
@@ -52,6 +99,7 @@ type ReaderState =
 
 type OptionalPermissionsApi = {
   request: (permissions: { origins: string[] }) => Promise<boolean>;
+  contains: (permissions: { origins: string[] }) => Promise<boolean>;
 };
 
 type LocalStorageArea = {
@@ -92,6 +140,126 @@ type SelectionDraft = {
   toolbarTop: number;
 };
 
+type TranslationState = {
+  quote: string;
+  targetLanguage: 'Chinese' | 'English';
+  left: number;
+  top: number;
+  status: 'preparing' | 'generating' | 'success' | 'error';
+  result?: TranslationResult;
+  message?: string;
+  sourceNotice?: string;
+};
+
+type OverviewState = {
+  status: 'preparing' | 'generating' | 'success' | 'error';
+  result?: ThreeLineOverview;
+  message?: string;
+};
+
+type DetailedOverviewState = {
+  status: 'preparing' | 'generating' | 'success' | 'error';
+  result?: DetailedOverview;
+  /** Kept only for a completed click; never includes model/PDF text or secrets. */
+  diagnostics?: DetailedOverviewDiagnostics;
+  message?: string;
+};
+
+type DetailedOverviewSectionDiagnostic = {
+  id: DetailedSectionId;
+  /** Number of retrieval-selected passages actually added to this user turn. */
+  newSourceCount: number;
+  /** Number of source aliases legal after this turn, including earlier turns. */
+  availableAliasCount: number;
+  usage?: CompatibleUsage;
+};
+
+type DetailedOverviewDiagnostics = {
+  sections: DetailedOverviewSectionDiagnostic[];
+};
+
+function tokenCountLabel(value: number | undefined): string | undefined {
+  return value === undefined ? undefined : `${value} tokens`;
+}
+
+function cacheRateLabel(usage: CompatibleUsage | undefined): string | undefined {
+  if (!usage) return undefined;
+  const hit = usage.promptCacheHitTokens;
+  const miss = usage.promptCacheMissTokens;
+  if (hit === undefined && miss === undefined) return undefined;
+  if (hit === undefined) return `cache miss ${miss} tokens`;
+  if (miss === undefined) return `cache hit ${hit} tokens`;
+  const total = hit + miss;
+  return total === 0 ? 'cache rate unavailable' : `cache ${Math.round((hit / total) * 100)}% (${hit}/${total} tokens)`;
+}
+
+function totalCacheRateLabel(diagnostics: DetailedOverviewDiagnostics): string | undefined {
+  let hit = 0;
+  let miss = 0;
+  let hasCounters = false;
+  for (const diagnostic of diagnostics.sections) {
+    if (diagnostic.usage?.promptCacheHitTokens !== undefined) {
+      hit += diagnostic.usage.promptCacheHitTokens;
+      hasCounters = true;
+    }
+    if (diagnostic.usage?.promptCacheMissTokens !== undefined) {
+      miss += diagnostic.usage.promptCacheMissTokens;
+      hasCounters = true;
+    }
+  }
+  if (!hasCounters || hit + miss === 0) return undefined;
+  return `Total prefix-cache rate: ${Math.round((hit / (hit + miss)) * 100)}% (${hit}/${hit + miss} tokens).`;
+}
+
+function readerSessionId(): string {
+  return globalThis.crypto?.randomUUID?.() ?? `reader-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+function translationJobId(): string {
+  return globalThis.crypto?.randomUUID?.() ?? `translation-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+}
+
+const MAX_TRANSLATION_CHARACTERS = 4_000;
+
+function translationErrorMessage(error: unknown): string {
+  if (error instanceof CompatibleProviderError) {
+    if (error.code === 'unauthorized') return 'The provider rejected this API key. Update it in Settings.';
+    if (error.code === 'not-found') return 'The provider did not find this model or chat-completions endpoint. Check Settings.';
+    if (error.code === 'context-too-large') return 'The provider rejected this translation as too large. Select less text.';
+    if (error.code === 'rate-limited') return error.retryAfterSeconds === undefined
+      ? 'The provider is rate-limiting requests. Try again later.'
+      : `The provider is rate-limiting requests. Try again after ${error.retryAfterSeconds} seconds.`;
+    if (error.code === 'network') return 'The provider could not be reached. Check the endpoint and connection.';
+    if (error.code === 'server-error') return 'The provider had a server error. No retry was sent.';
+    if (error.code === 'invalid-response') return 'The provider returned an invalid response. No translation was shown.';
+    return 'The translation request was cancelled.';
+  }
+  return error instanceof Error ? error.message : 'Translation failed before a result was available.';
+}
+
+function overviewErrorMessage(error: unknown, subject: 'overview' | 'detailed overview' = 'overview'): string {
+  if (error instanceof CompatibleProviderError) {
+    if (error.code === 'unauthorized') return 'The provider rejected this API key. Update it in Settings.';
+    if (error.code === 'not-found') return 'The provider did not find this model or chat-completions endpoint. Check Settings.';
+    if (error.code === 'context-too-large') return `The provider rejected this ${subject} because the local evidence ledger is too large. No ${subject} was shown.`;
+    if (error.code === 'rate-limited') return error.retryAfterSeconds === undefined ? 'The provider is rate-limiting requests. Try again later.' : `The provider is rate-limiting requests. Try again after ${error.retryAfterSeconds} seconds.`;
+    if (error.code === 'network') return 'The provider could not be reached. Check the endpoint and connection.';
+    if (error.code === 'server-error') return 'The provider had a server error. No retry was sent.';
+    if (error.code === 'invalid-response') return `The provider returned an invalid response. No ${subject} was shown.`;
+    return `The ${subject} request was cancelled.`;
+  }
+  return error instanceof Error ? error.message : 'The overview failed before a result was available.';
+}
+
+const DETAILED_SECTION_LABELS: Record<DetailedSectionId, string> = {
+  problem_motivation: '问题与动机',
+  method: '方法总览与具体步骤',
+  contributions: '核心贡献',
+  relative_novelty: '相对创新',
+  experiments_ablations: '实验与消融',
+  limitations: '局限与未覆盖问题',
+};
+
 type RenderedHighlightViewport = {
   pageIndex: number;
   viewport: PageViewport;
@@ -127,22 +295,6 @@ function readerError(error: unknown): string {
     return `PDF.js could not load this file: ${error.message}`;
   }
   return 'PDF.js could not load this file.';
-}
-
-function isPdfSignature(bytes: Uint8Array): boolean {
-  return bytes.length >= 5 && bytes[0] === 0x25 && bytes[1] === 0x50 && bytes[2] === 0x44 && bytes[3] === 0x46 && bytes[4] === 0x2d;
-}
-
-function looksLikeHtml(bytes: Uint8Array): boolean {
-  const prefix = new TextDecoder().decode(bytes.subarray(0, 512)).trimStart().toLowerCase();
-  return prefix.startsWith('<!doctype html') || prefix.startsWith('<html') || prefix.startsWith('<head') || prefix.startsWith('<body');
-}
-
-function permissionPattern(url: URL): string {
-  // WebExtension host permissions are scoped to a scheme and host. Ports are
-  // not expressible in a match pattern, so the browser applies this to HTTPS on
-  // the submitted host; the request itself still uses the exact submitted URL.
-  return `${url.protocol}//${url.hostname}/*`;
 }
 
 function getOptionalPermissionsApi(): OptionalPermissionsApi | undefined {
@@ -188,6 +340,11 @@ type CitationIndexState =
   | { kind: 'idle' }
   | { kind: 'indexing' }
   | { kind: 'ready'; index: PdfLocalCitationIndex }
+  | { kind: 'error'; message: string };
+type EvidenceLedgerState =
+  | { kind: 'idle' }
+  | { kind: 'building' }
+  | { kind: 'ready'; ledger: EvidenceLedger }
   | { kind: 'error'; message: string };
 type Thumbnail = { kind: 'loading' } | { kind: 'ready'; src: string } | { kind: 'error' };
 type SearchIndexState =
@@ -330,10 +487,14 @@ function OutlineItems({ items, depth, onNavigate }: {
 }
 
 function ReaderPage() {
+  // Theme changes apply only to CSS tokens and never reset PDF/AI state.
+  useThemePreference();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const textLayerRef = useRef<HTMLDivElement>(null);
   const pdfPageRef = useRef<HTMLDivElement>(null);
   const highlightToolbarRef = useRef<HTMLDivElement>(null);
+  const translationPopoverRef = useRef<HTMLDivElement>(null);
   const citationPopoverRef = useRef<HTMLDivElement>(null);
   const citationOverlayRef = useRef<HTMLDivElement>(null);
   const citationTriggerRef = useRef<HTMLElement | null>(null);
@@ -342,7 +503,20 @@ function ReaderPage() {
   const renderTaskRef = useRef<{ cancel: () => void } | null>(null);
   const textLayerTaskRef = useRef<TextLayer | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const translationAbortRef = useRef<AbortController | null>(null);
+  const translationRequestRef = useRef(0);
+  const overviewAbortRef = useRef<AbortController | null>(null);
+  const overviewRequestRef = useRef(0);
+  const detailedOverviewAbortRef = useRef<AbortController | null>(null);
+  const detailedOverviewRequestRef = useRef(0);
+  const readerSessionIdRef = useRef(readerSessionId());
+  const translationJobRef = useRef<{ jobId: string; documentVersion: string } | null>(null);
+  const translationJobCreateRef = useRef<Promise<void> | null>(null);
+  const modelConfigRef = useRef<ModelConfig | null>(null);
+  const apiKeyRef = useRef<string | undefined>(undefined);
+  const modelConfigLoadErrorRef = useRef<string | null>(null);
   const requestIdRef = useRef(0);
+  const automaticArxivImportStartedRef = useRef(false);
   const renderIdRef = useRef(0);
   const thumbnailRequestIdRef = useRef(0);
   const searchRequestIdRef = useRef(0);
@@ -368,6 +542,7 @@ function ReaderPage() {
   const [outlineNotice, setOutlineNotice] = useState('');
   const [autoSections, setAutoSections] = useState<AutoSectionState>({ kind: 'idle' });
   const [citationIndex, setCitationIndex] = useState<CitationIndexState>({ kind: 'idle' });
+  const [evidenceLedger, setEvidenceLedger] = useState<EvidenceLedgerState>({ kind: 'idle' });
   const [thumbnails, setThumbnails] = useState<Record<number, Thumbnail>>({});
   const [thumbnailSession, setThumbnailSession] = useState(0);
   const [searchIndex, setSearchIndex] = useState<SearchIndexState>({ kind: 'idle' });
@@ -385,9 +560,23 @@ function ReaderPage() {
   const [renderedHighlightViewport, setRenderedHighlightViewport] = useState<RenderedHighlightViewport | null>(null);
   const [activeCitation, setActiveCitation] = useState<ActiveCitation | null>(null);
   const [citationHitRegions, setCitationHitRegions] = useState<CitationHitRegion[]>([]);
+  const [translation, setTranslation] = useState<TranslationState | null>(null);
+  const [translationTarget, setTranslationTarget] = useState<'Chinese' | 'English'>('Chinese');
+  const [savedTranslations, setSavedTranslations] = useState<StoredTranslationJob[]>([]);
+  const [translationStorageStatus, setTranslationStorageStatus] = useState('');
+  const [overview, setOverview] = useState<OverviewState | null>(null);
+  const [detailedOverview, setDetailedOverview] = useState<DetailedOverviewState | null>(null);
+  // This is only a narrow-layout presentation choice. It deliberately does
+  // not participate in the PDF, selection, translation, or overview state.
+  const [narrowPanel, setNarrowPanel] = useState<'reading' | 'information'>('reading');
 
   useEffect(() => () => {
+    const activeJob = translationJobRef.current;
+    if (activeJob) void (translationJobCreateRef.current ?? Promise.resolve()).then(() => interruptActiveTranslationJobs(activeJob.documentVersion, readerSessionIdRef.current)).catch(() => undefined);
     abortControllerRef.current?.abort();
+    translationAbortRef.current?.abort();
+    overviewAbortRef.current?.abort();
+    detailedOverviewAbortRef.current?.abort();
     renderTaskRef.current?.cancel();
     textLayerTaskRef.current?.cancel();
     thumbnailRequestIdRef.current += 1;
@@ -396,6 +585,25 @@ function ReaderPage() {
     if (viewSaveTimerRef.current) clearTimeout(viewSaveTimerRef.current);
     void loadingTaskRef.current?.destroy();
     void documentRef.current?.cleanup();
+  }, []);
+
+  useEffect(() => {
+    const markActiveTranslationInterrupted = () => {
+      const activeJob = translationJobRef.current;
+      if (activeJob) void (translationJobCreateRef.current ?? Promise.resolve()).then(() => interruptActiveTranslationJobs(activeJob.documentVersion, readerSessionIdRef.current)).catch(() => undefined);
+    };
+    window.addEventListener('pagehide', markActiveTranslationInterrupted);
+    return () => window.removeEventListener('pagehide', markActiveTranslationInterrupted);
+  }, []);
+
+  useEffect(() => {
+    void Promise.all([loadModelConfig(), loadApiKey()]).then(([config, key]) => {
+      modelConfigRef.current = config;
+      apiKeyRef.current = key.apiKey;
+      modelConfigLoadErrorRef.current = null;
+    }).catch(() => {
+      modelConfigLoadErrorRef.current = 'Model settings could not be loaded.';
+    });
   }, []);
 
   useEffect(() => {
@@ -449,6 +657,56 @@ function ReaderPage() {
 
   function clearBrowserSelection() {
     window.getSelection()?.removeAllRanges();
+  }
+
+  function invalidateTranslation() {
+    translationRequestRef.current += 1;
+    translationAbortRef.current?.abort();
+    translationAbortRef.current = null;
+    const activeJob = translationJobRef.current;
+    translationJobRef.current = null;
+    const creation = translationJobCreateRef.current;
+    translationJobCreateRef.current = null;
+    if (activeJob) void (creation ?? Promise.resolve()).then(() => updateTranslationJob(activeJob.jobId, 'cancelled')).catch(() => undefined);
+    setTranslation(null);
+  }
+
+  async function restoreSavedTranslations(contentKey: string, session: number) {
+    const documentVersion = `sha256:${contentKey}`;
+    setTranslationStorageStatus('Restoring completed translations locally…');
+    try {
+      // An active checkpoint cannot safely survive a reader reload: do not
+      // resume it or send another model request.
+      await interruptActiveTranslationJobs(documentVersion);
+      const restored = await loadSuccessfulTranslationJobs(documentVersion);
+      if (session !== highlightStorageSessionRef.current || highlightDocumentKeyRef.current !== contentKey) return;
+      setSavedTranslations(restored);
+      setTranslationStorageStatus(restored.length === 0
+        ? 'No completed translations are saved for this PDF yet.'
+        : `${restored.length} completed translation${restored.length === 1 ? '' : 's'} restored locally. Reopen one without contacting the model.`);
+    } catch {
+      if (session === highlightStorageSessionRef.current) {
+        setTranslationStorageStatus('Completed translations could not be restored locally. No model request was sent.');
+      }
+    }
+  }
+
+  function openSavedTranslation(job: StoredTranslationJob) {
+    if (!job.result) return;
+    invalidateTranslation();
+    setTranslation({
+      quote: job.selectedText,
+      targetLanguage: job.targetLanguage,
+      left: window.innerWidth / 2,
+      top: Math.max(8, window.innerHeight * 0.15),
+      status: 'success',
+      result: job.result,
+      sourceNotice: 'Completed translation restored from this browser’s local storage. It was not sent to the model again.',
+    });
+  }
+
+  function closeTranslation() {
+    invalidateTranslation();
   }
 
   function dismissCitationPopover(returnFocus = true) {
@@ -568,6 +826,7 @@ function ReaderPage() {
       });
     if (rects.length === 0) return;
     const toolbarBounds = range.getBoundingClientRect();
+    invalidateTranslation();
     setSelectionDraft({
       pageIndex: state.pageIndex,
       quote,
@@ -702,6 +961,7 @@ function ReaderPage() {
   }
 
   function dismissHighlightControls() {
+    invalidateTranslation();
     setSelectionDraft(null);
     setActiveHighlightId(null);
     clearBrowserSelection();
@@ -738,6 +998,7 @@ function ReaderPage() {
   function onTextLayerKeyUp(event: KeyboardEvent<HTMLDivElement>) {
     if (event.key === 'Escape') {
       if (activeCitation) dismissCitationPopover();
+      else if (translation) closeTranslation();
       else dismissHighlightControls();
       return;
     }
@@ -769,12 +1030,13 @@ function ReaderPage() {
       const target = event.target instanceof Node ? event.target : null;
       if (target && (citationPopoverRef.current?.contains(target) || (target instanceof Element && target.closest('[data-citation-id]')))) return;
       if (activeCitation) dismissCitationPopover();
-      if (target && (pdfPageRef.current?.contains(target) || highlightToolbarRef.current?.contains(target))) return;
+      if (target && (pdfPageRef.current?.contains(target) || highlightToolbarRef.current?.contains(target) || translationPopoverRef.current?.contains(target))) return;
       if (selectionDraft || activeHighlightId) dismissHighlightControls();
     };
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
       if (event.key !== 'Escape') return;
       if (activeCitation) dismissCitationPopover();
+      else if (translation) closeTranslation();
       else dismissHighlightControls();
     };
     document.addEventListener('pointerdown', onPointerDown);
@@ -783,9 +1045,320 @@ function ReaderPage() {
       document.removeEventListener('pointerdown', onPointerDown);
       document.removeEventListener('keydown', onKeyDown);
     };
-  }, [selectionDraft, activeHighlightId, activeCitation]);
+  }, [selectionDraft, activeHighlightId, activeCitation, translation]);
+
+  function startTranslation() {
+    const draft = selectionDraft;
+    if (!draft) return;
+    const position = { left: draft.toolbarLeft, top: draft.toolbarTop };
+    const source = translationSourceForSelection(searchPagesRef.current[draft.pageIndex], draft.quote);
+    const characterCount = Array.from(source.text).length;
+    if (characterCount > MAX_TRANSLATION_CHARACTERS) {
+      setTranslation({
+        quote: source.text,
+        targetLanguage: translationTarget,
+        ...position,
+        status: 'error',
+        message: `This selection has ${characterCount} characters. Select at most ${MAX_TRANSLATION_CHARACTERS} characters.`,
+        sourceNotice: source.degradation,
+      });
+      setSelectionDraft(null);
+      clearBrowserSelection();
+      return;
+    }
+    const config = modelConfigRef.current;
+    if (!config || !config.baseUrl || !config.model) {
+      setTranslation({
+        quote: draft.quote,
+        targetLanguage: translationTarget,
+        ...position,
+        status: 'error',
+        message: modelConfigLoadErrorRef.current ?? 'Configure an API endpoint and model in Settings before translating.',
+      });
+      setSelectionDraft(null);
+      clearBrowserSelection();
+      return;
+    }
+
+    // Keep this as the first asynchronous operation in the user-click path.
+    // Browser permission prompts lose their user gesture if anything is awaited first.
+    const permissionRequest = requestApiHostPermission(config.baseUrl);
+    const requestToken = ++translationRequestRef.current;
+    translationAbortRef.current?.abort();
+    const previousJob = translationJobRef.current;
+    translationJobRef.current = null;
+    const previousJobCreation = translationJobCreateRef.current;
+    translationJobCreateRef.current = null;
+    if (previousJob) void (previousJobCreation ?? Promise.resolve()).then(() => updateTranslationJob(previousJob.jobId, 'cancelled')).catch(() => undefined);
+    const controller = new AbortController();
+    translationAbortRef.current = controller;
+    const documentVersion = documentContentKey ? `sha256:${documentContentKey}` : undefined;
+    const cacheInput: TranslationCacheInput | undefined = documentContentKey
+      ? {
+        documentVersion: `sha256:${documentContentKey}`,
+        selectedText: source.text,
+        neighborContext: source.neighborContext,
+        targetLanguage: translationTarget,
+        model: config.model,
+        promptVersion: TRANSLATION_PROMPT_VERSION,
+      }
+      : undefined;
+    const sourceNotice = source.degradation ?? (source.expanded ? 'Expanded to a verified sentence from this same PDF text item. Neighboring sentences are context only and are not translated.' : undefined);
+    const job = documentVersion ? {
+      jobId: translationJobId(),
+      documentVersion,
+      stage: 'preparing' as const,
+      readerSessionId: readerSessionIdRef.current,
+      selectedText: source.text,
+      neighborContext: source.neighborContext,
+      targetLanguage: translationTarget,
+      model: config.model,
+      promptVersion: TRANSLATION_PROMPT_VERSION,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    } satisfies StoredTranslationJob : undefined;
+    const jobCreation = job ? createTranslationJob(job) : undefined;
+    const persistJobUpdate = (stage: 'generating' | 'success' | 'failed' | 'cancelled', options?: { result?: TranslationResult; error?: string }) => {
+      if (!job || !jobCreation) return Promise.resolve();
+      return jobCreation.then(() => updateTranslationJob(job.jobId, stage, options));
+    };
+    if (job && jobCreation) {
+      translationJobRef.current = { jobId: job.jobId, documentVersion: job.documentVersion };
+      translationJobCreateRef.current = jobCreation;
+      void jobCreation.catch(() => {
+        if (requestToken === translationRequestRef.current) setTranslationStorageStatus('This translation cannot be saved locally; it remains available in this reader if it succeeds.');
+      });
+    } else {
+      setTranslationStorageStatus('This PDF has no stable content version, so this translation will not be saved after the reader closes.');
+    }
+    setTranslation({ quote: source.text, targetLanguage: translationTarget, ...position, status: 'preparing', sourceNotice });
+    setSelectionDraft(null);
+    clearBrowserSelection();
+
+    void (async () => {
+      const permission = await permissionRequest;
+      if (requestToken !== translationRequestRef.current) return;
+      if (!permission.granted) {
+        if (job) void persistJobUpdate('failed', { error: 'API host permission was not granted.' }).catch(() => undefined);
+        if (translationJobRef.current?.jobId === job?.jobId) { translationJobRef.current = null; translationJobCreateRef.current = null; }
+        setTranslation((current) => current && ({
+          ...current,
+          status: 'error',
+          message: permission.reason === 'denied'
+            ? 'Permission to contact this API host was denied. You can grant it by starting translation again.'
+            : 'This browser could not request permission for the configured API host.',
+        }));
+        return;
+      }
+      // Permission is requested synchronously from the click above. A cache
+      // hit below never contacts the configured model endpoint.
+      if (cacheInput) {
+        try {
+          const cached = await loadCachedTranslation(cacheInput);
+          if (requestToken !== translationRequestRef.current || controller.signal.aborted) return;
+          if (cached) {
+            if (job) {
+              void persistJobUpdate('success', { result: cached }).then(() => {
+                if (requestToken === translationRequestRef.current) setSavedTranslations((previous) => [{ ...job, stage: 'success', result: cached, updatedAt: Date.now() }, ...previous.filter((item) => item.jobId !== job.jobId)]);
+              }).catch(() => undefined);
+              if (translationJobRef.current?.jobId === job.jobId) { translationJobRef.current = null; translationJobCreateRef.current = null; }
+            }
+            setTranslation((current) => current && ({ ...current, status: 'success', result: cached, message: 'Translation loaded from this browser’s local cache.' }));
+            return;
+          }
+        } catch {
+          // Caching is optional; an unavailable or full database cannot block translation.
+        }
+      }
+      if (job) void persistJobUpdate('generating').catch(() => undefined);
+      setTranslation((current) => current && ({ ...current, status: 'generating' }));
+      try {
+        const response = await requestCompatibleCompletion({
+          config,
+          apiKey: apiKeyRef.current,
+          messages: translationMessages(source.text, translationTarget, source.neighborContext),
+          signal: controller.signal,
+        });
+        const result = parseTranslationResponse(response.content);
+        if (requestToken !== translationRequestRef.current || controller.signal.aborted) return;
+        if (cacheInput) void cacheTranslation(cacheInput, result).catch(() => undefined);
+        if (job) {
+          void persistJobUpdate('success', { result }).then(() => {
+            if (requestToken === translationRequestRef.current) setSavedTranslations((previous) => [{ ...job, stage: 'success', result, updatedAt: Date.now() }, ...previous.filter((item) => item.jobId !== job.jobId)]);
+          }).catch(() => {
+            if (requestToken === translationRequestRef.current) setTranslationStorageStatus('Translation succeeded but could not be saved locally.');
+          });
+          if (translationJobRef.current?.jobId === job.jobId) { translationJobRef.current = null; translationJobCreateRef.current = null; }
+        }
+        setTranslation((current) => current && ({ ...current, status: 'success', result }));
+      } catch (error) {
+        if (requestToken !== translationRequestRef.current || controller.signal.aborted) return;
+        const message = translationErrorMessage(error);
+        if (job) void persistJobUpdate('failed', { error: message }).catch(() => undefined);
+        if (translationJobRef.current?.jobId === job?.jobId) { translationJobRef.current = null; translationJobCreateRef.current = null; }
+        setTranslation((current) => current && ({ ...current, status: 'error', message }));
+      }
+    })();
+  }
+
+  async function copyTranslation() {
+    if (!translation?.result) return;
+    try {
+      await navigator.clipboard.writeText(translation.result.translation);
+      setTranslation((current) => current?.result ? { ...current, message: 'Translation copied.' } : current);
+    } catch {
+      setTranslation((current) => current?.result ? { ...current, message: 'Could not copy the translation in this browser.' } : current);
+    }
+  }
+
+  function startThreeLineOverview() {
+    if (evidenceLedger.kind !== 'ready' || extraction.kind !== 'ready') return;
+    if (evidenceLedger.ledger.candidates.length === 0) {
+      setOverview({ status: 'error', message: 'No reliable local body excerpts are available for a paper overview. No model request was sent.' });
+      return;
+    }
+    const config = modelConfigRef.current;
+    if (!config || !config.baseUrl || !config.model) {
+      setOverview({ status: 'error', message: modelConfigLoadErrorRef.current ?? 'Configure an API endpoint and model in Settings before generating an overview.' });
+      return;
+    }
+    // Keep permission invocation in the click call stack so browsers retain
+    // the user gesture. The ledger itself is the only source supplied later.
+    const permissionRequest = requestApiHostPermission(config.baseUrl);
+    const requestToken = ++overviewRequestRef.current;
+    overviewAbortRef.current?.abort();
+    const controller = new AbortController();
+    overviewAbortRef.current = controller;
+    const ledger = evidenceLedger.ledger;
+    const pages = extraction.pages;
+    // The packet and its private alias mapping are request-local. Construct it
+    // once for this user-triggered request so the response cannot be resolved
+    // against a packet from another PDF or earlier attempt.
+    const packet = threeLineEvidencePacket(ledger);
+    setOverview({ status: 'preparing' });
+    void (async () => {
+      const permission = await permissionRequest;
+      if (requestToken !== overviewRequestRef.current) return;
+      if (!permission.granted) {
+        setOverview({ status: 'error', message: permission.reason === 'denied' ? 'Permission to contact this API host was denied. Start overview generation again to request it.' : 'This browser could not request permission for the configured API host.' });
+        return;
+      }
+      setOverview({ status: 'generating' });
+      try {
+        const response = await requestCompatibleCompletion({
+          config,
+          apiKey: apiKeyRef.current,
+          messages: threeLineOverviewMessages(packet),
+          signal: controller.signal,
+        });
+        const result = validateThreeLineOverview(parseThreeLineOverview(response.content), packet, ledger, pages);
+        if (requestToken !== overviewRequestRef.current || controller.signal.aborted) return;
+        setOverview({ status: 'success', result });
+      } catch (error) {
+        if (requestToken !== overviewRequestRef.current || controller.signal.aborted) return;
+        setOverview({ status: 'error', message: overviewErrorMessage(error) });
+      }
+    })();
+  }
+
+  function cancelThreeLineOverview() {
+    overviewRequestRef.current += 1;
+    overviewAbortRef.current?.abort();
+    overviewAbortRef.current = null;
+    setOverview(null);
+  }
+
+  function startDetailedOverview() {
+    if (evidenceLedger.kind !== 'ready' || extraction.kind !== 'ready') return;
+    if (overview?.status !== 'success') {
+      setDetailedOverview({ status: 'error', message: 'Generate a successful three-line paper overview first; detailed generation will not replace it.' });
+      return;
+    }
+    if (evidenceLedger.ledger.candidates.length === 0) {
+      setDetailedOverview({ status: 'error', message: 'No reliable local body excerpts are available for a detailed overview. No model request was sent.' });
+      return;
+    }
+    const config = modelConfigRef.current;
+    if (!config || !config.baseUrl || !config.model) {
+      setDetailedOverview({ status: 'error', message: modelConfigLoadErrorRef.current ?? 'Configure an API endpoint and model in Settings before generating a detailed overview.' });
+      return;
+    }
+    const permissionRequest = requestApiHostPermission(config.baseUrl);
+    const requestToken = ++detailedOverviewRequestRef.current;
+    detailedOverviewAbortRef.current?.abort();
+    const controller = new AbortController();
+    detailedOverviewAbortRef.current = controller;
+    const ledger = evidenceLedger.ledger;
+    const pages = extraction.pages;
+    setDetailedOverview({ status: 'preparing' });
+    void (async () => {
+      const permission = await permissionRequest;
+      if (requestToken !== detailedOverviewRequestRef.current) return;
+      if (!permission.granted) {
+        setDetailedOverview({ status: 'error', message: permission.reason === 'denied' ? 'Permission to contact this API host was denied. Start detailed overview generation again to request it.' : 'This browser could not request permission for the configured API host.' });
+        return;
+      }
+      setDetailedOverview({ status: 'generating' });
+      const sections: DetailedOverviewSection[] = [];
+      const diagnostics: DetailedOverviewSectionDiagnostic[] = [];
+      // One session is deliberately local to this click. Each following
+      // request preserves the exact earlier messages, which lets compatible
+      // providers reuse a stable prefix while the only new material is the
+      // next retrieval-selected evidence increment and task.
+      const passages = createEvidencePassages(ledger, { targetChars: 360, maxChars: 960 });
+      const retrievalIndex = createPassageRetrievalIndex(passages);
+      const evidenceSession = createProgressiveEvidenceSession(ledger, { maxExcerptChars: 960 });
+      const history: Array<{ role: 'user' | 'assistant'; content: string }> = [];
+      for (const sectionId of DETAILED_SECTION_IDS) {
+        if (requestToken !== detailedOverviewRequestRef.current || controller.signal.aborted) return;
+        const orderedPassages = selectRankedPassagesForPurpose(retrievalIndex, sectionId, {
+          maxCandidates: 12,
+          maxCandidatesPerPage: 2,
+          includeAdjacent: true,
+        });
+        const increment = appendProgressiveEvidenceStage(evidenceSession, sectionId, { orderedPassages });
+        const messages = progressiveDetailedSectionMessages(sectionId, increment, history);
+        const finalMessage = messages[messages.length - 1];
+        if (!finalMessage || finalMessage.role !== 'user') throw new Error('The progressive detailed request must end with its current evidence turn.');
+        const currentUserTurn: { role: 'user'; content: string } = { role: 'user', content: finalMessage.content };
+        const diagnostic: DetailedOverviewSectionDiagnostic = {
+          id: sectionId,
+          newSourceCount: increment.sources.length,
+          availableAliasCount: increment.sentAliases.length,
+        };
+        diagnostics.push(diagnostic);
+        try {
+          const response = await requestCompatibleCompletion({ config, apiKey: apiKeyRef.current, messages, signal: controller.signal });
+          if (requestToken !== detailedOverviewRequestRef.current || controller.signal.aborted) return;
+          diagnostic.usage = response.usage;
+          // Keep the provider's exact content as history even if it fails the
+          // local schema/evidence gate. The stable system prompt explicitly
+          // marks assistant history as an unverified draft, never as evidence.
+          history.push(currentUserTurn, { role: 'assistant', content: response.content });
+          sections.push(validateProgressiveDetailedSectionResponse(sectionId, parseDetailedSectionResponse(response.content), evidenceSession, ledger, pages));
+        } catch {
+          if (requestToken !== detailedOverviewRequestRef.current || controller.signal.aborted) return;
+          // A malformed, ungrounded, or failed section cannot erase already
+          // verified sections or become a factual fallback.
+          sections.push(unavailableDetailedSection(sectionId, 'unavailable', 'This section could not be safely grounded in the available PDF excerpts.'));
+        }
+      }
+      if (requestToken !== detailedOverviewRequestRef.current || controller.signal.aborted) return;
+      setDetailedOverview({ status: 'success', result: assembleDetailedOverview(sections), diagnostics: { sections: diagnostics } });
+    })();
+  }
+
+  function cancelDetailedOverview() {
+    detailedOverviewRequestRef.current += 1;
+    detailedOverviewAbortRef.current?.abort();
+    detailedOverviewAbortRef.current = null;
+    setDetailedOverview(null);
+  }
 
   function beginImport() {
+    invalidateTranslation();
+    cancelThreeLineOverview();
+    cancelDetailedOverview();
     requestIdRef.current += 1;
     renderIdRef.current += 1;
     renderTaskRef.current?.cancel();
@@ -806,6 +1379,8 @@ function ReaderPage() {
     highlightDocumentKeyRef.current = null;
     if (viewSaveTimerRef.current) clearTimeout(viewSaveTimerRef.current);
     setDocumentContentKey(null);
+    setSavedTranslations([]);
+    setTranslationStorageStatus('');
     setViewStorageStatus('');
     searchPagesRef.current = [];
     pageBlocksRef.current = [];
@@ -814,6 +1389,8 @@ function ReaderPage() {
     setOutlineNotice('');
     setAutoSections({ kind: 'idle' });
     setCitationIndex({ kind: 'idle' });
+    setEvidenceLedger({ kind: 'idle' });
+    setOverview(null);
     setSearchIndex({ kind: 'idle' });
     setExtraction({ kind: 'idle' });
     setSearchQuery('');
@@ -877,6 +1454,7 @@ function ReaderPage() {
     setExtraction({ kind: 'extracting', extractedPageCount: indexedPageCount, pageCount: pdf.numPages, textPageCount, emptyPageCount, failedPageCount });
     setAutoSections({ kind: 'identifying' });
     setCitationIndex({ kind: 'indexing' });
+    setEvidenceLedger({ kind: 'building' });
 
     for (let pageIndex = 0; pageIndex < pdf.numPages; pageIndex += 1) {
       if (extractionRequestId !== extractionRequestIdRef.current || searchRequestId !== searchRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
@@ -944,9 +1522,19 @@ function ReaderPage() {
           const candidates = pdfSectionCandidatesFromPages(pages, documentVersion);
           if (extractionRequestId !== extractionRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
           setAutoSections({ kind: 'ready', candidates });
+          try {
+            const ledger = pdfEvidenceLedgerFromPages(pages, documentVersion, candidates);
+            if (extractionRequestId !== extractionRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
+            setEvidenceLedger({ kind: 'ready', ledger });
+          } catch {
+            if (extractionRequestId === extractionRequestIdRef.current && isCurrent(requestId) && documentRef.current === pdf) {
+              setEvidenceLedger({ kind: 'error', message: 'Local evidence candidates could not be prepared. Reading and text extraction remain available.' });
+            }
+          }
         } catch {
           if (extractionRequestId === extractionRequestIdRef.current && isCurrent(requestId) && documentRef.current === pdf) {
             setAutoSections({ kind: 'error', message: 'Automatic section candidates could not be inspected. Page navigation remains available.' });
+            setEvidenceLedger({ kind: 'error', message: 'Local evidence candidates need section inspection and could not be prepared. Reading and text extraction remain available.' });
           }
         }
         try {
@@ -1188,6 +1776,7 @@ function ReaderPage() {
       setDocumentContentKey(contentKey);
       highlightDocumentKeyRef.current = contentKey;
       void restoreSavedHighlights(contentKey, highlightStorageSessionRef.current);
+      void restoreSavedTranslations(contentKey, highlightStorageSessionRef.current);
       const restoreSession = viewSessionRef.current;
       const restoreRevision = viewInteractionRevisionRef.current;
       const storage = getLocalStorageArea();
@@ -1303,16 +1892,13 @@ function ReaderPage() {
         return;
       }
 
-      const contentType = response.headers.get('content-type')?.toLowerCase() ?? '';
       const bytes = await readPdfResponse(response, requestId, isCurrent);
       if (!isCurrent(requestId)) return;
-      if (!isPdfSignature(bytes)) {
-        const html = contentType.includes('text/html') || looksLikeHtml(bytes);
+      const responseKind = classifyUrlPdfResponse(bytes);
+      if (responseKind !== 'pdf') {
         setState({
           kind: 'error',
-          message: html
-            ? 'The URL returned HTML instead of a PDF, often a sign-in or landing page. Download the PDF and choose it locally instead.'
-            : 'The downloaded response is not a PDF. Download the PDF and choose it locally instead.',
+          message: urlPdfRejectionMessage(responseKind),
         });
         return;
       }
@@ -1332,6 +1918,66 @@ function ReaderPage() {
     }
   }
 
+  async function importAutomaticArxivPdf(urlValueFromNavigation: string) {
+    if (!isArxivDirectPdfUrl(urlValueFromNavigation)) {
+      setState({ kind: 'error', message: 'Automatic arXiv opening accepts only an arxiv.org /pdf/ direct link.' });
+      return;
+    }
+    const url = new URL(urlValueFromNavigation);
+    const permissions = getOptionalPermissionsApi();
+    if (!permissions) {
+      setState({ kind: 'error', message: 'This browser does not expose the extension permission API.' });
+      return;
+    }
+
+    // The listener only redirects after it has checked this too. Repeat the
+    // check because the extension page URL is editable, and never prompt for a
+    // host permission without a user gesture.
+    let granted = false;
+    try {
+      granted = await permissions.contains({ origins: [permissionPattern(url)] });
+    } catch {
+      setState({ kind: 'error', message: `Could not verify permission for ${url.origin}. Open the PDF URL from the import form instead.` });
+      return;
+    }
+    if (!granted) {
+      setState({ kind: 'error', message: `Permission to download from ${url.origin} is unavailable. Open the PDF URL from the import form to grant it.` });
+      return;
+    }
+
+    const requestId = beginImport();
+    const controller = new AbortController();
+    try {
+      if (!await prepareImport(url.href, requestId, controller)) return;
+      const response = await fetch(url.href, {
+        credentials: 'omit',
+        headers: { Accept: 'application/pdf' },
+        signal: controller.signal,
+      });
+      if (!isCurrent(requestId)) return;
+      if (!response.ok) {
+        setState({ kind: 'error', message: `The arXiv server responded with HTTP ${response.status} ${response.statusText}. Open the original PDF link again or choose a local PDF instead.` });
+        return;
+      }
+      const bytes = await readPdfResponse(response, requestId, isCurrent);
+      if (!isCurrent(requestId)) return;
+      const responseKind = classifyUrlPdfResponse(bytes);
+      if (responseKind !== 'pdf') {
+        setState({ kind: 'error', message: urlPdfRejectionMessage(responseKind) });
+        return;
+      }
+      await loadPdf(bytes, url.pathname.split('/').pop() || url.hostname, requestId);
+    } catch (error) {
+      if (!isCurrent(requestId)) return;
+      if (error instanceof DOMException && error.name === 'AbortError') {
+        setState({ kind: 'cancelled', message: 'Automatic arXiv PDF import cancelled.' });
+        return;
+      }
+      const detail = error instanceof Error ? ` ${error.message}` : '';
+      setState({ kind: 'error', message: `Could not download this arXiv PDF. Open the original link again or choose a local PDF instead.${detail}` });
+    }
+  }
+
   function cancelImport() {
     if (state.kind !== 'loading' && state.kind !== 'requesting-permission') return;
     requestIdRef.current += 1;
@@ -1344,6 +1990,7 @@ function ReaderPage() {
   function changeView(nextView: ViewState) {
     if (state.kind !== 'ready' || !documentRef.current) return;
     viewInteractionRevisionRef.current += 1;
+    invalidateTranslation();
     setSelectionDraft(null);
     setActiveHighlightId(null);
     dismissCitationPopover(false);
@@ -1367,6 +2014,14 @@ function ReaderPage() {
     if (citationIndex.kind !== 'ready' || !citationIndex.index.referenceHeading) return;
     dismissCitationPopover(false);
     goToPage(citationIndex.index.referenceHeading.anchor.pageIndex);
+  }
+
+  function goToEvidenceCandidate(evidenceId: string) {
+    if (evidenceLedger.kind !== 'ready' || extraction.kind !== 'ready') return;
+    const candidate = evidenceLedger.ledger.candidates.find((item) => item.evidenceId === evidenceId);
+    if (!candidate) return;
+    const location = locateEvidenceCandidate(candidate, extraction.pages);
+    if (location) goToPage(location.pageIndex);
   }
 
   function submitPage(event: FormEvent<HTMLFormElement>) {
@@ -1446,6 +2101,15 @@ function ReaderPage() {
     return `${coverage}: ${extraction.textPageCount} of ${extraction.pageCount} pages have extractable text; ${extraction.emptyPageCount} have no text and ${extraction.failedPageCount} could not be extracted. ${extraction.blockCount} local page blocks were created with ${PDF_PAGE_BLOCK_EXTRACTION_VERSION} mapping; ${transformedBlocks} blocks have normalization changes or uncertain interior offsets.`;
   }
 
+  useEffect(() => {
+    if (automaticArxivImportStartedRef.current) return;
+    const urlValueFromNavigation = new URL(window.location.href).searchParams.get('arxivPdfUrl');
+    if (!urlValueFromNavigation) return;
+    automaticArxivImportStartedRef.current = true;
+    setUrlValue(urlValueFromNavigation);
+    void importAutomaticArxivPdf(urlValueFromNavigation);
+  }, []);
+
   const activeHighlight = activeHighlightId ? sessionHighlights.find((highlight) => highlight.id === activeHighlightId) ?? null : null;
   const canProjectHighlights = state.kind === 'ready'
     && renderedHighlightViewport?.pageIndex === state.pageIndex;
@@ -1471,13 +2135,29 @@ function ReaderPage() {
     <main className="reader-page" aria-labelledby="page-title">
       <header className="reader-header">
         <div>
-          <p className="eyebrow">Independent reader · local PDF.js spike</p>
-          <h1 id="page-title">Open a PDF</h1>
+          <p className="eyebrow">Thesis Viewer · local PDF reader</p>
+          <h1 id="page-title">{state.kind === 'ready' ? state.fileName : 'Open a PDF'}</h1>
         </div>
-        <label className="file-picker">
-          <span>Choose PDF</span>
-          <input aria-label="Choose a local PDF" type="file" accept="application/pdf,.pdf" onChange={onFileChange} />
-        </label>
+        <div className="reader-header-actions">
+          <a className="reader-settings-link" href="options.html">Appearance, language &amp; settings</a>
+          <button
+            type="button"
+            className="file-picker"
+            aria-controls="local-pdf-input"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <span>Choose PDF</span>
+          </button>
+          <input
+            ref={fileInputRef}
+            id="local-pdf-input"
+            className="file-picker-input"
+            aria-label="Choose a local PDF"
+            type="file"
+            accept="application/pdf,.pdf"
+            onChange={onFileChange}
+          />
+        </div>
       </header>
       <form className="url-import" onSubmit={importUrl}>
         <label htmlFor="pdf-url">Import an HTTPS PDF URL</label>
@@ -1497,10 +2177,28 @@ function ReaderPage() {
         {state.kind === 'error' && state.message}
       </section>
       {state.kind === 'ready' && viewStorageStatus && <p className="view-storage-status" role="status">{viewStorageStatus}</p>}
-      {state.kind === 'ready' && <section className="highlight-storage-controls" aria-label="Saved highlights">
+      <div className={`reader-workspace reader-workspace--${narrowPanel}`}>
+        {state.kind === 'ready' && <div className="reader-layout-switch" role="group" aria-label="Narrow screen panels">
+          <span>Workspace</span>
+          <button type="button" aria-pressed={narrowPanel === 'reading'} onClick={() => setNarrowPanel('reading')}>Reading</button>
+          <button type="button" aria-pressed={narrowPanel === 'information'} onClick={() => setNarrowPanel('information')}>Overview &amp; details</button>
+        </div>}
+        {state.kind === 'ready' && <aside className="reader-side-utilities" aria-label="Saved highlights and translations">
+        <section className="highlight-storage-controls" aria-label="Saved highlights">
         <p role="status">{highlightStorageStatus || 'Highlights will be saved locally after this PDF is identified.'}</p>
         <button type="button" onClick={clearCurrentDocumentHighlights} disabled={!documentContentKey}>Clear saved highlights for this PDF</button>
+        </section>
+      {state.kind === 'ready' && <section className="translation-history" aria-labelledby="translation-history-title">
+        <h2 id="translation-history-title">Completed translations</h2>
+        <p role="status">{translationStorageStatus || (documentContentKey ? 'Checking this PDF for completed translations…' : 'Translations are not saved until this PDF has a stable content version.')}</p>
+        {savedTranslations.length > 0 && <ul>
+          {savedTranslations.map((job) => <li key={job.jobId}>
+            <button type="button" onClick={() => openSavedTranslation(job)}>Open saved translation</button>
+            <span>{job.selectedText.length > 100 ? `${job.selectedText.slice(0, 100)}…` : job.selectedText}</span>
+          </li>)}
+        </ul>}
       </section>}
+        </aside>}
       {state.kind === 'ready' && <section className="reader-controls" aria-label="PDF page controls">
         <div className="page-navigation" role="group" aria-label="Page navigation">
           <button type="button" onClick={() => goToPage(state.pageIndex - 1)} disabled={isRendering || state.pageIndex === 0}>Previous page</button>
@@ -1539,7 +2237,8 @@ function ReaderPage() {
           <button type="button" onClick={() => navigateSearchMatch(1)} disabled={isRendering || searchIndex.kind === 'unavailable' || searchIndex.kind === 'error' || searchMatches.length === 0}>Next match</button>
         </div>
       </section>}
-      {state.kind === 'ready' && <section className="extraction-diagnostics" aria-labelledby="extraction-diagnostics-title">
+      {state.kind === 'ready' && <aside className="reader-information" aria-label="Paper overview and local diagnostics">
+      <section className="extraction-diagnostics" aria-labelledby="extraction-diagnostics-title">
         <h2 id="extraction-diagnostics-title">Text extraction diagnostics</h2>
         <p aria-live="polite">{extractionStatus()}</p>
         <p className="extraction-caution">Blocks keep PDF.js source-item order and original item coordinates for page anchors. That source order is not a reliable paper reading order, especially for columns, tables, and formulas.</p>
@@ -1556,7 +2255,7 @@ function ReaderPage() {
             </li>)}
           </ul>
         </details>}
-      </section>}
+      </section>
       {state.kind === 'ready' && <section className="extraction-diagnostics" aria-labelledby="citation-diagnostics-title">
         <h2 id="citation-diagnostics-title">Local References and citation diagnostics</h2>
         {citationIndex.kind === 'idle' || citationIndex.kind === 'indexing'
@@ -1579,7 +2278,99 @@ function ReaderPage() {
               </details>
             </>}
       </section>}
-      <div className="reader-workspace">
+      {state.kind === 'ready' && <section className="extraction-diagnostics paper-insights" aria-labelledby="evidence-ledger-title">
+        <p className="panel-kicker">Paper insights</p>
+        <h2 id="evidence-ledger-title">Overview &amp; local evidence</h2>
+        {evidenceLedger.kind === 'idle' || evidenceLedger.kind === 'building'
+          ? <p aria-live="polite">Preparing conservative local source excerpts after page extraction…</p>
+          : evidenceLedger.kind === 'error'
+            ? <p className="extraction-caution" role="status">{evidenceLedger.message}</p>
+            : <>
+              <p aria-live="polite">{evidenceLedger.ledger.candidates.length} local body excerpt candidate{evidenceLedger.ledger.candidates.length === 1 ? '' : 's'} with {evidenceLedger.ledger.coverage === 'full-text' ? 'full-text' : evidenceLedger.ledger.coverage} coverage. These excerpts are not facts, summaries, or model output.</p>
+              {evidenceLedger.ledger.diagnostics.map((diagnostic) => <p key={diagnostic} className="extraction-caution">{diagnostic}</p>)}
+              <p className="extraction-caution">A section-derived slot is only routing context, not semantic verification. References and Appendix are excluded from this initial body ledger; theoretical, review, and qualitative papers are not forced into experimental slots.</p>
+              <section className="overview-panel" aria-labelledby="paper-overview-title">
+                <h3 id="paper-overview-title">Paper overview</h3>
+                <p>Generate only when you choose to send a compact, bounded set of local evidence excerpts and coverage to your configured model. No overview is generated automatically.</p>
+                <button type="button" onClick={startThreeLineOverview} disabled={overview?.status === 'preparing' || overview?.status === 'generating'}>Generate paper overview</button>
+                {overview?.status === 'preparing' && <p role="status">Requesting permission to contact the configured API…</p>}
+                {overview?.status === 'generating' && <p role="status">Generating a three-line overview from compact local evidence excerpts… <button type="button" onClick={cancelThreeLineOverview}>Cancel</button></p>}
+                {overview?.status === 'error' && <p className="overview-error" role="alert">{overview.message} <a href="options.html">Open Settings</a></p>}
+                {overview?.status === 'success' && overview.result && <>
+                  <ol className="overview-items">
+                    {overview.result.items.map((item, index) => <li key={`${index}-${item.text}`}>
+                      <p>{item.text}</p>
+                      {item.status === 'unavailable' && <span className="overview-unavailable">Material insufficient to confirm an independent contribution.</span>}
+                      {item.evidenceIds.length > 0 && <span className="overview-evidence">Evidence: {item.evidenceIds.map((evidenceId) => {
+                        const candidate = evidenceLedger.ledger.candidates.find((entry) => entry.evidenceId === evidenceId);
+                        const page = candidate && extraction.kind === 'ready' ? locateEvidenceCandidate(candidate, extraction.pages)?.pageIndex : undefined;
+                        return <button type="button" className="evidence-chip" key={evidenceId} onClick={() => goToEvidenceCandidate(evidenceId)}>Page {page === undefined ? '?' : page + 1} · {candidate?.precision ?? 'local'}</button>;
+                      })}</span>}
+                    </li>)}
+                  </ol>
+                  {overview.result.uncertainties.length > 0 && <p className="overview-uncertainties">Uncertainties: {overview.result.uncertainties.map((item) => item.text).join(' ')}</p>}
+                  <p className="extraction-caution">Each evidence chip was checked against this PDF’s current block ID, quote, and recorded location precision. This is model output grounded in local excerpts, not an independent fact check.</p>
+                </>}
+                <section className="detailed-overview-panel" aria-labelledby="detailed-overview-title">
+                  <h4 id="detailed-overview-title">Detailed overview</h4>
+                  <p>After the three-line overview succeeds, you may explicitly request a separate 800–1500 Chinese-character overview. It uses six small, section-specific local evidence packets in sequence and never replaces the successful three-line overview.</p>
+                  <button type="button" onClick={startDetailedOverview} disabled={overview?.status !== 'success' || detailedOverview?.status === 'preparing' || detailedOverview?.status === 'generating'}>Generate detailed overview</button>
+                  {detailedOverview?.status === 'preparing' && <p role="status">Requesting permission to contact the configured API…</p>}
+                  {detailedOverview?.status === 'generating' && <p role="status">Generating six detailed-overview sections from progressive local evidence packets… <button type="button" onClick={cancelDetailedOverview}>Cancel</button></p>}
+                  {detailedOverview?.status === 'error' && <p className="overview-error" role="alert">{detailedOverview.message} <a href="options.html">Open Settings</a></p>}
+                  {detailedOverview?.status === 'success' && detailedOverview.result && <>
+                    <p className="extraction-caution">Coverage remains {evidenceLedger.ledger.coverage}; this app-computed limit is not upgraded by the model. Each factual block below has a locally verified evidence chip.</p>
+                    <div className="detailed-overview-sections">
+                      {detailedOverview.result.sections.map((section) => <section key={section.id} className="detailed-overview-section">
+                        <h5>{DETAILED_SECTION_LABELS[section.id]}</h5>
+                        {section.status !== 'available' && <p className="overview-unavailable">{section.status === 'not_applicable' ? 'Not applicable to this paper type based on the available material.' : 'Material insufficient to support this section.'}</p>}
+                        {section.blocks.map((block, index) => <div key={`${section.id}-${index}`} className="detailed-overview-block">
+                          <p>{block.text}</p>
+                          {section.id === 'limitations' && block.limitationKind && <span className="detailed-overview-kind">{block.limitationKind.replace('_', ' ')}</span>}
+                          {block.evidenceIds.length > 0 && <span className="overview-evidence">Evidence: {block.evidenceIds.map((evidenceId) => {
+                            const candidate = evidenceLedger.ledger.candidates.find((entry) => entry.evidenceId === evidenceId);
+                            const page = candidate && extraction.kind === 'ready' ? locateEvidenceCandidate(candidate, extraction.pages)?.pageIndex : undefined;
+                            return <button type="button" className="evidence-chip" key={evidenceId} onClick={() => goToEvidenceCandidate(evidenceId)}>Page {page === undefined ? '?' : page + 1} · {candidate?.precision ?? 'local'}</button>;
+                          })}</span>}
+                        </div>)}
+                      </section>)}
+                    </div>
+                    {detailedOverview.result.uncertainties.length > 0 && <p className="overview-uncertainties">Uncertainties: {detailedOverview.result.uncertainties.map((item) => item.text).join(' ')}</p>}
+                    {detailedOverview.diagnostics && <details className="detailed-overview-diagnostics">
+                      <summary>Local request diagnostics</summary>
+                      <p className="extraction-caution">These completed-request counters contain only source/alias counts and provider token usage; no PDF excerpts, prompts, responses, or API key are retained here.</p>
+                      {totalCacheRateLabel(detailedOverview.diagnostics) && <p>{totalCacheRateLabel(detailedOverview.diagnostics)}</p>}
+                      <ul>
+                        {detailedOverview.diagnostics.sections.map((diagnostic) => {
+                          const usageParts = [
+                            tokenCountLabel(diagnostic.usage?.promptTokens) && `prompt ${tokenCountLabel(diagnostic.usage?.promptTokens)}`,
+                            tokenCountLabel(diagnostic.usage?.completionTokens) && `completion ${tokenCountLabel(diagnostic.usage?.completionTokens)}`,
+                            cacheRateLabel(diagnostic.usage),
+                          ].filter((part): part is string => Boolean(part));
+                          return <li key={diagnostic.id}>
+                            {DETAILED_SECTION_LABELS[diagnostic.id]}: {diagnostic.newSourceCount} new local passage{diagnostic.newSourceCount === 1 ? '' : 's'}, {diagnostic.availableAliasCount} available alias{diagnostic.availableAliasCount === 1 ? '' : 'es'}
+                            {usageParts.length > 0 ? `; ${usageParts.join(', ')}.` : '; provider usage unavailable.'}
+                          </li>;
+                        })}
+                      </ul>
+                    </details>}
+                  </>}
+                </section>
+              </section>
+              <details>
+                <summary>Inspect local evidence candidates</summary>
+                <ul className="extraction-page-list">
+                  {evidenceLedger.ledger.candidates.slice(0, 100).map((candidate) => <li key={candidate.evidenceId}>
+                    <button type="button" onClick={() => goToEvidenceCandidate(candidate.evidenceId)}>Go to Page {locateEvidenceCandidate(candidate, extraction.kind === 'ready' ? extraction.pages : [])?.pageIndex! + 1}</button>
+                    {' '}{candidate.slot} · {candidate.section.title} · {candidate.precision} location · {candidate.quote.length > 180 ? `${candidate.quote.slice(0, 180)}…` : candidate.quote}
+                  </li>)}
+                  {evidenceLedger.ledger.candidates.length > 100 && <li>{evidenceLedger.ledger.candidates.length - 100} more candidates are not shown.</li>}
+                  {evidenceLedger.ledger.candidates.length === 0 && <li>No reliable main-body text-item candidates were found. This does not establish that the paper lacks content.</li>}
+                </ul>
+              </details>
+            </>}
+        </section>}
+        </aside>}
         {state.kind === 'ready' && <aside className="reader-navigation" aria-label="PDF navigation">
           <section className="navigation-panel" aria-labelledby="outline-title">
             <h2 id="outline-title">Outline</h2>
@@ -1723,6 +2514,31 @@ function ReaderPage() {
           ? <button type="button" className="citation-references-button" onClick={goToCitationReferences}>Go to local References on Page {citationIndex.index.referenceHeading.anchor.pageIndex + 1}</button>
           : <p className="citation-unresolved">No local References heading is available to jump to.</p>}
       </div>}
+      {translation && <section
+        ref={translationPopoverRef}
+        className="translation-popover"
+        aria-labelledby="translation-popover-title"
+        aria-live="polite"
+        style={{ left: `${translation.left}px`, top: `${translation.top}px` }}
+      >
+        <div className="translation-popover-header">
+          <h2 id="translation-popover-title">Translation to {translation.targetLanguage}</h2>
+          <button type="button" onClick={closeTranslation} aria-label="Close translation">Close</button>
+        </div>
+        <p className="translation-source-label">Translation source</p>
+        <blockquote className="translation-source">{translation.quote}</blockquote>
+        {translation.sourceNotice && <p className="translation-source-notice" role="status">{translation.sourceNotice}</p>}
+        {translation.status === 'preparing' && <p role="status">Requesting permission to contact the configured API…</p>}
+        {translation.status === 'generating' && <p role="status">Translating the selected text… <button type="button" onClick={closeTranslation}>Cancel</button></p>}
+        {translation.status === 'success' && translation.result && <>
+          <p className="translation-source-label">Translation</p>
+          <p className="translation-result">{translation.result.translation}</p>
+          {translation.result.uncertainty && <p className="translation-uncertainty">Uncertainty: {translation.result.uncertainty}</p>}
+          <div className="translation-actions"><button type="button" onClick={() => void copyTranslation()}>Copy translation</button></div>
+        </>}
+        {translation.status === 'error' && <p className="translation-error" role="alert">{translation.message} <a href="options.html">Open Settings</a></p>}
+        {translation.message && translation.status === 'success' && <p role="status">{translation.message}</p>}
+      </section>}
       {highlightToolbarPosition && (selectionDraft || activeHighlight) && <div
         ref={highlightToolbarRef}
         className="highlight-toolbar"
@@ -1732,6 +2548,13 @@ function ReaderPage() {
       >
         {selectionDraft ? <>
           <span className="highlight-toolbar-label">{selectionDraft.quote.length} selected characters</span>
+          <label className="translation-target-label">Translate to
+            <select value={translationTarget} onChange={(event) => setTranslationTarget(event.target.value as 'Chinese' | 'English')} aria-label="Translation target language">
+              <option value="Chinese">Chinese</option>
+              <option value="English">English</option>
+            </select>
+          </label>
+          <button type="button" className="translate-button" onMouseDown={(event) => event.preventDefault()} onClick={startTranslation}>Translate</button>
           <button type="button" className="highlight-create-button" onMouseDown={(event) => event.preventDefault()} onClick={() => createHighlight('yellow')}>Highlight</button>
           {HIGHLIGHT_COLORS.filter((color) => color.value !== 'yellow').map((color) => <button
             type="button"

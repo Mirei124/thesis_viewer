@@ -2,11 +2,13 @@
   "name": "thesis-viewer",
   "version": "0.1.0",
   "private": true,
+  "license": "GPL-3.0-only",
   "type": "module",
   "scripts": {
     "dev": "wxt",
     "dev:firefox": "wxt --browser firefox",
     "typecheck": "wxt prepare && tsc --noEmit",
+    "test": "vitest run",
     "build:chrome": "wxt build --browser chrome",
     "build:firefox": "wxt build --browser firefox"
   },
@@ -20,7 +22,8 @@
   "devDependencies": {
     "@types/react": "^19.1.0",
     "@types/react-dom": "^19.1.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^5.0.1"
   },
   "packageManager": "pnpm@11.26.0"
 }
