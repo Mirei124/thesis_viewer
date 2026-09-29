@@ -4,9 +4,12 @@ import {
   browserUiLocale,
   isUiLocale,
   loadUiLocale,
+  message,
   saveUiLocale,
   UI_LOCALE_STORAGE_KEY,
 } from './i18n';
+import { en } from '../i18n/en';
+import { zhCN } from '../i18n/zh-CN';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -32,5 +35,18 @@ describe('UI locale preferences', () => {
     await expect(loadUiLocale()).resolves.toBe('zh-CN');
     await saveUiLocale('en');
     expect(set).toHaveBeenCalledWith({ [UI_LOCALE_STORAGE_KEY]: 'en' });
+  });
+
+  it('keeps reader keys and interpolation placeholders aligned across languages', () => {
+    expect(Object.keys(zhCN).sort()).toEqual(Object.keys(en).sort());
+    for (const [key, english] of Object.entries(en)) {
+      if (!key.startsWith('reader.')) continue;
+      const chinese = zhCN[key as keyof typeof zhCN];
+      expect(chinese.trim(), key).not.toBe('');
+      const placeholders = (value: string) => [...new Set([...value.matchAll(/\{([A-Za-z][A-Za-z0-9]*)\}/g)].map((match) => match[1]))].sort();
+      expect(placeholders(chinese), key).toEqual(placeholders(english));
+    }
+    expect(message('zh-CN', 'reader.page.count', { count: 12 })).toBe('共 12 页');
+    expect(message('en', 'reader.page.count', { count: 12 })).toBe('12 pages');
   });
 });

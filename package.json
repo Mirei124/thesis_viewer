@@ -9,8 +9,8 @@
     "dev:firefox": "wxt --browser firefox",
     "typecheck": "wxt prepare && tsc --noEmit",
     "test": "vitest run",
-    "build:chrome": "wxt build --browser chrome",
-    "build:firefox": "wxt build --browser firefox"
+    "build:chrome": "wxt build --browser chrome && node scripts/copy-license.mjs chrome",
+    "build:firefox": "wxt build --browser firefox && node scripts/copy-license.mjs firefox"
   },
   "dependencies": {
     "@wxt-dev/module-react": "^1.1.0",

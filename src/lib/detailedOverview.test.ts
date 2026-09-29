@@ -65,6 +65,7 @@ describe('detailed overview compact section contract', () => {
     const section = validateDetailedSectionResponse('contributions', response, packet, ledger, [page]);
     expect(section).toMatchObject({ id: 'contributions', status: 'available', blocks: [{ claimKind: 'author_claim' }] });
     expect(section.blocks[0].evidenceIds[0]).toBe(ledger.candidates[0].evidenceId);
+    expect(section.blocks[0].evidenceRefs).toEqual([{ alias: 'S01', evidenceIds: [ledger.candidates[0].evidenceId] }]);
   });
 
   it('rejects unsupported aliases and stale anchors without affecting independently assembled sections', () => {
@@ -116,7 +117,9 @@ describe('detailed overview compact section contract', () => {
     appendProgressiveEvidenceStage(session, 'problem_motivation');
     const method = appendProgressiveEvidenceStage(session, 'method');
     const valid = parseDetailedSectionResponse(`{"status":"available","text":"方法段由本地摘录支持。","sources":["${method.sources[0].alias}"]}`);
-    expect(validateProgressiveDetailedSectionResponse('method', valid, session, ledger, [page]).status).toBe('available');
+    const validated = validateProgressiveDetailedSectionResponse('method', valid, session, ledger, [page]);
+    expect(validated.status).toBe('available');
+    expect(validated.blocks[0].evidenceRefs?.[0]).toMatchObject({ alias: method.sources[0].alias, evidenceIds: [validated.blocks[0].evidenceIds[0]] });
     const invalid = parseDetailedSectionResponse('{"status":"available","text":"不应通过。","sources":["E999"]}');
     expect(() => validateProgressiveDetailedSectionResponse('contributions', invalid, session, ledger, [page])).toThrow(/has not been sent/);
     expect(unavailableDetailedSection('contributions').blocks[0].evidenceIds).toEqual([]);

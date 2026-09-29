@@ -4,6 +4,8 @@ import {
   browserUiLocale,
   loadUiLocale,
   saveUiLocale,
+  UI_LOCALE_STORAGE_KEY,
+  isUiLocale,
   type UiLocale,
 } from '../lib/i18n';
 
@@ -21,6 +23,26 @@ export function useUiLocale(): readonly [UiLocale, (locale: UiLocale) => void] {
   useEffect(() => {
     globalThis.document?.documentElement.setAttribute('lang', locale);
   }, [locale]);
+
+  useEffect(() => {
+    type StorageChangeListener = (changes: Record<string, { newValue?: unknown }>, areaName: string) => void;
+    type StorageChangeEvent = {
+      addListener: (listener: StorageChangeListener) => void;
+      removeListener: (listener: StorageChangeListener) => void;
+    };
+    const extensionGlobal = globalThis as typeof globalThis & {
+      browser?: { storage?: { onChanged?: StorageChangeEvent } };
+      chrome?: { storage?: { onChanged?: StorageChangeEvent } };
+    };
+    const changed = extensionGlobal.browser?.storage?.onChanged ?? extensionGlobal.chrome?.storage?.onChanged;
+    if (!changed) return;
+    const onChanged = (changes: Record<string, { newValue?: unknown }>, areaName: string) => {
+      const next = changes[UI_LOCALE_STORAGE_KEY]?.newValue;
+      if (areaName === 'local' && isUiLocale(next)) setLocale(next);
+    };
+    changed.addListener(onChanged);
+    return () => changed.removeListener(onChanged);
+  }, []);
 
   function updateLocale(next: UiLocale) {
     setLocale(next);

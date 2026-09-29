@@ -1,3 +1,5 @@
+import { readerEn } from './reader-en';
+
 export const en = {
   'settings.eyebrow': 'Settings',
   'settings.title': 'Compatible API configuration',
@@ -46,4 +48,5 @@ export const en = {
   'arxiv.unavailable': 'Browser permissions are unavailable. Automatic opening remains disabled.',
   'arxiv.requestFailed': 'arXiv permission could not be requested. Automatic opening remains disabled.',
   'arxiv.saveFailed': 'The setting could not be saved. Automatic opening remains disabled.',
+  ...readerEn,
 } as const;

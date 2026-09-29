@@ -25,6 +25,7 @@ describe('three-line overview compact contract', () => {
     expect(overview.kind).toBe('three_line');
     expect(overview.items.map((item) => item.role)).toEqual(['contribution', 'contribution', 'contribution']);
     expect(overview.items.map((item) => item.evidenceIds)).toEqual(ledger.candidates.slice(0, 3).map((candidate) => [candidate.evidenceId]));
+    expect(overview.items.map((item) => item.evidenceRefs)).toEqual(ledger.candidates.slice(0, 3).map((candidate, index) => [{ alias: `S0${index + 1}`, evidenceIds: [candidate.evidenceId] }]));
   });
 
   it('requires three sourced items and rejects invented, repeated, or stale aliases', () => {

@@ -1,0 +1,4 @@
+{"recorded_at":"2026-09-29T09:39:11.554Z","origin":"82B6:3:409a67fc1443","scope":"ws","kind":"intent","id":"0002","field":"progress","from":null,"to":100,"by":"cli"}
+{"recorded_at":"2026-09-29T09:39:11.554Z","origin":"82B6:3:409a67fc1443","scope":"ws","kind":"intent","id":"0002","field":"status","from":"in_progress","to":"done","by":"cli"}
+{"recorded_at":"2026-09-29T09:39:46.180Z","origin":"82B6:3:c0863b487565","scope":"ws","kind":"intent","id":"0002","field":"body_hash","from":"627233e8545819162b7d5f2c6af02dfa73475156c7f897ae14c6ce8ccf7fe381","to":"4606d0a9a786ee8a50633119a5d736bc40ef156d827e4644a3a23967ceb46843","by":"apply"}
+{"recorded_at":"2026-09-29T09:40:24Z","origin":"82B6:3:cec0dbc67356","scope":"ws","kind":"session","id":"workspace","field":"lifecycle","from":null,"to":"close","by":"cli","handoff_id":"e937d62105b44be189b1d9c1ac566fd9"}

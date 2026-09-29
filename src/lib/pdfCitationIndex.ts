@@ -10,7 +10,6 @@ export const PDF_LOCAL_CITATION_INDEX_VERSION = 'pdf-local-citation-index-v1';
 
 export type ReferenceQualityWarning =
   | 'references-heading-is-heuristic'
-  | 'single-pdfjs-item-entry'
   | 'pdfjs-source-order-not-reading-order';
 
 export type PdfReferenceCandidate = {
@@ -22,7 +21,7 @@ export type PdfReferenceCandidate = {
   confidence: 'low';
   qualityWarnings: ReferenceQualityWarning[];
   matchingStatus: 'candidate';
-  /** An http(s) URL written verbatim in this one local PDF.js reference item. */
+  /** An http(s) URL written in the local PDF.js blocks grouped for this entry. */
   sourceUrl?: string;
 };
 
@@ -56,14 +55,13 @@ export type PdfLocalCitationIndex = {
 type ReferenceHeading = { block: PdfPageTextBlock; flatIndex: number };
 
 const referenceHeadingPattern = /^(?:(?:\d+(?:\.\d+){0,5}\.?|[IVXLCDM]{1,8}\.)\s+)?(?:references|bibliography|literature\s+cited)\.?$/i;
-const referenceEntryPattern = /^\s*\[\s*(\d{1,5})\s*\]\s+\S/;
+const referenceEntryPattern = /^\s*\[\s*(\d{1,5})\s*\]/;
 const numberedCitationPattern = /\[\s*\d{1,5}\s*(?:(?:[,;]|[-–])\s*\d{1,5}\s*)*\]/g;
 const MAX_RANGE_WIDTH = 25;
 
 function localHttpSourceUrl(rawText: string): string | undefined {
   // Do not turn a DOI, title, or other inferred field into a link. This is
-  // deliberately limited to an http(s) URL that is present in the one local
-  // text item used as the reference candidate.
+  // deliberately limited to an http(s) URL present in the grouped local text.
   const url = rawText.match(/https?:\/\/[^\s<>"']+/i)?.[0]?.replace(/[),.;\]}]+$/u, '');
   if (!url) return undefined;
   try {
@@ -118,30 +116,47 @@ function occurrenceAnchor(block: PdfPageTextBlock, marker: string): PdfPageAncho
 }
 
 /**
- * Builds only inspectable candidates: one heading item, one numbered entry
- * item, and one bracket marker within one PDF.js item. It never joins items,
- * parses bibliographic fields, follows links, or consults a network service.
+ * Builds inspectable candidates from a heuristic References heading and the
+ * following PDF.js source-order tail. Each [n] starts a new candidate; later
+ * items belong to it until the next [n], possibly across pages. This grouping
+ * is not a reconstructed reading order or parsed bibliography record.
  */
 export function pdfLocalCitationIndexFromPages(pages: PageExtraction[], documentVersion: string): PdfLocalCitationIndex {
   const blocks = flattenPages(pages);
   const heading = headingWithMostNumberedEntries(blocks);
   const referenceBlocks = heading ? blocks.slice(heading.flatIndex + 1) : [];
-  const references = referenceBlocks.flatMap((block): PdfReferenceCandidate[] => {
-    const match = referenceEntryPattern.exec(block.rawText);
-    if (!match) return [];
-    const number = Number(match[1]);
-    return [{
-      refId: `${documentVersion}:${PDF_LOCAL_CITATION_INDEX_VERSION}:ref:${number}:p${block.pageIndex}:i${block.sourceOrder}`,
-      number,
-      rawText: block.rawText,
-      anchor: block.anchor,
-      sourceBlockId: block.blockId,
+  const references: PdfReferenceCandidate[] = [];
+  let entryStart: PdfPageTextBlock | undefined;
+  let entryNumber = 0;
+  let entryParts: string[] = [];
+  const finishEntry = () => {
+    if (!entryStart) return;
+    // Separators aid display but do not assert the PDF's visual reading order.
+    const rawText = entryParts.map((part) => part.trim()).filter(Boolean).join(' ');
+    references.push({
+      refId: `${documentVersion}:${PDF_LOCAL_CITATION_INDEX_VERSION}:ref:${entryNumber}:p${entryStart.pageIndex}:i${entryStart.sourceOrder}`,
+      number: entryNumber,
+      rawText,
+      anchor: entryStart.anchor,
+      sourceBlockId: entryStart.blockId,
       confidence: 'low',
-      qualityWarnings: ['references-heading-is-heuristic', 'single-pdfjs-item-entry', 'pdfjs-source-order-not-reading-order'],
+      qualityWarnings: ['references-heading-is-heuristic', 'pdfjs-source-order-not-reading-order'],
       matchingStatus: 'candidate',
-      sourceUrl: localHttpSourceUrl(block.rawText),
-    }];
-  });
+      sourceUrl: localHttpSourceUrl(rawText),
+    });
+  };
+  for (const block of referenceBlocks) {
+    const match = referenceEntryPattern.exec(block.rawText);
+    if (match) {
+      finishEntry();
+      entryStart = block;
+      entryNumber = Number(match[1]);
+      entryParts = [block.rawText];
+    } else if (entryStart) {
+      entryParts.push(block.rawText);
+    }
+  }
+  finishEntry();
   const referencesByNumber = new Map<number, PdfReferenceCandidate[]>();
   for (const reference of references) {
     referencesByNumber.set(reference.number, [...(referencesByNumber.get(reference.number) ?? []), reference]);
@@ -183,9 +198,9 @@ export function pdfLocalCitationIndexFromPages(pages: PageExtraction[], document
   const unresolvedOccurrenceCount = occurrences.filter((occurrence) => occurrence.status === 'unresolved').length;
   const diagnostics = [
     heading
-      ? `A heuristic References heading was found on page ${heading.block.pageIndex + 1}; only later single-item entries beginning [n] were indexed.`
-      : 'No unambiguous References/Bibliography heading with numbered single-item entries was found; numbered markers remain unresolved.',
-    'PDF.js source-item order is not paper reading order. The index does not merge lines, parse titles/authors/DOIs, or infer author-year citations.',
+      ? `A heuristic References heading was found on page ${heading.block.pageIndex + 1}; later [n] starts were grouped with following source-order items until the next [n].`
+      : 'No unambiguous References/Bibliography heading with numbered entries was found; numbered markers remain unresolved.',
+    'PDF.js source-item order is not paper reading order. Grouped entries do not imply reconstructed layout; the index does not parse titles/authors/DOIs or infer author-year citations.',
     'Matched means exactly one local numbered entry candidate exists for every number in the marker; it does not establish semantic correctness.',
   ];
   return {

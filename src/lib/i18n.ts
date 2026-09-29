@@ -20,8 +20,10 @@ export function browserUiLocale(languages: readonly string[] | undefined = globa
   return languages?.some((language) => language.toLowerCase().startsWith('zh')) ? 'zh-CN' : 'en';
 }
 
-export function message(locale: UiLocale, key: MessageKey): string {
-  return messages[locale][key];
+export function message(locale: UiLocale, key: MessageKey, values?: Record<string, string | number>): string {
+  const template = messages[locale][key];
+  return values ? template.replace(/\{([A-Za-z][A-Za-z0-9]*)\}/g, (match, name: string) =>
+    Object.hasOwn(values, name) ? String(values[name]) : match) : template;
 }
 
 function extensionStorage(): ExtensionStorageArea | undefined {

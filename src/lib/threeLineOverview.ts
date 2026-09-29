@@ -2,6 +2,7 @@ import type { ChatMessage } from './compatibleProvider';
 import { createEvidencePacket, resolveEvidencePacketAliases, type EvidencePacket } from './evidencePacket';
 import type { EvidenceLedger } from './evidenceLedger';
 import type { PageExtraction } from './pdfPageBlocks';
+import type { VerifiedEvidenceRef } from './inlineEvidence';
 
 export const THREE_LINE_OVERVIEW_PROMPT_VERSION = 'research-overview-zh-v2';
 
@@ -10,6 +11,7 @@ export type ThreeLineOverviewItem = {
   status: 'available' | 'unavailable';
   text: string;
   evidenceIds: string[];
+  evidenceRefs: VerifiedEvidenceRef[];
 };
 
 export type ThreeLineOverview = {
@@ -76,6 +78,7 @@ export function validateThreeLineOverview(
     status: 'available' as const,
     text: item.text,
     evidenceIds: resolveEvidencePacketAliases(packet, item.sources, ledger, pages).map((candidate) => candidate.evidenceId),
+    evidenceRefs: item.sources.map((alias) => ({ alias, evidenceIds: resolveEvidencePacketAliases(packet, [alias], ledger, pages).map((candidate) => candidate.evidenceId) })),
   }));
   return { kind: 'three_line', items: [items[0], items[1], items[2]], uncertainties: [] };
 }

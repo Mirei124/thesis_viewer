@@ -9,6 +9,7 @@ import {
 } from './evidencePacket';
 import type { EvidenceCandidate, EvidenceLedger } from './evidenceLedger';
 import type { PageExtraction } from './pdfPageBlocks';
+import type { VerifiedEvidenceRef } from './inlineEvidence';
 
 export const DETAILED_OVERVIEW_PROMPT_VERSION = 'research-detailed-overview-zh-v2';
 export const PROGRESSIVE_DETAILED_OVERVIEW_PROMPT_VERSION = 'research-detailed-overview-zh-v3';
@@ -27,6 +28,7 @@ export type DetailedOverviewBlock = {
   type: DetailedBlockType;
   text: string;
   evidenceIds: string[];
+  evidenceRefs?: VerifiedEvidenceRef[];
   claimKind: DetailedClaimKind;
   limitationKind?: LimitationKind;
 };
@@ -111,7 +113,9 @@ export function validateDetailedSectionResponse(
   if (response.status !== 'available') return unavailableDetailedSection(sectionId, response.status, response.text);
   const candidates = resolveEvidencePacketAliases(packet, response.sources, ledger, pages);
   const block: DetailedOverviewBlock = {
-    type: 'paragraph', text: response.text, evidenceIds: candidates.map((candidate) => candidate.evidenceId), claimKind: SECTION_CLAIM_KINDS[sectionId],
+    type: 'paragraph', text: response.text, evidenceIds: candidates.map((candidate) => candidate.evidenceId),
+    evidenceRefs: response.sources.map((alias) => ({ alias, evidenceIds: resolveEvidencePacketAliases(packet, [alias], ledger, pages).map((candidate) => candidate.evidenceId) })),
+    claimKind: SECTION_CLAIM_KINDS[sectionId],
     ...(sectionId === 'limitations' ? { limitationKind: limitationKindFor(candidates) } : {}),
   };
   return { id: sectionId, status: 'available', blocks: [block] };
@@ -131,7 +135,9 @@ export function validateProgressiveDetailedSectionResponse(
   if (response.status !== 'available') return unavailableDetailedSection(sectionId, response.status, response.text);
   const candidates = resolveProgressiveEvidenceAliases(session, response.sources, ledger, pages);
   const block: DetailedOverviewBlock = {
-    type: 'paragraph', text: response.text, evidenceIds: candidates.map((candidate) => candidate.evidenceId), claimKind: SECTION_CLAIM_KINDS[sectionId],
+    type: 'paragraph', text: response.text, evidenceIds: candidates.map((candidate) => candidate.evidenceId),
+    evidenceRefs: response.sources.map((alias) => ({ alias, evidenceIds: resolveProgressiveEvidenceAliases(session, [alias], ledger, pages).map((candidate) => candidate.evidenceId) })),
+    claimKind: SECTION_CLAIM_KINDS[sectionId],
     ...(sectionId === 'limitations' ? { limitationKind: limitationKindFor(candidates) } : {}),
   };
   return { id: sectionId, status: 'available', blocks: [block] };

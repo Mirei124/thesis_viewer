@@ -1,4 +1,5 @@
 import type { en } from './en';
+import { readerZhCN } from './reader-zh-CN';
 
 export const zhCN: Record<keyof typeof en, string> = {
   'settings.eyebrow': '设置',
@@ -48,4 +49,5 @@ export const zhCN: Record<keyof typeof en, string> = {
   'arxiv.unavailable': '浏览器权限不可用，自动打开保持关闭。',
   'arxiv.requestFailed': '无法请求 arXiv 权限，自动打开保持关闭。',
   'arxiv.saveFailed': '无法保存设置，自动打开保持关闭。',
+  ...readerZhCN,
 };
