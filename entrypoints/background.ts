@@ -3,6 +3,7 @@ import {
   isArxivDirectPdfUrl,
   readerUrlForArxivPdf,
 } from '../src/lib/arxivPdfInterception';
+import { handleToolbarClick } from '../src/lib/toolbarPdfAction';
 
 type NavigationDetails = { tabId: number; frameId: number; url: string };
 type TabUpdateDetails = { url?: string };
@@ -11,13 +12,16 @@ type ExtensionApi = {
   storage?: { local?: { get: (key: string) => Promise<Record<string, unknown>>; set: (items: Record<string, unknown>) => Promise<void> } };
   permissions?: {
     contains: (permissions: { origins: string[] }) => Promise<boolean>;
+    request: (permissions: { origins: string[] }) => Promise<boolean>;
     onRemoved?: { addListener: (callback: (permissions: { origins?: string[] }) => void) => void };
   };
   runtime?: { getURL: (path: string) => string };
   tabs?: {
     update: (tabId: number, updateProperties: { url: string }) => Promise<unknown>;
+    create: (createProperties: { url: string }) => Promise<unknown>;
     onUpdated?: { addListener: (callback: (tabId: number, changeInfo: TabUpdateDetails) => void) => void };
   };
+  action?: { onClicked?: { addListener: (callback: (tab: { url?: string }) => void) => void } };
   webNavigation?: {
     onBeforeNavigate?: { addListener: (callback: (details: NavigationDetails) => void, filter?: { url: Array<{ schemes: string[]; hostEquals: string; pathPrefix: string }> }) => void };
     onCommitted?: { addListener: (callback: (details: NavigationDetails) => void, filter?: { url: Array<{ schemes: string[]; hostEquals: string; pathPrefix: string }> }) => void };
@@ -68,6 +72,11 @@ async function mayOpenArxivPdf(details: NavigationDetails): Promise<void> {
 
 export default defineBackground(() => {
   const api = extensionApi();
+  api?.action?.onClicked?.addListener((tab) => {
+    handleToolbarClick(tab, api?.permissions && api.runtime && api.tabs
+      ? { permissions: api.permissions, runtime: api.runtime, tabs: api.tabs }
+      : undefined);
+  });
   api?.webNavigation?.onBeforeNavigate?.addListener(
     (details) => { void mayOpenArxivPdf(details); },
     ARXIV_PDF_NAVIGATION_FILTER,

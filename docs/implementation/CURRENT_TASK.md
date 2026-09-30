@@ -1,15 +1,15 @@
-# 当前实现任务
+# 当前实现任务：无
 
-维护者：主 agent。更新时间：2026-09-30。状态：无执行中批次。
+维护者：主 agent。更新时间：2026-09-30。状态：等待下一项用户目标。
 
 ## 一、总体实现进度
 
-B001–B075 已完成双浏览器 MV3 阅读扩展、Paper Insights、图标、分发 ZIP 以及 Chrome CRX/PEM 打包；最新批次见 [B075](batches/B075.md)。
+B001–B076 已完成。B076 的工具栏 PDF 入口和三行概览质量回归已归档至 [B076](batches/B076.md)，完整结果见[评估记录](evaluations/B076.md)。总体状态以 [IMPLEMENTATION_PROGRESS](../IMPLEMENTATION_PROGRESS.md) 为准。
 
 ## 二、当前细节目标清单
 
-暂无新派发目标。`pnpm package` 将 Chrome CRX/PEM 与 Firefox 扩展 ZIP 放入忽略的 `dist/`；Firefox sources ZIP 留在 `.output/`。Firefox 正式安装仍需 Mozilla 签名，B073 设置页真实浏览器交互待 Playwright 会话恢复后复验。
+当前没有已派发的实现目标。新任务开始前，主 agent 按 [WORKFLOW](WORKFLOW.md) 重新整理三部分任务包，定义小目标和文件边界后再委派。
 
 ## 三、相关背景知识与执行边界
 
-Chrome 私钥 `dist/thesis-viewer-chrome.pem` 由脚本在后续打包中复用，以维持扩展 ID；丢失该密钥可能导致 ID 变化。PEM 不能纳入版本库或对外分发。`dist/` 受 Git 排除。后续批次按 [协作流程](WORKFLOW.md)重新准备三部分任务包。
+继续保留 PDF 直链范围、按需来源权限、当前 PDF 原文锚点校验与 Paper Insights 的三行／六栏目结构。The Moonlight 只作内容组织参考；遇到新论文质量问题，先以本地离线回放定位实际发送素材，再验证真实模型输出。

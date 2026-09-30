@@ -1484,7 +1484,7 @@ function ReaderPage() {
     // The packet and its private alias mapping are request-local. Construct it
     // once for this user-triggered request so the response cannot be resolved
     // against a packet from another PDF or earlier attempt.
-    const packet = threeLineEvidencePacket(ledger);
+    const packet = threeLineEvidencePacket(ledger, pages);
     setOverview({ status: 'preparing' });
     void (async () => {
       const permission = await permissionRequest;

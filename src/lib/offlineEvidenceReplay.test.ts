@@ -27,6 +27,13 @@ describe('offline detailed evidence replay', () => {
       page(2, ['Results', 'Removing the visual encoder increases the model allocation exponent from 0.464 to 0.570 under compute-optimal training.']),
     ];
     const report = replayDetailedEvidenceFromPages(pages, 'fixture');
+    expect(report.threeLine.sourceCount).toBe(report.threeLine.sources.length);
+    expect(report.threeLine.sourceCount).toBeLessThanOrEqual(12);
+    for (const source of report.threeLine.sources) {
+      expect(source.excerptChars).toBeLessThanOrEqual(600);
+      expect(source.evidenceIds.length).toBeGreaterThan(0);
+      expect(source.evidenceIds.every((id) => id.startsWith('fixture:pdf-evidence-ledger-v1:'))).toBe(true);
+    }
     expect(report.stages.map((stage) => stage.stage)).toEqual(PROGRESSIVE_EVIDENCE_STAGES);
     expect(report.stages.some((stage) => stage.sourceCount > 0)).toBe(true);
     for (const stage of report.stages) {

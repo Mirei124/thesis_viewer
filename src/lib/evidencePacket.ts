@@ -54,6 +54,8 @@ export type EvidencePacketOptions = {
   preferredSlots?: readonly EvidenceSlot[];
   maxCandidates?: number;
   maxExcerptChars?: number;
+  /** Original page blocks allow geometry-checked inline math reconstruction. */
+  pages?: readonly PageExtraction[];
 };
 
 const DEFAULT_MAX_CANDIDATES = 12;
@@ -181,12 +183,17 @@ function threeLineCategory(passage: EvidencePassage): ThreeLineCategory | undefi
 function threeLinePassageQuality(passage: EvidencePassage): number {
   const title = passage.sectionTitle;
   const text = passage.text.trim();
+  // PDF.js may stop a passage midway through its final clause even when
+  // earlier sentences contain independently usable evidence. Keep those
+  // sentences eligible; the model is explicitly told not to use the fragment.
+  const completeSentences = (text.match(/[.!?。！？](?=\s|$)/g) ?? []).length;
+  const hasCompleteCore = completeSentences >= 2 && text.length >= 170;
   if (/\b(?:acknowledg\w*|references|bibliography|appendix|supplementary)\b|致谢|参考文献|附录/i.test(title)) return 0;
   if (/\b(?:related work|discussions?|conclusions?|future work)\b|相关工作|讨论|结论|未来工作/i.test(title)) return 0;
   if (/^(?:fig\.?|figure|table|tab\.?|algorithm)\s*\d+\b|^(?:图|表)\s*\d+/i.test(text)) return 0;
   if (/^(?:ACM Reference Format|CCS Concepts|Authors?[’']? addresses|Publication rights|We first briefly overview)\b|^\d{4}\]|^\d+\s+in\s+all\s+our\s+tests\b/i.test(text)) return 0;
   if (/^\d+%\)/.test(text)) return 0;
-  if (/\b(?:the|a|an|of|for|with|to|by|and|or|in)\s*$/i.test(text)
+  if (!hasCompleteCore && /\b(?:the|a|an|of|for|with|to|by|and|or|in)\s*$/i.test(text)
     && !/\b\d+\s*fps\b.{0,100}\b(?:1080p|resolution)\b[^.]*\./i.test(text)) return 0;
   if (/\b(?:our method is not without limitations|in conclusion|non-obvious differences in quality)\b/i.test(text)) return 0;
   if (/\b(?:acknowledg\w*|we thank|grateful to|funded by|supported by|efforts made by)\b|致谢|感谢|资助/i.test(text)) return 0;
@@ -194,7 +201,7 @@ function threeLinePassageQuality(passage: EvidencePassage): number {
   if (/\b(?:eval-|contri-|experi-)\s*$/i.test(text)) return 0;
   if (/^[,;:]/.test(text) || /[A-Za-z]-$/.test(text)) return 0;
   if (/^[a-z]/.test(text) && !/\b(?:we|our|this paper|the authors?)\b.{0,90}\b(?:introduc\w*|propos\w*|collect\w*|curat\w*|annotat\w*|construct\w*|design\w*|evaluat\w*|train\w*|render\w*)\b/i.test(text)) return 0;
-  if (/\b(?:e\.g\.,|i\.e\.,)\s*$|[(:,]\s*$/.test(text)) return 0;
+  if (!hasCompleteCore && /\b(?:e\.g\.,|i\.e\.,)\s*$|[(:,]\s*$/.test(text)) return 0;
   if (/^\d+\.\d+\s+[A-Z]\w+\s+(?:achiev\w*|attain\w*|improv\w*)\b/.test(text)) return 0;
   if (/^[a-z]/.test(text) && !/[.!?。！？]$/.test(text)) return 0;
   const length = Array.from(text).filter((character) => /[\p{L}\p{N}]/u.test(character)).length;
@@ -205,8 +212,8 @@ function threeLinePassageQuality(passage: EvidencePassage): number {
   return /[.!?。！？]$/.test(text) && length >= 55 ? 2 : 1;
 }
 
-function selectThreeLinePassages(ledger: EvidenceLedger, limit: number): EvidencePassage[] {
-  const passages = createEvidencePassages(ledger, { targetChars: 450, maxChars: 600 }).passages;
+function selectThreeLinePassages(ledger: EvidenceLedger, limit: number, pages?: readonly PageExtraction[]): EvidencePassage[] {
+  const passages = createEvidencePassages(ledger, { targetChars: 450, maxChars: 600, pages }).passages;
   const groups: Record<ThreeLineCategory, EvidencePassage[]> = { contribution: [], method: [], result: [] };
   for (const passage of passages) {
     if (threeLinePassageQuality(passage) === 0) continue;
@@ -258,6 +265,10 @@ function selectThreeLinePassages(ledger: EvidenceLedger, limit: number): Evidenc
       && /\b(?:sort\w*|project\w*|visibility|tile|mask|output|parallel|token|cache|pixel)\b|排序|投影|可见|分块|掩码|输出|并行|缓存|像素/i.test(text),
     (text: string) => /\b\d+(?:\.\d+)?\s*(?:fps|%|points?)\b/i.test(text)
       && /\b(?:resolution|1080p|accuracy|compared|outperform\w*|improv\w*|speedup|long|short)\b|分辨率|准确率|速度|提升|对比/i.test(text),
+    (text: string) => /\bclon\w*\b/i.test(text) && /\bsplit\w*\b/i.test(text),
+    (text: string) => /\b(?:scaling laws?|compute.optimal|extrapolat\w*|crossover)\b/i.test(text)
+      && /\b(?:predict\w*|compar\w*|increas\w*|decreas\w*|faster|efficien\w*)\b/i.test(text)
+      && /\d/.test(text),
   ];
   for (const [facetIndex, matches] of facets.entries()) {
     const candidates = substantive.filter((passage) => matches(passage.text)
@@ -327,7 +338,7 @@ export function createEvidencePacket(ledger: EvidenceLedger, options: EvidencePa
   const maxCandidates = boundedPositiveInteger(options.maxCandidates, DEFAULT_MAX_CANDIDATES, 'maxCandidates');
   const maxExcerptChars = boundedPositiveInteger(options.maxExcerptChars, DEFAULT_MAX_EXCERPT_CHARS, 'maxExcerptChars');
   if (options.purpose === 'three_line' && !options.preferredSlots) {
-    const selected = selectThreeLinePassages(ledger, maxCandidates);
+    const selected = selectThreeLinePassages(ledger, maxCandidates, options.pages);
     const packet: EvidencePacket = {
       purpose: 'three_line', coverage: ledger.coverage, coverageHints: coverageHints(ledger),
       sources: selected.map((passage, index) => ({

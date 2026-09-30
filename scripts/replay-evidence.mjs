@@ -59,5 +59,5 @@ for (const inputPath of inputPaths) {
   }
 }
 
-console.log(JSON.stringify({ formatVersion: 1, documents, errors }, null, 2));
+console.log(JSON.stringify({ formatVersion: 2, documents, errors }, null, 2));
 if (errors.length) process.exitCode = 1;

@@ -40,6 +40,20 @@ function sample(): { ledger: EvidenceLedger; pages: PageExtraction[] } {
 }
 
 describe('compact evidence packet', () => {
+  it('retains complete mechanism and scaling claims when a PDF passage ends mid-clause', () => {
+    const passages = [
+      'We initialize a reconstruction from camera-calibrated sparse points. Small primitives in missing regions are cloned to cover new geometry. Large primitives are split to improve local detail. The final adjustment uses a factor of',
+      'The two systems have similar loss on the text objective. Without an encoder, the multimodal loss improves faster as compute grows. Extrapolated scaling laws predict a crossover near 10^22 FLOPs under compute-optimal allocation, and at a larger budget under',
+    ];
+    const pages = passages.map((text, index) => page(index, [block(index, 0, text)]));
+    const ledger = pdfEvidenceLedgerFromPages(pages, 'doc', []);
+    const packet = createEvidencePacket(ledger, { purpose: 'three_line', pages, maxExcerptChars: 600 });
+    expect(packet.sources.some((source) => source.excerpt.includes('cloned') && source.excerpt.includes('split'))).toBe(true);
+    const scaling = packet.sources.find((source) => source.excerpt.includes('10^22 FLOPs'));
+    expect(scaling).toBeDefined();
+    expect(resolveEvidencePacketAliases(packet, [scaling!.alias], ledger, pages)).toHaveLength(1);
+  });
+
   it('keeps distinct 3DGS representation, density, rasterization and conditioned speed evidence', () => {
     const quoted = [
       'The input to our method is a set of images of a static scene, together with the corresponding cameras calibrated by SfM which produces a sparse point cloud. From these points we create a set of 3D Gaussians, defined by a position, covariance matrix and opacity.',

@@ -1,11 +1,12 @@
 import { DEFAULT_PROGRESSIVE_MAX_CANDIDATES, PROGRESSIVE_EVIDENCE_STAGES,
-  appendProgressiveEvidenceStage, createProgressiveEvidenceSession, resolveProgressiveEvidenceAliases,
+  appendProgressiveEvidenceStage, createProgressiveEvidenceSession, resolveEvidencePacketAliases, resolveProgressiveEvidenceAliases,
   type ProgressiveEvidenceStage } from './evidencePacket';
 import { pdfEvidenceLedgerFromPages } from './evidenceLedger';
 import { createEvidencePassages } from './evidencePassages';
 import type { PageExtraction } from './pdfPageBlocks';
 import { pdfSectionCandidatesFromPages } from './pdfSectionCandidates';
 import { createPassageRetrievalIndex, selectRankedPassagesForPurpose } from './retrievalIndex';
+import { threeLineEvidencePacket } from './threeLineOverview';
 
 const EXCERPT_LIMIT = 1500;
 
@@ -33,6 +34,12 @@ export type OfflineEvidenceReplay = {
   sectionCandidateCount: number;
   ledgerCandidateCount: number;
   passageCount: number;
+  threeLine: {
+    sourceCount: number;
+    sourceLimit: number;
+    totalExcerptChars: number;
+    sources: OfflineEvidenceSource[];
+  };
   stages: OfflineEvidenceStage[];
 };
 
@@ -40,6 +47,16 @@ export type OfflineEvidenceReplay = {
 export function replayDetailedEvidenceFromPages(pages: PageExtraction[], documentVersion: string): OfflineEvidenceReplay {
   const sections = pdfSectionCandidatesFromPages(pages, documentVersion);
   const ledger = pdfEvidenceLedgerFromPages(pages, documentVersion, sections);
+  const threeLinePacket = threeLineEvidencePacket(ledger, pages);
+  const threeLineSources = threeLinePacket.sources.map((source): OfflineEvidenceSource => {
+    const excerptChars = Array.from(source.excerpt).length;
+    if (excerptChars > 600) throw new Error(`three_line/${source.alias}: excerpt budget exceeded.`);
+    const originals = resolveEvidencePacketAliases(threeLinePacket, [source.alias], ledger, pages);
+    if (!originals.length) throw new Error(`three_line/${source.alias}: no original evidence.`);
+    return { alias: source.alias, section: source.section, excerpt: source.excerpt,
+      excerptChars, evidenceIds: originals.map((item) => item.evidenceId) };
+  });
+  if (threeLineSources.length > 12) throw new Error('three_line: source budget exceeded.');
   const passages = createEvidencePassages(ledger, { targetChars: 520, maxChars: EXCERPT_LIMIT, pages });
   const index = createPassageRetrievalIndex(passages);
   const session = createProgressiveEvidenceSession(ledger, { maxExcerptChars: EXCERPT_LIMIT });
@@ -69,5 +86,8 @@ export function replayDetailedEvidenceFromPages(pages: PageExtraction[], documen
 
   return { documentVersion, pageCount: pages.length, coverage: ledger.coverage,
     sectionCandidateCount: sections.length, ledgerCandidateCount: ledger.candidates.length,
-    passageCount: passages.passages.length, stages };
+    passageCount: passages.passages.length,
+    threeLine: { sourceCount: threeLineSources.length, sourceLimit: 12,
+      totalExcerptChars: threeLineSources.reduce((sum, source) => sum + source.excerptChars, 0), sources: threeLineSources },
+    stages };
 }
