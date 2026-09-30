@@ -26,9 +26,11 @@ WXT writes Chrome output to `.output/chrome-mv3/` and Firefox output to `.output
 
 ## Package for distribution
 
-Run `pnpm package` to build both browsers and write ZIP archives under `.output/`. The Chrome and Firefox extension archives contain the manifest, bundled assets, icons, and `LICENSE` at the archive root. A separate Firefox sources archive contains only the files needed to rebuild the extension for add-on review. You can run `pnpm package:chrome` or `pnpm package:firefox` for one target.
+Run `pnpm package` to build both browsers. It creates `dist/thesis-viewer-<version>-chrome.crx`, `dist/thesis-viewer-chrome.pem`, and `dist/thesis-viewer-<version>-firefox.zip`. The script reuses the PEM on later runs so the Chrome extension ID stays stable. Keep a secure backup of the PEM, and never publish or send it with the CRX. You can run `pnpm package:chrome` or `pnpm package:firefox` for one target; set `CHROME_BIN` to the Chromium/Chrome executable if it is not discoverable on `PATH`.
 
-These are unsigned upload archives. Chrome users can load the unpacked build locally; persistent installation in Firefox release/beta requires [Mozilla signing](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/). The Firefox sources archive is for review and is not an installable extension. The archives are ignored by Git.
+WXT also keeps the browser extension ZIP archives under `.output/`, plus a separate Firefox sources ZIP containing the files needed to rebuild the extension for add-on review. The archives contain bundled assets, icons, and `LICENSE` at the root. `dist/` and `.output/` are ignored by Git.
+
+Chrome users can load the unpacked build locally; persistent installation in Firefox release/beta requires [Mozilla signing](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/). The Firefox sources archive is for review and is not an installable extension. The Firefox ZIP in `dist/` is unsigned.
 
 To inspect the detailed overview's local evidence packets without a model or browser, use Node 22+ with one or more local PDFs:
 
@@ -40,7 +42,7 @@ The JSON lists each document's six stages, new-source count and limit, total exc
 
 ## Load the built extension
 
-The `.output/` directories are build artifacts, ignored by Git, and are intended for local development loading. The ZIP archives above are unsigned distribution artifacts.
+The `.output/` directories are build artifacts, ignored by Git, and are intended for local development loading.
 
 - Chrome: open `chrome://extensions`, enable **Developer mode**, select **Load unpacked**, and choose `.output/chrome-mv3/`.
 - Firefox: open `about:debugging#/runtime/this-firefox`, select **Load Temporary Add-on**, and choose `.output/firefox-mv3/manifest.json`. Firefox removes a temporary add-on after restart.

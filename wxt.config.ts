@@ -17,6 +17,7 @@ export default defineConfig({
       'entrypoints/**',
       'public/**',
       'scripts/copy-license.mjs',
+      'scripts/package-extension.mjs',
       'package.json',
       'pnpm-lock.yaml',
       'pnpm-workspace.yaml',

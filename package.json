@@ -13,8 +13,8 @@
     "build:chrome": "wxt build --browser chrome && node scripts/copy-license.mjs chrome",
     "build:firefox": "wxt build --browser firefox && node scripts/copy-license.mjs firefox",
     "package": "pnpm package:chrome && pnpm package:firefox",
-    "package:chrome": "wxt zip --browser chrome",
-    "package:firefox": "wxt zip --browser firefox"
+    "package:chrome": "node scripts/package-extension.mjs chrome",
+    "package:firefox": "node scripts/package-extension.mjs firefox"
   },
   "dependencies": {
     "@wxt-dev/module-react": "^1.1.0",

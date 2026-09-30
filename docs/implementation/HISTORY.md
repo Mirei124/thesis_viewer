@@ -4,6 +4,7 @@
 
 | 日期 | 批次／事件 | 工作范围 | 结果与证据 | 下一步 |
 |---|---|---|---|---|
+| 2026-09-30 | [B075](batches/B075.md) | Chrome CRX/PEM 与 Firefox ZIP 汇集到 `dist/` | `pnpm package` 生成 CRX3 和私钥、复制 Firefox ZIP；私钥复用与 ID 稳定、`0600`、ZIP 一致性和 Git 排除均通过 | 备份 PEM 且不对外分发；Firefox 正式安装仍需 Mozilla 签名 |
 | 2026-09-30 | [B074](batches/B074.md) | 双浏览器扩展 ZIP 与 Firefox 源码 ZIP 打包 | `pnpm package` 生成三包；ZIP 根目录 LICENSE/manifest/图标完备；源码白名单排除测试和临时数据，隔离重建 76 个产物字节一致 | Firefox 正式安装前需 Mozilla 签名；B073 设置页浏览器交互待会话恢复后复验 |
 | 2026-09-30 | [B073](batches/B073.md) | 设置默认值、非流式兼容请求与扩展图标 | 移除模型 SSE 路径；官方 DeepSeek 新用户默认值、旧配置迁移；Chrome/Firefox 四尺寸图标产物；169 项测试、typecheck、双端构建通过 | `pw-main` 恢复后复验真实设置页交互；其他 PDF 质量和边界样本按需继续 |
 | 2026-09-30 | [B072](batches/B072.md) | 详细概览关键公式证据与显示 | [五篇回放与真实模型评估](evaluations/B072.md)：2609.35457 的 `C=MD` 及计算最优分配律进入方法摘要并完成数学排版，35 个原始锚点复核；164 项测试、typecheck、双端构建通过 | 复杂多行／图像公式仅在可靠提取方案与样本出现时处理 |
