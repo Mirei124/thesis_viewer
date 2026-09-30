@@ -24,6 +24,14 @@ pnpm build:firefox
 
 WXT writes Chrome output to `.output/chrome-mv3/` and Firefox output to `.output/firefox-mv3/`; each build copies the root `LICENSE` into its output directory. Open `reader.html` from the loaded extension's URL to use the reader. The extension management page's options command opens `options.html` in its own tab.
 
+To inspect the detailed overview's local evidence packets without a model or browser, use Node 22+ with one or more local PDFs:
+
+```sh
+pnpm replay:evidence -- /absolute/path/paper.pdf /absolute/path/another.pdf > /tmp/evidence-replay.json
+```
+
+The JSON lists each document's six stages, new-source count and limit, total excerpt length, and each source's alias, section, excerpt, length, and original evidence IDs. The command revalidates every alias against its PDF.js text block and exits nonzero if a PDF fails or a source exceeds its budget. It reads PDFs locally and makes no API request; it does not save PDFs or keys.
+
 ## Load the built extension
 
 The `.output/` directories are build artifacts, ignored by Git, and are intended for local development loading rather than a signed store package.
@@ -39,7 +47,7 @@ Open `reader.html` from the extension details page or its extension URL. The ext
 
 The reader rejects inputs larger than 100 MiB before local-file reads, from URL response metadata when available, and while streaming URL bytes. It opens the PDF only far enough to reject documents above 500 pages, before rendering, outline work, thumbnails, or full-text indexing begin. The UI reports no selected file, permission denial, loading, cancellation, successful page rendering, HTTP/network errors, HTML/non-PDF input, invalid/damaged PDF, password-protected PDF, and unexpected PDF.js failures. Password entry/decryption is deliberately unavailable. If PDF.js cannot extract any text (for example, a scanned PDF), page rendering remains available while the full-document search field and navigation are disabled with an explicit explanation; no text has been falsely indexed. Outline destinations are resolved through PDF.js and unresolved entries remain on the current page with an explanation; PDFs without an outline say so directly. Manual highlights capture the selected quote plus PDF-coordinate rectangles, so they redraw with the current page at every supported zoom and rotation. Their local IndexedDB records are keyed by a SHA-256 content version, restore only for the same content, and can be cleared for that document. Successful translations are retained only under that same stable content version and can be reopened locally; API keys, authorization headers, and unfinished output are never stored. Reloading or closing the reader marks active translation checkpoints interrupted and never sends a replacement request. Storage failures are shown while the in-memory highlight remains usable. Highlights do not cross pages and do not create notes, citations, automatic highlights, or automatic AI requests. Starting a new import, pressing Cancel, or choosing another page/view invalidates an older render so it cannot replace the current reader state. It does not implement OCR, PDF/full-text persistence, HTML import, webpage scraping, cloud sync, or AI actions without an explicit user request.
 
-The current static audit ran 121 unit tests, typecheck, both browser builds, and `git diff --check`. Both builds retain the known non-blocking warning that the reader JavaScript chunk exceeds 500 kB. Users have exercised the M8 main reading flow in normal Chromium and Firefox, including local and direct-URL PDFs, language/theme controls, and Insights. Earlier browser checks covered translation, overviews, Evidence navigation, HTML rejection, and permission denial. A successful build does not substitute for browser evidence or prove the untested boundary samples below.
+The current static audit ran 164 unit tests, typecheck, both browser builds, and `git diff --check`. Both builds retain the known non-blocking warning that the reader JavaScript chunk exceeds 500 kB. Users have exercised the M8 main reading flow in normal Chromium and Firefox, including local and direct-URL PDFs, language/theme controls, and Insights. The B068–B072 quality reviews checked five public PDFs with offline evidence replay and generated detailed overviews in Chromium, including a verified formula from arXiv 2609.35457. Earlier browser checks covered translation, overviews, Evidence navigation, HTML rejection, and permission denial. A successful build does not substitute for browser evidence or prove the untested boundary samples below.
 
 ## Verify URL import in a browser
 

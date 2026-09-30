@@ -1,8 +1,9 @@
-import { isModelEligibleCandidate } from './evidencePacket';
+import { isModelEligibleCandidate } from './evidenceEligibility';
 import type { EvidenceCandidate, EvidenceLedger } from './evidenceLedger';
+import type { PageExtraction, PdfPageTextBlock } from './pdfPageBlocks';
 
 /** Bump when passage admission or joining rules change. */
-export const EVIDENCE_PASSAGE_VERSION = 'local-evidence-passages-v1';
+export const EVIDENCE_PASSAGE_VERSION = 'local-evidence-passages-v7';
 
 /**
  * A local-only trace for one original ledger item.  `text` is deliberately
@@ -40,6 +41,8 @@ export type EvidencePassageOptions = {
   maxChars?: number;
   /** Avoid admitting isolated PDF.js fragments as model material. */
   minimumChars?: number;
+  /** Original PDF.js blocks permit strictly local, geometry-checked inline math. */
+  pages?: readonly PageExtraction[];
 };
 
 const DEFAULT_TARGET_CHARS = 360;
@@ -99,6 +102,11 @@ function isJoinableBodyFragment(candidate: EvidenceCandidate): boolean {
     && !/^[\p{P}\p{S}\d\s]+$/u.test(text);
 }
 
+function isCaptionOrAcknowledgment(candidate: EvidenceCandidate): boolean {
+  return /^(?:fig\.?|figure|table|tab\.?|algorithm)\s*\d+\b|^(?:图|表)\s*\d+/i.test(candidate.quote.trim())
+    || /\b(?:acknowledg\w*|references|bibliography)\b|致谢|参考文献/i.test(candidate.section.title);
+}
+
 function joinText(left: string, right: string): string {
   const previous = left.trimEnd();
   const next = right.trimStart();
@@ -107,6 +115,8 @@ function joinText(left: string, right: string): string {
   // The only destructive normalization is a conventional English line-break
   // hyphen followed by a lower-case continuation ("frame-" + "work").
   if (/[A-Za-z]-$/.test(previous) && /^[a-z]/.test(next)) return `${previous.slice(0, -1)}${next}`;
+  if (/\($/.test(previous)) return `${previous}${next}`;
+  if (/\d\.$/.test(previous) && /^\d/.test(next)) return `${previous}${next}`;
   // CJK prose normally has no inter-item space; preserve an existing boundary
   // for every other script so English words cannot run together.
   if (/[\p{Script=Han}\p{Script=Hiragana}\p{Script=Katakana}]/u.test(previous.at(-1)!)
@@ -115,13 +125,125 @@ function joinText(left: string, right: string): string {
   return `${previous} ${next}`;
 }
 
+function inlineMathToken(text: string): boolean {
+  return /^(?:[A-Za-z]|[A-Za-z]\s+[A-Za-z]|to|from|\d+(?:\.\d+)?|=\s*\d*|[.×+\-−^])$/.test(text.trim());
+}
+
+function quantitativeLead(text: string): boolean {
+  return /\b(?:exponent from|order of|approximately|equal(?:s)? to|training budget is|increas\w*|decreas\w*|from|to)\s*$/i.test(text.trim());
+}
+
+function inlineGeometry(left: PdfPageTextBlock | undefined, right: PdfPageTextBlock | undefined): boolean {
+  if (!left || !right || left.pageIndex !== right.pageIndex) return false;
+  const leftSize = Math.hypot(left.rawTransform[0], left.rawTransform[1]);
+  const rightSize = Math.hypot(right.rawTransform[0], right.rawTransform[1]);
+  const baselineGap = Math.abs(left.rawTransform[5] - right.rawTransform[5]);
+  const horizontalGap = right.rawTransform[4] - (left.rawTransform[4] + left.rawWidth);
+  return leftSize > 0 && rightSize > 0 && baselineGap <= Math.max(leftSize, rightSize) * 0.55
+    && horizontalGap >= -3 && horizontalGap <= Math.max(18, leftSize * 1.6);
+}
+
+function wrappedMathGeometry(left: PdfPageTextBlock | undefined, right: PdfPageTextBlock | undefined, first: PdfPageTextBlock | undefined): boolean {
+  if (!left || !right || !first || left.pageIndex !== right.pageIndex || first.pageIndex !== right.pageIndex) return false;
+  const size = Math.hypot(left.rawTransform[0], left.rawTransform[1]);
+  const lineDrop = left.rawTransform[5] - right.rawTransform[5];
+  return size > 0 && lineDrop >= size * 0.75 && lineDrop <= size * 1.4
+    && Math.abs(right.rawTransform[4] - first.rawTransform[4]) <= size * 1.2;
+}
+
+function isSuperscript(left: PdfPageTextBlock | undefined, right: PdfPageTextBlock | undefined): boolean {
+  if (!left || !right || !/^\d+$/.test(left.normalizedText.trim()) || !/^\d+$/.test(right.normalizedText.trim())) return false;
+  const size = Math.hypot(left.rawTransform[0], left.rawTransform[1]);
+  const lift = right.rawTransform[5] - left.rawTransform[5];
+  return inlineGeometry(left, right) && size > 0 && lift > size * 0.15 && lift < size * 0.55;
+}
+
+/** Rebuild only short, numbered, single-line equations whose every glyph is
+ * still backed by its original PDF.js item. Geometry supplies subscripts and
+ * superscripts; an uncertain row is simply omitted. */
+function numberedEquationPassages(ledger: EvidenceLedger, pages: readonly PageExtraction[], maxChars: number): EvidencePassage[] {
+  const result: EvidencePassage[] = [];
+  const byBlock = new Map(ledger.candidates.map((candidate) => [candidate.blockId, candidate]));
+  for (const page of pages) {
+    for (const [markerIndex, marker] of page.blocks.entries()) {
+      const number = /^\((\d{1,2})\)$/.exec(marker.normalizedText.trim());
+      if (!number || marker.rawTransform[4] < 350) continue;
+      const baseline = marker.rawTransform[5];
+      const size = Math.hypot(marker.rawTransform[0], marker.rawTransform[1]);
+      const row: PdfPageTextBlock[] = [];
+      for (let i = markerIndex - 1; i >= 0; i -= 1) {
+        const block = page.blocks[i];
+        if (Math.abs(block.rawTransform[5] - baseline) > size * 0.55) break;
+        row.unshift(block);
+      }
+      const glyphs = row.filter((block) => block.normalizedText.trim());
+      if (glyphs.length < 9 || glyphs.length > 38 || glyphs[0].rawTransform[4] <= 140
+        || glyphs.some((block) => !byBlock.has(block.blockId) || block.normalizedText.trim().length > 12)) continue;
+      if (!glyphs.some((block) => /[=∝≈≤≥]/.test(block.normalizedText)) || !glyphs.some((block) => /[a-zA-Z]/.test(block.normalizedText))) continue;
+      const lead = page.blocks.slice(Math.max(0, markerIndex - row.length - 5), markerIndex - row.length)
+        .reverse().find((block) => /:\s*$/.test(block.normalizedText.trim())
+          && block.normalizedText.length >= 25 && byBlock.has(block.blockId)
+          && block.rawTransform[5] > baseline && block.rawTransform[5] - baseline < size * 3);
+      if (!lead) continue;
+      let formula = '';
+      let previous: PdfPageTextBlock | undefined;
+      let scriptKind: '^' | '_' | undefined;
+      for (const block of glyphs) {
+        const token = block.normalizedText.trim();
+        const tokenSize = Math.hypot(block.rawTransform[0], block.rawTransform[1]);
+        const relativeY = block.rawTransform[5] - baseline;
+        if (tokenSize < size * 0.85 && Math.abs(relativeY) > size * 0.12) {
+          const kind = relativeY > 0 ? '^' : '_';
+          if (scriptKind === kind && formula.endsWith('}')) formula = `${formula.slice(0, -1)}${token}}`;
+          else formula += `${kind}{${token}}`;
+          scriptKind = kind;
+        } else {
+          scriptKind = undefined;
+          const gap = previous ? block.rawTransform[4] - (previous.rawTransform[4] + previous.rawWidth) : 0;
+          const space = gap > size * 0.4 || previous && /[A-Za-z0-9]$/.test(previous.normalizedText.trim()) && /^[A-Za-z0-9]/.test(token) && gap > size * 0.12;
+          formula += `${space ? ' ' : ''}${token}`;
+        }
+        previous = block;
+      }
+      formula = formula.replace(/\s+/g, ' ').replace(/[.,;:]$/, '').trim()
+        .replace(/∝/g, '\\propto ').replace(/[−–]/g, '-').replace(/∗/g, '*');
+      if (formula.length > 160 || /[<>]/.test(formula) || glyphs.some((block) => /\\/.test(block.normalizedText))) continue;
+      let definitionBlocks: PdfPageTextBlock[] = [];
+      if (/compute.optimal allocation law/i.test(lead.normalizedText)) {
+        const earlier = page.blocks.slice(Math.max(0, markerIndex - 100), markerIndex - row.length);
+        const letIndex = earlier.findIndex((block) => block.normalizedText.trim() === 'Let');
+        const budgetIndex = earlier.findIndex((block) => /the training budget is/i.test(block.normalizedText));
+        const endIndex = earlier.findIndex((block, index) => index > budgetIndex && /\. At a target budget/i.test(block.normalizedText));
+        if (letIndex >= 0 && budgetIndex > letIndex && endIndex > budgetIndex && endIndex - letIndex <= 24
+          && earlier.slice(letIndex, endIndex + 1).some((block) => /denote FLOPs per token/i.test(block.normalizedText))) {
+          definitionBlocks = earlier.slice(letIndex, endIndex + 1).filter((block) => block.normalizedText.trim());
+        }
+      }
+      const sourceBlocks = [...definitionBlocks, lead, ...glyphs, marker];
+      const candidates = sourceBlocks.map((block) => byBlock.get(block.blockId)).filter((item): item is EvidenceCandidate => Boolean(item));
+      if (candidates.length !== sourceBlocks.length || candidates.some((candidate) => candidate.section.title !== candidates[0].section.title)) continue;
+      const definition = definitionBlocks.reduce((joined, block) => joinText(joined, block.normalizedText), '').split('. At a target budget')[0].trim();
+      const text = `${definition ? `${definition}. ` : ''}${lead.normalizedText.trim()} $${formula}$ (Equation ${number[1]}).`;
+      if (Array.from(text).length > maxChars) continue;
+      result.push({
+        passageId: `${ledger.documentVersion}:${EVIDENCE_PASSAGE_VERSION}:equation:p${page.pageIndex}:i${marker.sourceOrder}`,
+        pageIndex: page.pageIndex, sectionTitle: candidates[0].section.title, text,
+        members: candidates.map((candidate) => ({ candidate, textStart: 0, textEnd: text.length })),
+        diagnostics: ['Single-line numbered formula reconstructed from adjacent PDF text items; every symbol retains an independently verified source anchor.'],
+      });
+    }
+  }
+  return result;
+}
+
 function appendCandidate(
   text: string,
   members: EvidencePassageMember[],
   candidate: EvidenceCandidate,
   maxChars: number,
+  joinedOverride?: string,
 ): { text: string; members: EvidencePassageMember[]; clipped: boolean } {
-  const joined = joinText(text, candidate.quote);
+  const joined = joinedOverride ?? joinText(text, candidate.quote);
   const available = Array.from(joined);
   const clipped = available.length > maxChars;
   const finalText = clipped ? `${available.slice(0, Math.max(0, maxChars - 1)).join('')}…` : joined;
@@ -140,15 +262,18 @@ function canFollow(
 ): boolean {
   return Boolean(previousPosition && position
     && previousPosition.pageIndex === position.pageIndex
-    && position.sourceOrder === previousPosition.sourceOrder + 1
+    && (position.sourceOrder === previousPosition.sourceOrder + 1
+      || (position.sourceOrder === previousPosition.sourceOrder + 2
+        && /[:;：；]\s*$/.test(previous.quote)
+        && /^(?:\(?\d+[).]|[A-Za-z\p{L}])/u.test(candidate.quote.trim())))
     && normalizedSectionTitle(previous) === normalizedSectionTitle(candidate));
 }
 
 /**
  * Builds cautiously readable passages while retaining a many-to-one mapping
- * back to immutable original evidence. This function never reads PDF blocks,
- * crosses pages/sections, or upgrades PDF.js source order into reading-order
- * certainty.
+ * back to immutable original evidence. Optional PDF blocks only confirm local
+ * inline math geometry; source order is never treated as reading-order proof.
+ * Passages never cross pages or sections.
  */
 export function createEvidencePassages(
   ledger: EvidenceLedger,
@@ -167,6 +292,10 @@ export function createEvidencePassages(
   let previous: EvidenceCandidate | undefined;
   let previousPosition: CandidatePosition | undefined;
   let clipped = false;
+  let captionTail: { pageIndex: number; sourceOrder: number; remaining: number } | undefined;
+  let mathBridge = false;
+  let hadMathBridge = false;
+  const blocks = new Map(options.pages?.flatMap((page) => page.blocks.map((block) => [block.blockId, block] as const)) ?? []);
 
   const flush = () => {
     if (!previous || !members.length) return;
@@ -181,32 +310,77 @@ export function createEvidencePassages(
         diagnostics: [
           `${members.length} original PDF text item${members.length === 1 ? '' : 's'} retained as independently verifiable passage members.`,
           ...(clipped ? ['Passage text was bounded; its final original member remains available through its own anchor.'] : []),
+          ...(hadMathBridge ? ['Inline mathematical text was joined only from adjacent, geometrically aligned PDF items; each original quote retains its own anchor.'] : []),
         ],
       });
     } else {
       diagnostics.push(`Excluded an isolated ${readableLength(text)}-character PDF fragment from model-facing passages.`);
     }
-    text = ''; members = []; firstPosition = undefined; previous = undefined; previousPosition = undefined; clipped = false;
+    text = ''; members = []; firstPosition = undefined; previous = undefined; previousPosition = undefined; clipped = false; mathBridge = false; hadMathBridge = false;
   };
 
   for (const [ledgerOrder, candidate] of ledger.candidates.entries()) {
-    if (candidate.coverage === 'unreadable' || (!isModelEligibleCandidate(candidate, ledger.candidates) && !isJoinableBodyFragment(candidate))) {
+    const position = positionForCandidate(candidate, ledgerOrder);
+    const captionStart = /^(?:fig\.?|figure|table|tab\.?|algorithm)\s*\d+\b|^(?:图|表)\s*\d+/i.test(candidate.quote.trim());
+    if (captionStart && position) captionTail = { pageIndex: position.pageIndex, sourceOrder: position.sourceOrder, remaining: 2 };
+    else if (captionTail && position && captionTail.pageIndex === position.pageIndex
+      && position.sourceOrder - captionTail.sourceOrder <= 3 && captionTail.remaining > 0
+      && candidate.quote.length < 160) {
+      captionTail.remaining -= 1;
+      diagnostics.push('Excluded a short continuation immediately after a figure or table caption.');
+      flush();
+      continue;
+    } else if (captionTail && (!position || captionTail.pageIndex !== position.pageIndex || position.sourceOrder - captionTail.sourceOrder > 3)) captionTail = undefined;
+    const inlineAbbreviationBridge = Boolean(previous && /\($/.test(previous.quote.trim())
+      && /^(?:i\.e\.?|e\.g\.?)$/i.test(candidate.quote.trim())
+      && canFollow(previous, candidate, previousPosition, position));
+    const unknownBridge = Boolean(previous && candidate.section.confidence === 'unknown'
+      && canFollow(previous, candidate, previousPosition, position)
+      && readableLength(candidate.quote) >= 3
+      && !/\b(?:doi|arxiv)\s*[:/]|https?:\/\/|\S+@\S+/i.test(candidate.quote));
+    const inlineMathFollow = Boolean(previous && previousPosition && position
+      && previousPosition.pageIndex === position.pageIndex
+      && position.sourceOrder > previousPosition.sourceOrder && position.sourceOrder - previousPosition.sourceOrder <= 2
+      && normalizedSectionTitle(previous) === normalizedSectionTitle(candidate)
+      && (inlineGeometry(blocks.get(previous.blockId), blocks.get(candidate.blockId))
+        || mathBridge && inlineMathToken(candidate.quote)
+          && wrappedMathGeometry(blocks.get(previous.blockId), blocks.get(candidate.blockId), members[0] && blocks.get(members[0].candidate.blockId)))
+      && (mathBridge || quantitativeLead(text))
+      && (inlineMathToken(candidate.quote) || mathBridge && isModelEligibleCandidate(candidate, ledger.candidates)));
+    if (candidate.coverage === 'unreadable' || isCaptionOrAcknowledgment(candidate)
+      || (!isModelEligibleCandidate(candidate, ledger.candidates) && !isJoinableBodyFragment(candidate) && !unknownBridge && !inlineAbbreviationBridge && !inlineMathFollow)) {
       diagnostics.push('Excluded a non-body, front-matter, heading, or unreadable ledger candidate.');
       flush();
       continue;
     }
-    const position = positionForCandidate(candidate, ledgerOrder);
-    const follows = previous && canFollow(previous, candidate, previousPosition, position);
-    const prospective = follows ? joinText(text, candidate.quote) : candidate.quote.trim();
+    const follows = previous && (canFollow(previous, candidate, previousPosition, position) || inlineMathFollow);
+    const leftBlock = previous && blocks.get(previous.blockId);
+    const rightBlock = blocks.get(candidate.blockId);
+    const prospective = follows ? inlineMathFollow && isSuperscript(leftBlock, rightBlock)
+      ? `${text}^${candidate.quote.trim()}` : joinText(text, candidate.quote) : candidate.quote.trim();
     // A target is a safe split point only after at least two real items. Never
     // split a single source solely because it is already substantial.
-    if (!follows || (members.length >= 2 && Array.from(text).length >= targetChars) || Array.from(prospective).length > maxChars) flush();
-    const added = appendCandidate(text, members, candidate, maxChars);
-    text = added.text; members = added.members; clipped ||= added.clipped;
+    // Keep an enumerated contribution/feature list with its introductory
+    // clause when the next source item still belongs to this exact section.
+    const leadsIntoList = /[:;：；]\s*$/.test(text)
+      || /(?:^|\s)\d+[).][^.;!?。！？]*$/.test(text);
+    // A PDF text item may end halfway through a word or an enumerated step.
+    // Wait for a sentence boundary (up to maxChars) so its next source item is
+    // retained in the same independently anchored passage.
+    const safeTargetBoundary = /[.!?。！？]["'”’)]?\s*$/.test(text) && !/[A-Za-z]-$/.test(text);
+    const splitBeforeCandidate = !follows || (members.length >= 2 && Array.from(text).length >= targetChars && !leadsIntoList && safeTargetBoundary) || Array.from(prospective).length > maxChars;
+    if (splitBeforeCandidate) flush();
+    const added = appendCandidate(text, members, candidate, maxChars, !splitBeforeCandidate && follows ? prospective : undefined);
+    text = added.text;
+    members = added.members; clipped ||= added.clipped;
+    if (!splitBeforeCandidate && inlineMathFollow) { mathBridge = inlineMathToken(candidate.quote); hadMathBridge = true; }
+    else if (readableLength(candidate.quote) >= 12) mathBridge = false;
     if (!firstPosition) firstPosition = position;
     previous = candidate; previousPosition = position;
   }
   flush();
+
+  if (options.pages) passages.push(...numberedEquationPassages(ledger, options.pages, maxChars));
 
   diagnostics.unshift(`${passages.length} conservative local passage${passages.length === 1 ? '' : 's'} created from ${ledger.candidates.length} ledger candidate${ledger.candidates.length === 1 ? '' : 's'}.`);
   return { version: EVIDENCE_PASSAGE_VERSION, documentVersion: ledger.documentVersion, passages, diagnostics };

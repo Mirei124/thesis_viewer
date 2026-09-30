@@ -3,7 +3,7 @@ export type VerifiedEvidenceRef = { alias: string; evidenceIds: string[] };
 
 export type InlineEvidencePart =
   | { kind: 'text'; value: string }
-  | { kind: 'source'; alias: string; evidenceId: string; member: number; memberCount: number };
+  | { kind: 'source'; alias: string; evidenceIds: string[] };
 
 type SourcePart = Extract<InlineEvidencePart, { kind: 'source' }>;
 
@@ -11,39 +11,43 @@ type SourcePart = Extract<InlineEvidencePart, { kind: 'source' }>;
 export function inlineEvidenceLabel(part: SourcePart): string {
   const match = /^[ES](\d+)$/.exec(part.alias);
   const number = match ? String(Number(match[1])) : part.alias;
-  return part.memberCount > 1 ? `[${number}.${part.member}]` : `[${number}]`;
+  return `[${number}]`;
 }
 
-export function inlineEvidenceAccessibleName(part: SourcePart, pageIndex: number, precision: 'exact' | 'block' | 'page'): string {
+export function inlineEvidenceAccessibleName(part: SourcePart, pageIndex: number, precision: 'exact' | 'block' | 'page', member?: number): string {
   const category = part.alias.startsWith('E') ? 'Detailed overview source' : 'Three-line overview source';
-  const member = part.memberCount > 1 ? `, passage part ${part.member} of ${part.memberCount}` : '';
-  return `Go to ${category} ${part.alias}${member} on page ${pageIndex + 1}; ${precision} precision`;
+  const memberLabel = member && part.evidenceIds.length > 1 ? `, passage part ${member} of ${part.evidenceIds.length}` : '';
+  return `Go to ${category} ${part.alias}${memberLabel} on page ${pageIndex + 1}; ${precision} precision`;
 }
 
 /** Keeps unknown mentions as ordinary text, then appends any verified but unmentioned sources. */
 export function inlineEvidenceParts(text: string, refs: readonly VerifiedEvidenceRef[]): InlineEvidencePart[] {
-  const bound = new Map(refs.filter((ref) => ref.evidenceIds.length > 0).map((ref) => [ref.alias, ref.evidenceIds]));
+  const bound = new Map(refs.filter((ref) => ref.evidenceIds.length > 0).map((ref) => [ref.alias, [...new Set(ref.evidenceIds)]]));
   const mentioned = new Set<string>();
+  const seenInSentence = new Set<string>();
   const parts: InlineEvidencePart[] = [];
   const appendSource = (alias: string, evidenceIds: readonly string[]) => {
-    evidenceIds.forEach((evidenceId, index) => {
-      if (index > 0) parts.push({ kind: 'text', value: ' ' });
-      parts.push({ kind: 'source', alias, evidenceId, member: index + 1, memberCount: evidenceIds.length });
-    });
+    parts.push({ kind: 'source', alias, evidenceIds: [...evidenceIds] });
   };
-  const pattern = /\b(?:E\d{3}|S\d{2})\b/g;
+  const appendText = (value: string) => {
+    if (value) parts.push({ kind: 'text', value });
+    if (/[。！？.!?\n]/.test(value)) seenInSentence.clear();
+  };
+  const pattern = /\[(E\d{3}|S\d{2})\]|\b(E\d{3}|S\d{2})\b/g;
   let cursor = 0;
   for (const match of text.matchAll(pattern)) {
     const index = match.index;
-    if (index > cursor) parts.push({ kind: 'text', value: text.slice(cursor, index) });
-    const evidenceIds = bound.get(match[0]);
+    if (index > cursor) appendText(text.slice(cursor, index));
+    const alias = match[1] ?? match[2];
+    const evidenceIds = bound.get(alias);
     if (evidenceIds) {
-      appendSource(match[0], evidenceIds);
-      mentioned.add(match[0]);
-    } else parts.push({ kind: 'text', value: match[0] });
+      if (!seenInSentence.has(alias)) appendSource(alias, evidenceIds);
+      seenInSentence.add(alias);
+      mentioned.add(alias);
+    } else appendText(match[0]);
     cursor = index + match[0].length;
   }
-  if (cursor < text.length) parts.push({ kind: 'text', value: text.slice(cursor) });
+  if (cursor < text.length) appendText(text.slice(cursor));
   for (const ref of refs) {
     const evidenceIds = bound.get(ref.alias);
     if (!evidenceIds || mentioned.has(ref.alias)) continue;

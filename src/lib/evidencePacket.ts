@@ -1,6 +1,9 @@
 import { locateEvidenceCandidate, type EvidenceCandidate, type EvidenceLedger, type EvidencePrecision, type EvidenceSlot } from './evidenceLedger';
 import type { PageExtraction } from './pdfPageBlocks';
 import type { EvidencePassage } from './evidencePassages';
+import { createEvidencePassages } from './evidencePassages';
+import { isModelEligibleCandidate } from './evidenceEligibility';
+export { isModelEligibleCandidate } from './evidenceEligibility';
 
 /**
  * A request-local, model-visible source excerpt. It intentionally contains no
@@ -66,7 +69,7 @@ const PURPOSE_SLOTS: Record<EvidencePacketPurpose, readonly EvidenceSlot[]> = {
   limitations: ['author_limitation', 'evaluation_scope', 'ablation'],
 };
 
-const mappings = new WeakMap<EvidencePacket, Map<string, EvidenceCandidate>>();
+const mappings = new WeakMap<EvidencePacket, Map<string, EvidenceCandidate | EvidencePassage>>();
 
 type ProgressiveSource = EvidenceCandidate | EvidencePassage;
 
@@ -115,7 +118,7 @@ export type ProgressiveEvidenceStageSelection = {
   orderedPassages?: readonly EvidencePassage[];
 };
 
-const DEFAULT_PROGRESSIVE_MAX_CANDIDATES: Record<ProgressiveEvidenceStage, number> = {
+export const DEFAULT_PROGRESSIVE_MAX_CANDIDATES: Record<ProgressiveEvidenceStage, number> = {
   problem_motivation: 4,
   method: 5,
   contributions: 4,
@@ -153,53 +156,165 @@ function rankCandidates(candidates: EvidenceCandidate[], preferredSlots: readonl
     .map(({ candidate }) => candidate);
 }
 
-function normalizedHeading(value: string): string {
-  return value.trim().replace(/^(?:\d+(?:\.\d+)*\.?\s+)?/, '').replace(/[.:]+$/, '').replace(/\s+/g, ' ').toLocaleLowerCase();
+type ThreeLineCategory = 'contribution' | 'method' | 'result';
+
+function threeLineCategory(passage: EvidencePassage): ThreeLineCategory | undefined {
+  const title = passage.sectionTitle;
+  const text = passage.text;
+  const intro = /\b(?:abstract|introduction|contributions?)\b|摘要|引言|贡献/i.test(title);
+  const method = /\b(?:method|approach|architecture|construction|collection|annotation|dataset|benchmark|model|framework|training|data engine)\b|方法|架构|构建|采集|标注|数据|模型|训练/i.test(title);
+  const experiment = /\b(?:experiments?|evaluation|results?|analysis|analyses|ablation)\b|实验|评测|结果|分析|消融/i.test(title);
+  const contributionCue = /\bwe\s+(?:\w+ly\s+)?(?:introduce|present|propose|build|construct|curate|develop|design|provide|create|contribute|establish|evaluate|analyze|analyse)\b|\bour\s+(?:benchmark|dataset|method|framework|model|work distinguishes)\b|提出|构建|设计|建立|贡献/i.test(text);
+  const methodCue = /\b(?:collect\w*|curat\w*|annotat\w*|construct\w*|compris\w*|consist\w*|contain\w*|train\w*|distill\w*|encod\w*|decod\w*|rasteriz\w*|render\w*|optimis\w*|optimiz\w*|clon\w*|densif\w*|split\w*|prun\w*|sample\w*|prompt\w*)\b|采集|收集|标注|构建|训练|蒸馏|编码|解码|渲染|优化|筛选|提示|密度控制|克隆/i.test(text);
+  const resultCue = /\b(?:outperform\w*|improv\w*|achiev\w*|attain\w*|declin\w*|decreas\w*|increas\w*|compar\w*|performance|accuracy|fps|ablation)\b|提升|下降|优于|相比|准确率|性能|消融/i.test(text);
+  if (experiment && resultCue) return 'result';
+  if ((intro || /\b(?:we introduce|we propose|our work distinguishes)\b/i.test(text)) && contributionCue) return 'contribution';
+  if (resultCue && /\d+(?:\.\d+)?\s*%/.test(text)
+    && !/\b(?:we|our|the authors?)\b.{0,35}\b(?:collect\w*|annotat\w*|train\w*|construct\w*)\b/i.test(text)) return 'result';
+  if (method && methodCue) return 'method';
+  if (methodCue && !experiment) return 'method';
+  if (contributionCue) return 'contribution';
+  if (resultCue && /\d|\b(?:short|long|with|without)\b|短|长/i.test(text)) return 'result';
+  return undefined;
+}
+
+function threeLinePassageQuality(passage: EvidencePassage): number {
+  const title = passage.sectionTitle;
+  const text = passage.text.trim();
+  if (/\b(?:acknowledg\w*|references|bibliography|appendix|supplementary)\b|致谢|参考文献|附录/i.test(title)) return 0;
+  if (/\b(?:related work|discussions?|conclusions?|future work)\b|相关工作|讨论|结论|未来工作/i.test(title)) return 0;
+  if (/^(?:fig\.?|figure|table|tab\.?|algorithm)\s*\d+\b|^(?:图|表)\s*\d+/i.test(text)) return 0;
+  if (/^(?:ACM Reference Format|CCS Concepts|Authors?[’']? addresses|Publication rights|We first briefly overview)\b|^\d{4}\]|^\d+\s+in\s+all\s+our\s+tests\b/i.test(text)) return 0;
+  if (/^\d+%\)/.test(text)) return 0;
+  if (/\b(?:the|a|an|of|for|with|to|by|and|or|in)\s*$/i.test(text)
+    && !/\b\d+\s*fps\b.{0,100}\b(?:1080p|resolution)\b[^.]*\./i.test(text)) return 0;
+  if (/\b(?:our method is not without limitations|in conclusion|non-obvious differences in quality)\b/i.test(text)) return 0;
+  if (/\b(?:acknowledg\w*|we thank|grateful to|funded by|supported by|efforts made by)\b|致谢|感谢|资助/i.test(text)) return 0;
+  if (/^(?:performance of|comparison of|experimental results|evaluation of)\b[^.!?。！？]*[.:]?$/.test(text)) return 0;
+  if (/\b(?:eval-|contri-|experi-)\s*$/i.test(text)) return 0;
+  if (/^[,;:]/.test(text) || /[A-Za-z]-$/.test(text)) return 0;
+  if (/^[a-z]/.test(text) && !/\b(?:we|our|this paper|the authors?)\b.{0,90}\b(?:introduc\w*|propos\w*|collect\w*|curat\w*|annotat\w*|construct\w*|design\w*|evaluat\w*|train\w*|render\w*)\b/i.test(text)) return 0;
+  if (/\b(?:e\.g\.,|i\.e\.,)\s*$|[(:,]\s*$/.test(text)) return 0;
+  if (/^\d+\.\d+\s+[A-Z]\w+\s+(?:achiev\w*|attain\w*|improv\w*)\b/.test(text)) return 0;
+  if (/^[a-z]/.test(text) && !/[.!?。！？]$/.test(text)) return 0;
+  const length = Array.from(text).filter((character) => /[\p{L}\p{N}]/u.test(character)).length;
+  if (length < 42) return 0;
+  // PDF.js sometimes begins in the middle of a line or omits terminal
+  // punctuation. Such passages are a fallback only when their content still
+  // identifies a concrete contribution, mechanism, or result.
+  return /[.!?。！？]$/.test(text) && length >= 55 ? 2 : 1;
+}
+
+function selectThreeLinePassages(ledger: EvidenceLedger, limit: number): EvidencePassage[] {
+  const passages = createEvidencePassages(ledger, { targetChars: 450, maxChars: 600 }).passages;
+  const groups: Record<ThreeLineCategory, EvidencePassage[]> = { contribution: [], method: [], result: [] };
+  for (const passage of passages) {
+    if (threeLinePassageQuality(passage) === 0) continue;
+    const category = threeLineCategory(passage);
+    if (category) groups[category].push(passage);
+  }
+  const sectionPriority = (passage: EvidencePassage, category: ThreeLineCategory): number => {
+    const title = passage.sectionTitle;
+    if (category === 'contribution') return /\b(?:introduction|contributions?)\b|引言|贡献/i.test(title) ? 2 : /\babstract\b|摘要/i.test(title) ? 1 : 0;
+    if (category === 'method') return /\b(?:method|approach|construction|collection|annotation|architecture|data engine)\b|方法|构建|采集|标注|架构/i.test(title) ? 2 : 0;
+    return /\b(?:experiments?|evaluation|results?|analysis|analyses|ablation)\b|实验|评测|结果|分析|消融/i.test(title) ? 2 : 0;
+  };
+  for (const category of Object.keys(groups) as ThreeLineCategory[]) {
+    const score = (passage: EvidencePassage) =>
+      sectionPriority(passage, category) * 3 + threeLinePassageQuality(passage) * 4
+      + Math.min(3, (passage.text.match(/\b\d+(?:[.,]\d+)?(?:%|\s+\w+)?/g) ?? []).length)
+      + Number(/\b(?:introduce|propose|curate|construct|collect|annotate|design|train|render|achieve|attain|improve|decline)\b/i.test(passage.text)) * 2
+      + Number(/\b(?:distinguishes|contributions?)\b/i.test(passage.text) && /(?:^|\s)\d+[.)]/.test(passage.text)) * 4
+      + Number(/\b(?:first|then|using|by|through|whereas|compared|outperform\w*|improv\w*|declin\w*)\b|首先|然后|通过|相比|提升|下降/i.test(passage.text))
+      - Number(/^in this section\b|^we begin by outlining\b/i.test(passage.text)) * 3;
+    groups[category].sort((a, b) => score(b) - score(a));
+  }
+  const selected: EvidencePassage[] = [];
+  const perPage = new Map<number, number>();
+  const add = (passage: EvidencePassage, pageLimit: number): boolean => {
+    if (selected.length >= limit || (perPage.get(passage.pageIndex) ?? 0) >= pageLimit || selected.some((item) => nearDuplicate(item.text, passage.text))) return false;
+    selected.push(passage);
+    perPage.set(passage.pageIndex, (perPage.get(passage.pageIndex) ?? 0) + 1);
+    return true;
+  };
+  // Reserve distinct research roles before broad contribution/method/result
+  // filling. The cues cover model, dataset, benchmark and rendering papers;
+  // no single named technique is required for admission.
+  const substantive = [...new Set([...groups.contribution, ...groups.method, ...groups.result])];
+  const hasTaskDefinition = substantive.some((passage) => /\btask\b.{0,55}\b(?:is to|requires?|asks?|given|return\w*|predict\w*|produce\w*|segment\w*|answer\w*)\b/i.test(passage.text));
+  const facets = [
+    (text: string) => /\btask\b.{0,55}\b(?:is to|requires?|asks?|given|return\w*|predict\w*|produce\w*|segment\w*|answer\w*)\b|\b(?:prompt\w*|segment\w*)\b.{0,75}\btask\s+is\b/i.test(text),
+    (text: string) => /\b(?:encoder|embedding|representation|covariance|gaussian\w*|feature\w*|backbone|architecture|attention)\b|编码|嵌入|表征|协方差|特征|骨干|架构|注意力/i.test(text)
+      && /\b(?:input|prompt|point|image|model|scene|initializ\w*|sparse|mask|decoder|parameter)\b|输入|提示|点|图像|模型|场景|初始化|掩码|参数/i.test(text),
+    (text: string) => {
+      const operations = text.match(hasTaskDefinition
+        ? /\b(?:collect\w*|annotat\w*|curat\w*|filter\w*|train\w*|distill\w*|optimi[sz]\w*|clon\w*|densif\w*|split\w*|prun\w*)\b|采集|标注|筛选|训练|蒸馏|优化|克隆|拆分|剪枝/gi
+        : /\b(?:train\w*|distill\w*|optimi[sz]\w*|clon\w*|densif\w*|split\w*|prun\w*)\b|训练|蒸馏|优化|克隆|拆分|剪枝/gi) ?? [];
+      return new Set(operations.map((value) => value.toLocaleLowerCase().replace(/(?:ing|ed|es|s)$/, ''))).size >= 2;
+    },
+    (text: string) => /\b(?:distill\w*|teacher.student|on.policy)\b|蒸馏|教师.*学生/i.test(text)
+      && /\b(?:teacher|student|logits|reward|knowledge|train\w*)\b|教师|学生|奖励|训练/i.test(text),
+    (text: string) => /\b(?:decoder|decoding|rasteriz\w*|render\w*|draft|splatt\w*|inference)\b|解码|光栅|渲染|推理/i.test(text)
+      && /\b(?:sort\w*|project\w*|visibility|tile|mask|output|parallel|token|cache|pixel)\b|排序|投影|可见|分块|掩码|输出|并行|缓存|像素/i.test(text),
+    (text: string) => /\b\d+(?:\.\d+)?\s*(?:fps|%|points?)\b/i.test(text)
+      && /\b(?:resolution|1080p|accuracy|compared|outperform\w*|improv\w*|speedup|long|short)\b|分辨率|准确率|速度|提升|对比/i.test(text),
+  ];
+  for (const [facetIndex, matches] of facets.entries()) {
+    const candidates = substantive.filter((passage) => matches(passage.text)
+      && !(facetIndex === 1 && /^[-(]/.test(passage.text))
+      && !(facetIndex === 1 && /^(?:to validate|we (?:evaluate|compare|test|assess))\b/i.test(passage.text)))
+      .sort((left, right) => {
+        const score = (passage: EvidencePassage) => threeLinePassageQuality(passage) * 4
+          + Number(/\b(?:introduction|method|model|approach)\b/i.test(passage.sectionTitle)) * 3
+          - Number(facetIndex !== facets.length - 1 && /\b(?:results?|experiments?|evaluation|ablation)\b/i.test(passage.sectionTitle)) * 9
+          - Number(/\b(?:for this ablation|we evaluate if|we also assess|in conclusion|exploratory and empirical studies)\b|^(?:to validate|we evaluate|we compare|we test)\b/i.test(passage.text)) * 10
+          - Number(/^[a-z-]/.test(passage.text)) * 5
+          - Number(facetIndex === 1 && /^[-(]/.test(passage.text)) * 12
+          - Number(facetIndex === 1 && /^\d/.test(passage.text)) * 8
+          - Number(facetIndex === 4 && /\b(?:however,? it can only|previous methods?|prior work)\b/i.test(passage.text)) * 6
+          + Number(/\b(?:we|our|this paper|the model)\b.{0,110}\b(?:create|use|design|sort|render|rasteriz\w*|decode|train|optimi[sz]\w*)\b/i.test(passage.text)) * 3
+          + Number(facetIndex === 1 && /\b(?:input to our method|from these|we (?:represent|create|initialize|present|propose)|our model)\b/i.test(passage.text)) * 6
+          + Number(facetIndex === 4 && /\b(?:rasteriz\w*|decoder|draft|tile|pixel)\b/i.test(passage.text)) * 6
+          + Number(/\bclon\w*\b/i.test(passage.text) && /\bsplit\w*\b/i.test(passage.text)) * 5
+          + Number(/\b(?:tile.based|depth.sort\w*|pre.sort\w*)\b/i.test(passage.text)) * 4;
+        return score(right) - score(left) || right.text.length - left.text.length;
+      });
+    for (const passage of candidates) if (add(passage, 2)) break;
+  }
+  // Each bucket gets a fair chance before later material can fill the packet.
+  for (const category of ['contribution', 'method', 'result'] as const) {
+    for (const passage of groups[category]) {
+      if (selected.filter((item) => groups[category].includes(item)).length >= Math.max(1, Math.floor(limit / 3))) break;
+      add(passage, 2);
+    }
+  }
+  for (const category of ['contribution', 'method', 'result'] as const) {
+    for (const passage of groups[category]) {
+      if (selected.length >= limit) break;
+      if (!selected.includes(passage)) add(passage, 2);
+    }
+  }
+  if (selected.length < Math.min(3, limit)) {
+    for (const category of ['contribution', 'method', 'result'] as const) {
+      for (const passage of groups[category]) {
+        if (selected.length >= Math.min(3, limit)) break;
+        if (!selected.includes(passage)) add(passage, 3);
+      }
+    }
+  }
+  return selected;
+}
+
+function nearDuplicate(left: string, right: string): boolean {
+  const words = (value: string) => new Set(value.toLocaleLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []);
+  const a = words(left); const b = words(right);
+  if (a.size < 8 || b.size < 8) return false;
+  const overlap = [...a].filter((word) => b.has(word)).length;
+  return overlap / Math.min(a.size, b.size) > 0.78;
 }
 
 function quoteDedupeKey(candidate: EvidenceCandidate): string {
   return candidate.quote.trim().replace(/\s+/g, ' ').toLocaleLowerCase();
-}
-
-/** The ledger deliberately retains headings; a compact prompt prefers body text. */
-function isSectionHeadingCandidate(candidate: EvidenceCandidate): boolean {
-  return candidate.section.confidence === 'automatic'
-    && normalizedHeading(candidate.quote) === normalizedHeading(candidate.section.title);
-}
-
-function visibleTextLength(value: string): number {
-  return Array.from(value).filter((character) => /[\p{L}\p{N}]/u.test(character)).length;
-}
-
-/**
- * PDF.js commonly exposes title pages as independent text items. They are not
- * useful fallback evidence for a scientific overview and, unlike section
- * headings, are not always identifiable from the extracted section list.
- */
-function isFrontMatterOrFragment(candidate: EvidenceCandidate, candidates: readonly EvidenceCandidate[]): boolean {
-  const text = candidate.quote.trim();
-  const folded = text.toLocaleLowerCase();
-  if (visibleTextLength(text) < 16 || /^[\p{P}\p{S}\d\s]+$/u.test(text)) return true;
-  if (/\b(?:doi|arxiv)\s*[:/]|https?:\/\/|www\.|\S+@\S+/i.test(text)) return true;
-  if (/\b(?:department|university|institute|laboratory|school|corresponding\s+author|e-?mail|affiliation)\b/i.test(text)) return true;
-  // Typical author lists have several capitalized names but no sentence-level
-  // predicate. Keep this deliberately narrow so ordinary prose is not lost.
-  if (/^(?:[A-Z][A-Za-z'’-]+(?:\s+[A-Z][A-Za-z'’-]+){0,2})(?:\s*(?:,|;|and|&|\*)\s*(?:[A-Z][A-Za-z'’-]+(?:\s+[A-Z][A-Za-z'’-]+){0,2})){1,}$/u.test(text)) return true;
-  const isFirstUnknownCandidate = candidates[0] === candidate && candidate.section.confidence === 'unknown';
-  const hasRecognizedBodyAfter = candidates.slice(1).some((item) => /\b(?:abstract|introduction|background|methods?|approach|experiments?|results?)\b/i.test(item.section.title));
-  // A first-page title is usually title-cased and lacks sentence punctuation;
-  // this is only applied when a later body section was actually recognized.
-  if (isFirstUnknownCandidate && hasRecognizedBodyAfter && !/[.!?。！？]$/.test(text) && /^[A-Z\p{Lu}]/u.test(text) && !/\b(?:we|our|this paper|we propose|we introduce)\b/i.test(folded)) return true;
-  return false;
-}
-
-/**
- * Shared local admission rule for model-facing evidence and retrieval. This is
- * intentionally a quality filter, not a semantic classifier: callers must not
- * infer that a retained excerpt proves its section-derived slot.
- */
-export function isModelEligibleCandidate(candidate: EvidenceCandidate, candidates: readonly EvidenceCandidate[]): boolean {
-  return !isSectionHeadingCandidate(candidate) && !isFrontMatterOrFragment(candidate, candidates);
 }
 
 /**
@@ -211,11 +326,28 @@ export function isModelEligibleCandidate(candidate: EvidenceCandidate, candidate
 export function createEvidencePacket(ledger: EvidenceLedger, options: EvidencePacketOptions): EvidencePacket {
   const maxCandidates = boundedPositiveInteger(options.maxCandidates, DEFAULT_MAX_CANDIDATES, 'maxCandidates');
   const maxExcerptChars = boundedPositiveInteger(options.maxExcerptChars, DEFAULT_MAX_EXCERPT_CHARS, 'maxExcerptChars');
+  if (options.purpose === 'three_line' && !options.preferredSlots) {
+    const selected = selectThreeLinePassages(ledger, maxCandidates);
+    const packet: EvidencePacket = {
+      purpose: 'three_line', coverage: ledger.coverage, coverageHints: coverageHints(ledger),
+      sources: selected.map((passage, index) => ({
+        alias: `S${String(index + 1).padStart(2, '0')}`,
+        slot: passage.members[0].candidate.slot,
+        section: passage.sectionTitle,
+        excerpt: truncateExcerpt(passage.text, maxExcerptChars),
+        precision: passage.members[0].candidate.precision,
+        coverage: passage.members[0].candidate.coverage,
+      })),
+    };
+    mappings.set(packet, new Map(packet.sources.map((source, index) => [source.alias, selected[index]])));
+    return packet;
+  }
   const preferredSlots = options.preferredSlots ?? PURPOSE_SLOTS[options.purpose];
   const seenQuotes = new Set<string>();
   const selected: EvidenceCandidate[] = [];
 
-  for (const candidate of rankCandidates(ledger.candidates, preferredSlots)) {
+  const ranked = rankCandidates(ledger.candidates, preferredSlots);
+  for (const candidate of ranked) {
     if (!isModelEligibleCandidate(candidate, ledger.candidates)) continue;
     const dedupeKey = quoteDedupeKey(candidate);
     if (!dedupeKey || seenQuotes.has(dedupeKey)) continue;
@@ -371,11 +503,12 @@ export function resolveEvidencePacketAliases(
   const mapping = mappings.get(packet);
   if (!mapping) throw new Error('The evidence packet is not available for local alias resolution.');
   if (new Set(aliases).size !== aliases.length) throw new Error('The model response repeated a packet source alias.');
-  return aliases.map((alias) => {
-    const candidate = mapping.get(alias);
-    if (!candidate) throw new Error(`The model response referenced an unknown packet source alias: ${alias}.`);
-    verifyOriginalCandidate(candidate, ledger, pages);
-    return candidate;
+  return aliases.flatMap((alias) => {
+    const source = mapping.get(alias);
+    if (!source) throw new Error(`The model response referenced an unknown packet source alias: ${alias}.`);
+    const candidates = 'members' in source ? source.members.map((member) => member.candidate) : [source];
+    for (const candidate of candidates) verifyOriginalCandidate(candidate, ledger, pages);
+    return candidates;
   });
 }
 

@@ -9,11 +9,13 @@
     "dev:firefox": "wxt --browser firefox",
     "typecheck": "wxt prepare && tsc --noEmit",
     "test": "vitest run",
+    "replay:evidence": "node --experimental-strip-types scripts/replay-evidence.mjs",
     "build:chrome": "wxt build --browser chrome && node scripts/copy-license.mjs chrome",
     "build:firefox": "wxt build --browser firefox && node scripts/copy-license.mjs firefox"
   },
   "dependencies": {
     "@wxt-dev/module-react": "^1.1.0",
+    "katex": "^0.18.9",
     "pdfjs-dist": "^6.3.289",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

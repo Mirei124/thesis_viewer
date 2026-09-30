@@ -14,6 +14,7 @@ import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 
 import '../styles.css';
 import 'pdfjs-dist/web/pdf_viewer.css';
+import 'katex/dist/katex.min.css';
 import {
   locateNormalizedRange,
   normalizePdfTextItem,
@@ -58,6 +59,8 @@ import {
 import { appendProgressiveEvidenceStage, createProgressiveEvidenceSession } from '../lib/evidencePacket';
 import { createEvidencePassages } from '../lib/evidencePassages';
 import { inlineEvidenceLabel, inlineEvidenceParts, type VerifiedEvidenceRef } from '../lib/inlineEvidence';
+import { buildInlineEvidenceExcerpts } from '../lib/inlineEvidenceExcerpts';
+import { LimitedMath } from '../components/LimitedMath';
 import { createPassageRetrievalIndex, selectRankedPassagesForPurpose } from '../lib/retrievalIndex';
 import {
   clearPdfHighlights,
@@ -1557,14 +1560,16 @@ function ReaderPage() {
       // request preserves the exact earlier messages, which lets compatible
       // providers reuse a stable prefix while the only new material is the
       // next retrieval-selected evidence increment and task.
-      const passages = createEvidencePassages(ledger, { targetChars: 360, maxChars: 960 });
+      const passages = createEvidencePassages(ledger, { targetChars: 520, maxChars: 1500, pages });
       const retrievalIndex = createPassageRetrievalIndex(passages);
-      const evidenceSession = createProgressiveEvidenceSession(ledger, { maxExcerptChars: 960 });
+      const evidenceSession = createProgressiveEvidenceSession(ledger, { maxExcerptChars: 1500 });
       const history: Array<{ role: 'user' | 'assistant'; content: string }> = [];
       for (const sectionId of DETAILED_SECTION_IDS) {
         if (requestToken !== detailedOverviewRequestRef.current || controller.signal.aborted) return;
         const orderedPassages = selectRankedPassagesForPurpose(retrievalIndex, sectionId, {
-          maxCandidates: 12,
+          // Overfetch for the session's sent-source dedupe: later stages can
+          // still reach fresh original passages after earlier turns.
+          maxCandidates: 24,
           maxCandidatesPerPage: 2,
           includeAdjacent: true,
         });
@@ -2882,16 +2887,36 @@ function ReaderPage() {
   const canGoForward = historyRevision >= 0 && locationHistoryRef.current.forward.length > 0;
   const panelStyle = { '--left-panel-width': `${panelWidths.left}px`, '--right-panel-width': `${panelWidths.right}px` } as CSSProperties;
 
-  function renderInlineEvidence(text: string, refs: readonly VerifiedEvidenceRef[]) {
+  function renderInlineEvidence(text: string, refs: readonly VerifiedEvidenceRef[], renderMath = false) {
     return inlineEvidenceParts(text, refs).map((part, index) => {
-      if (part.kind === 'text') return part.value;
-      const candidate = evidenceLedger.kind === 'ready' ? evidenceLedger.ledger.candidates.find((item) => item.evidenceId === part.evidenceId) : undefined;
-      const location = candidate && extraction.kind === 'ready' ? locateEvidenceCandidate(candidate, extraction.pages) : undefined;
-      if (!location) return part.alias;
+      if (part.kind === 'text') return renderMath ? <LimitedMath key={`text-${index}`} text={part.value} /> : part.value;
       const category = t(part.alias.startsWith('E') ? 'reader.evidence.sourceDetailed' : 'reader.evidence.sourceThreeLine');
-      const member = part.memberCount > 1 ? t('reader.evidence.member', { index: part.member, count: part.memberCount }) : '';
-      const description = t('reader.evidence.goTo', { category, alias: part.alias, member, page: location.pageIndex + 1, precision: t(`reader.evidence.precision.${location.precision}` as MessageKey) });
-      return <button type="button" className="inline-evidence-button" key={`${part.alias}-${index}`} aria-label={description} title={description} onClick={() => goToEvidenceCandidate(part.evidenceId)}>{inlineEvidenceLabel(part)}</button>;
+      const groups = buildInlineEvidenceExcerpts(
+        part.evidenceIds,
+        evidenceLedger.kind === 'ready' ? evidenceLedger.ledger.candidates : [],
+        extraction.kind === 'ready' ? extraction.pages : [],
+      );
+      const first = groups[0]?.members[0];
+      if (part.evidenceIds.length === 1) {
+        if (!first?.location) return part.alias;
+        const description = t('reader.evidence.goTo', { category, alias: part.alias, member: '', page: first.location.pageIndex + 1, precision: t(`reader.evidence.precision.${first.location.precision}` as MessageKey) });
+        return <button type="button" className="inline-evidence-button" key={`${part.alias}-${index}`} aria-label={description} title={description} onClick={() => goToEvidenceCandidate(first.evidenceId)}>{inlineEvidenceLabel(part)}</button>;
+      }
+      return <details className="inline-evidence-group" key={`${part.alias}-${index}`}>
+        <summary aria-label={t('reader.evidence.showMembers', { category, alias: part.alias, count: part.evidenceIds.length })}>{inlineEvidenceLabel(part)}</summary>
+        <div className="inline-evidence-excerpts">
+          {groups.map((group, groupIndex) => <p className="inline-evidence-excerpt" key={groupIndex}>
+            {groupIndex > 0 && <span className="inline-evidence-break">{t('reader.evidence.separateExcerpt')}</span>}
+            {group.members.map((item) => {
+              const member = t('reader.evidence.member', { index: item.index, count: part.evidenceIds.length });
+              const description = item.location && t('reader.evidence.goTo', { category, alias: part.alias, member, page: item.location.pageIndex + 1, precision: t(`reader.evidence.precision.${item.location.precision}` as MessageKey) });
+              return <span key={item.evidenceId}>{item.separatorBefore}{description
+                ? <button type="button" className="inline-evidence-quote" aria-label={`${item.quote}; ${description}`} title={description} onClick={() => goToEvidenceCandidate(item.evidenceId)}>{item.displayQuote}</button>
+                : <span className="inline-evidence-unlocated">{item.displayQuote || t('reader.evidence.unavailable')} <small>({t('reader.evidence.unlocated')})</small></span>}</span>;
+            })}
+          </p>)}
+        </div>
+      </details>;
     });
   }
 
@@ -3005,7 +3030,7 @@ function ReaderPage() {
                 {overview?.status === 'success' && overview.result && <>
                   <ol className="overview-items">
                     {overview.result.items.map((item, index) => <li key={`${index}-${item.text}`}>
-                      <p>{renderInlineEvidence(item.text, item.evidenceRefs)}</p>
+                      <div className="insight-text">{renderInlineEvidence(item.text, item.evidenceRefs)}</div>
                       {item.status === 'unavailable' && <span className="overview-unavailable">{t('reader.insights.unavailableContribution')}</span>}
                     </li>)}
                   </ol>
@@ -3025,7 +3050,7 @@ function ReaderPage() {
                         <h5>{t(DETAILED_SECTION_LABEL_KEYS[section.id])}</h5>
                         {section.status !== 'available' && <p className="overview-unavailable">{t(section.status === 'not_applicable' ? 'reader.insights.notApplicable' : 'reader.insights.insufficient')}</p>}
                         {section.blocks.map((block, index) => <div key={`${section.id}-${index}`} className="detailed-overview-block">
-                          <p>{renderInlineEvidence(section.status !== 'available' && block.text === UNGROUNDED_DETAILED_SECTION_FALLBACK ? t('reader.insights.ungroundedFallback') : block.text, block.evidenceRefs ?? [])}</p>
+                          <div className="insight-text">{renderInlineEvidence(section.status !== 'available' && block.text === UNGROUNDED_DETAILED_SECTION_FALLBACK ? t('reader.insights.ungroundedFallback') : block.text, block.evidenceRefs ?? [], true)}</div>
                           {section.id === 'limitations' && block.limitationKind && <span className="detailed-overview-kind">{t(block.limitationKind === 'author_stated' ? 'reader.insights.limitationAuthor' : block.limitationKind === 'evidence_gap' ? 'reader.insights.limitationGap' : 'reader.insights.limitationMissing')}</span>}
                         </div>)}
                       </section>)}

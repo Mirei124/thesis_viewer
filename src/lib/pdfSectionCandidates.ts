@@ -5,7 +5,7 @@ import type { PageExtraction, PdfPageAnchor, PdfPageTextBlock } from './pdfPageB
  * outline. PDF text items do not establish reading order, so the detector only
  * accepts a short individual item with a strong numbering or type-size signal.
  */
-export const PDF_SECTION_CANDIDATE_VERSION = 'pdf-section-candidates-v1';
+export const PDF_SECTION_CANDIDATE_VERSION = 'pdf-section-candidates-v3';
 
 export type PdfSectionCandidate = {
   candidateId: string;
@@ -35,6 +35,25 @@ function isTitleLength(title: string): boolean {
   if (words.length > 16) return false;
   // Sentences, figure captions, and most table prose have terminal punctuation.
   return !/[.!?。！？]$/.test(title);
+}
+
+function isBodyLineDisguisedAsTitle(title: string): boolean {
+  const withoutNumber = title.replace(/^\d+(?:\.\d+)*\.?\s+/, '');
+  // Decimal measurements and model names often start a PDF.js line. Their
+  // numeric prefix alone must not turn the line into a section boundary.
+  if (/^(?:\[|[a-z]|\d)/.test(withoutNumber)) return true;
+  if (/^(?:fig(?:ure)?|table|tab\.)\s*\d+\b/i.test(withoutNumber)) return true;
+  if (/\b(?:achieves|attains|outperforms|improves|declines|increases|decreases|evaluates|compares|includes|provides|shows|consists)\b/.test(withoutNumber)) return true;
+  if (/[;,]$|[-–]$|\[[0-9]+\]/.test(title)) return true;
+  return false;
+}
+
+function isTitleCaseHeading(title: string): boolean {
+  const words = title.split(/\s+/).filter(Boolean);
+  if (words.length === 1) return /^(?:Abstract|Introduction|Background|Methods?|Approach|Experiments?|Evaluation|Results?|Discussion|Conclusion|Limitations|References|Acknowledgments?)$/i.test(title);
+  if (words.length < 2 || words.length > 8) return false;
+  const minor = /^(?:a|an|and|as|at|by|for|from|in|of|on|or|the|to|with)$/i;
+  return words.every((word, index) => minor.test(word) && index > 0 || /^[A-Z][\w-]*$/.test(word));
 }
 
 function pageMedianFontSize(page: PageExtraction): number {
@@ -85,6 +104,12 @@ export function pdfSectionCandidatesFromPages(
       if (block.qualityFlags.includes('non-axis-aligned-transform')) continue;
       const title = normalizedTitle(block.rawText);
       if (!isTitleLength(title)) continue;
+      if (isBodyLineDisguisedAsTitle(title)) continue;
+      // Author names on the title page can be larger than body text and all
+      // caps. Once accepted, they would label the entire paper until the next
+      // detected heading, so require a recognisable heading word there.
+      if (page.pageIndex === 0 && /^[A-Z]+(?:\s+[A-Z]+){1,3}$/.test(title)
+        && !/\b(?:ABSTRACT|INTRODUCTION|BACKGROUND|METHODS?|MODEL|ARCHITECTURE|DATA|RESULTS?|EVALUATION|DISCUSSION|CONCLUSION|LIMITATIONS?|CONTRIBUTIONS?)\b/.test(title)) continue;
 
       const signals: PdfSectionCandidate['signals'] = [];
       if (numberedTitle.test(title)) signals.push('numbered-title');
@@ -94,7 +119,7 @@ export function pdfSectionCandidatesFromPages(
       // Typography alone is weak unless it looks like a title. Numbered
       // headings are accepted even where an embedded font obscures size.
       const looksLikeTitle = signals.includes('numbered-title')
-        || (signals.includes('large-type') && (signals.includes('all-caps-title') || title.split(/\s+/).length <= 10));
+        || (signals.includes('large-type') && (signals.includes('all-caps-title') || isTitleCaseHeading(title)));
       if (!looksLikeTitle) continue;
 
       candidates.push({
