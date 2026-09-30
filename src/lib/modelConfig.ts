@@ -1,7 +1,6 @@
 export type ModelConfig = {
   baseUrl: string;
   model: string;
-  streaming: boolean;
   structuredOutput: boolean;
   contextLimit: number;
   outputLimit: number;
@@ -19,12 +18,11 @@ const CONFIG_STORAGE_KEY = 'model-config:v1';
 const API_KEY_STORAGE_KEY = 'model-api-key:v1';
 
 export const DEFAULT_MODEL_CONFIG: ModelConfig = {
-  baseUrl: '',
-  model: '',
-  streaming: true,
-  structuredOutput: false,
+  baseUrl: 'https://api.deepseek.com/v1',
+  model: 'deepseek-flash',
+  structuredOutput: true,
   contextLimit: 32_000,
-  outputLimit: 4_000,
+  outputLimit: 32_000,
 };
 
 function getLocalStorageArea(): ExtensionStorageArea | undefined {
@@ -87,7 +85,6 @@ export function normalizeModelConfig(input: ModelConfigInput): ModelConfig {
   return {
     baseUrl: normalizeBaseUrl(input.baseUrl),
     model,
-    streaming: Boolean(input.streaming),
     structuredOutput: Boolean(input.structuredOutput),
     contextLimit: positiveLimit(input.contextLimit, 'Context limit'),
     outputLimit: positiveLimit(input.outputLimit, 'Output limit'),
@@ -99,7 +96,6 @@ function isStoredConfig(value: unknown): value is ModelConfig {
   const candidate = value as Partial<ModelConfig>;
   return typeof candidate.baseUrl === 'string'
     && typeof candidate.model === 'string'
-    && typeof candidate.streaming === 'boolean'
     && typeof candidate.structuredOutput === 'boolean'
     && typeof candidate.contextLimit === 'number'
     && typeof candidate.outputLimit === 'number';

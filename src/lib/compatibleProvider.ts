@@ -31,7 +31,7 @@ export class CompatibleProviderError extends Error {
 }
 
 export type CompatibleRequest = {
-  config: Pick<ModelConfig, 'baseUrl' | 'model' | 'streaming' | 'structuredOutput' | 'outputLimit'>;
+  config: Pick<ModelConfig, 'baseUrl' | 'model' | 'structuredOutput' | 'outputLimit'>;
   messages: readonly ChatMessage[];
   apiKey?: string;
   signal?: AbortSignal;
@@ -41,7 +41,6 @@ export type CompatibleRequest = {
 
 export type CompatibleResponse = {
   content: string;
-  streamed: boolean;
   /**
    * Optional provider accounting. It is deliberately limited to numeric token
    * counters: callers must never need to retain messages, completions, or
@@ -141,87 +140,6 @@ function contentFromNonStream(payload: unknown): string {
   return content;
 }
 
-function streamDeltaFromEvent(data: string): string {
-  let payload: unknown;
-  try {
-    payload = JSON.parse(data);
-  } catch {
-    throw invalidResponse();
-  }
-  if (!payload || typeof payload !== 'object') throw invalidResponse();
-  const choices = (payload as { choices?: unknown }).choices;
-  // OpenAI-compatible usage terminal chunks may intentionally have no choice.
-  if (!Array.isArray(choices)) throw invalidResponse();
-  if (choices.length === 0) return '';
-  if (!choices[0] || typeof choices[0] !== 'object') throw invalidResponse();
-  const delta = (choices[0] as { delta?: unknown }).delta;
-  const content = delta && typeof delta === 'object' ? (delta as { content?: unknown }).content : undefined;
-  // A role-only / finish event is valid but contributes no text.
-  if (content === undefined) return '';
-  if (typeof content !== 'string') throw invalidResponse();
-  return content;
-}
-
-async function readSse(response: Response, signal?: AbortSignal): Promise<{ content: string; usage?: CompatibleUsage }> {
-  if (!response.body) throw invalidResponse();
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let pending = '';
-  let eventLines: string[] = [];
-  let content = '';
-  let complete = false;
-  let usage: CompatibleUsage | undefined;
-
-  const processEvent = () => {
-    const data = eventLines
-      .filter(line => line.startsWith('data:'))
-      .map(line => line.slice(5).trimStart())
-      .join('\n');
-    eventLines = [];
-    if (!data) return;
-    if (data === '[DONE]') {
-      complete = true;
-      return;
-    }
-    let payload: unknown;
-    try {
-      payload = JSON.parse(data);
-    } catch {
-      throw invalidResponse();
-    }
-    // Some compatible providers send usage in a final event with an empty
-    // choices array. Treat it as accounting, not malformed text.
-    usage = usageFromPayload(payload) ?? usage;
-    content += streamDeltaFromEvent(data);
-  };
-
-  try {
-    while (true) {
-      if (signal?.aborted) throw new CompatibleProviderError('aborted');
-      const { done, value } = await reader.read();
-      pending += decoder.decode(value, { stream: !done });
-      let newline: number;
-      while ((newline = pending.indexOf('\n')) >= 0) {
-        const line = pending.slice(0, newline).replace(/\r$/, '');
-        pending = pending.slice(newline + 1);
-        if (line === '') processEvent();
-        else if (!line.startsWith(':')) eventLines.push(line);
-      }
-      if (done) break;
-    }
-    if (pending) eventLines.push(pending.replace(/\r$/, ''));
-    if (eventLines.length) processEvent();
-  } catch (error) {
-    if (error instanceof CompatibleProviderError) throw error;
-    if (signal?.aborted || (error instanceof DOMException && error.name === 'AbortError')) throw new CompatibleProviderError('aborted');
-    throw new CompatibleProviderError('network');
-  } finally {
-    reader.releaseLock();
-  }
-  if (!complete) throw invalidResponse();
-  return { content, ...(usage ? { usage } : {}) };
-}
-
 /** Sends only caller-supplied messages to the configured OpenAI-compatible endpoint. */
 export async function requestCompatibleCompletion(request: CompatibleRequest): Promise<CompatibleResponse> {
   const fetchImpl = request.fetchImpl ?? globalThis.fetch;
@@ -241,7 +159,7 @@ export async function requestCompatibleCompletion(request: CompatibleRequest): P
       body: JSON.stringify({
         model: request.config.model,
         messages: request.messages,
-        stream: request.config.streaming,
+        stream: false,
         // First-version protocol contract: OpenAI-compatible chat completion
         // endpoints receive the explicitly configured limit as max_tokens.
         max_tokens: outputLimit,
@@ -256,18 +174,16 @@ export async function requestCompatibleCompletion(request: CompatibleRequest): P
     throw new CompatibleProviderError('network');
   }
   if (!response.ok) throw await errorForResponse(response);
-  if (request.config.streaming) {
-    const streamed = await readSse(response, request.signal);
-    return { ...streamed, streamed: true };
-  }
   try {
     const payload = await response.json();
+    if (request.signal?.aborted) throw new CompatibleProviderError('aborted');
     const usage = usageFromPayload(payload);
-    return { content: contentFromNonStream(payload), streamed: false, ...(usage ? { usage } : {}) };
+    return { content: contentFromNonStream(payload), ...(usage ? { usage } : {}) };
   } catch (error) {
     if (error instanceof CompatibleProviderError) throw error;
+    if (request.signal?.aborted || (error instanceof DOMException && error.name === 'AbortError')) throw new CompatibleProviderError('aborted');
     throw invalidResponse();
   }
 }
 
-export const __testOnly = { completionUrl, retryAfterSeconds, contentFromNonStream, streamDeltaFromEvent, usageFromPayload, validatedOutputLimit };
+export const __testOnly = { completionUrl, retryAfterSeconds, contentFromNonStream, usageFromPayload, validatedOutputLimit };

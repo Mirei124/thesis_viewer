@@ -28,7 +28,6 @@ export function overviewCacheKey(input: OverviewCacheInput): string {
     input.kind === 'three-line' ? THREE_LINE_OVERVIEW_PROMPT_VERSION : PROGRESSIVE_DETAILED_OVERVIEW_PROMPT_VERSION,
     config.baseUrl,
     config.model,
-    config.streaming,
     config.structuredOutput,
     config.contextLimit,
     config.outputLimit,

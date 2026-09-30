@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Thesis Viewer">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#244b79"/>
+      <stop offset="1" stop-color="#132b4d"/>
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="120" height="120" rx="28" fill="url(#tile)"/>
+  <path d="M33 21h45l18 18v61a8 8 0 0 1-8 8H40a8 8 0 0 1-8-8V29a8 8 0 0 1 8-8Z" fill="#f7fbff"/>
+  <path d="M78 21v18h18" fill="#d8eaf8"/>
+  <path d="M46 51h35M46 64h27M46 77h17" fill="none" stroke="#356083" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="79" cy="81" r="16" fill="#f7fbff" stroke="#21bcb3" stroke-width="7"/>
+  <path d="m91 93 15 15" fill="none" stroke="#21bcb3" stroke-width="8" stroke-linecap="round"/>
+</svg>

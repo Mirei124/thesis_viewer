@@ -105,11 +105,11 @@ export function ModelSettings() {
         <p>{t('settings.intro')}</p>
         <form className="model-settings-form" onSubmit={save}>
           <label htmlFor="baseUrl">{t('settings.baseUrl')} <span aria-hidden="true">{t('settings.required')}</span></label>
-          <input id="baseUrl" name="baseUrl" type="url" autoComplete="url" value={config.baseUrl} onChange={updateText} disabled={busy} required placeholder="https://provider.example/v1" />
+          <input id="baseUrl" name="baseUrl" type="url" autoComplete="url" value={config.baseUrl} onChange={updateText} disabled={busy} required placeholder="https://api.deepseek.com/v1" />
           <p className="field-help">{t('settings.baseUrlHelp')}</p>
 
           <label htmlFor="model">{t('settings.model')} <span aria-hidden="true">{t('settings.required')}</span></label>
-          <input id="model" name="model" value={config.model} onChange={updateText} disabled={busy} required placeholder="your-model-id" />
+          <input id="model" name="model" value={config.model} onChange={updateText} disabled={busy} required placeholder="deepseek-flash" />
 
           <label htmlFor="apiKey">{t('settings.apiKey')} <span className="optional">{t('settings.optional')}</span></label>
           <input id="apiKey" name="apiKey" type="password" autoComplete="off" spellCheck={false} value={apiKey} onChange={updateText} disabled={busy} />
@@ -118,7 +118,6 @@ export function ModelSettings() {
 
           <fieldset disabled={busy}>
             <legend>{t('settings.capabilities')}</legend>
-            <label className="check-row"><input name="streaming" type="checkbox" checked={config.streaming} onChange={updateCapability} /> {t('settings.streaming')}</label>
             <label className="check-row"><input name="structuredOutput" type="checkbox" checked={config.structuredOutput} onChange={updateCapability} /> {t('settings.structuredOutput')}</label>
             <p className="field-help">{t('settings.structuredOutputHelp')}</p>
             <div className="limit-grid">

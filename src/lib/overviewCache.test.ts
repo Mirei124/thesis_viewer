@@ -9,7 +9,7 @@ import type { ThreeLineOverview } from './threeLineOverview';
 const documentContentKey = 'a'.repeat(64);
 const documentVersion = `sha256:${documentContentKey}`;
 const config: ModelConfig = {
-  baseUrl: 'https://example.test/v1', model: 'scholar-model', streaming: true,
+  baseUrl: 'https://example.test/v1', model: 'scholar-model',
   structuredOutput: true, contextLimit: 32000, outputLimit: 4000,
 };
 
@@ -37,7 +37,7 @@ describe('verified overview cache', () => {
     expect(overviewCacheKey({ ...input, config: { ...config, apiKey: 'top-secret' } as ModelConfig })).toBe(key);
     expect(overviewCacheKey({ ...input, documentContentKey: 'b'.repeat(64) })).not.toBe(key);
     expect(overviewCacheKey({ ...input, kind: 'detailed' })).not.toBe(key);
-    for (const field of ['baseUrl', 'model', 'streaming', 'structuredOutput', 'contextLimit', 'outputLimit'] as const) {
+    for (const field of ['baseUrl', 'model', 'structuredOutput', 'contextLimit', 'outputLimit'] as const) {
       const changed = { ...config, [field]: typeof config[field] === 'boolean' ? !config[field] : typeof config[field] === 'number' ? config[field] + 1 : `${config[field]}-other` };
       expect(overviewCacheKey({ ...input, config: changed })).not.toBe(key);
     }

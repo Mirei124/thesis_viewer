@@ -7,7 +7,7 @@ import { pdfEvidenceLedgerFromPages } from './evidenceLedger';
 import { threeLineEvidencePacket, threeLineOverviewMessages } from './threeLineOverview';
 import { translationMessages } from './translationResponse';
 
-const config = { baseUrl: 'https://api.example.test/v1', model: 'test-model', streaming: false, structuredOutput: false, outputLimit: 32_000 };
+const config = { baseUrl: 'https://api.example.test/v1', model: 'test-model', structuredOutput: false, outputLimit: 32_000 };
 const messages = [{ role: 'user' as const, content: 'Only this text is sent.' }];
 
 function response(body: BodyInit | null, init: ResponseInit = {}): Response {
@@ -20,7 +20,7 @@ afterEach(() => {
 });
 
 describe('compatible provider', () => {
-  it('sends one exact completion URL and reads a non-stream response', async () => {
+  it('sends one exact completion URL and reads a JSON response', async () => {
     let seen: RequestInit | undefined;
     let url = '';
     const result = await requestCompatibleCompletion({
@@ -33,14 +33,14 @@ describe('compatible provider', () => {
         return response(JSON.stringify({ choices: [{ message: { content: 'complete' } }] }), { status: 200 });
       },
     });
-    expect(result).toEqual({ content: 'complete', streamed: false });
+    expect(result).toEqual({ content: 'complete' });
     expect(url).toBe('https://api.example.test/v1/chat/completions');
     expect(seen?.method).toBe('POST');
     expect(seen?.headers).toMatchObject({ authorization: 'Bearer secret' });
     expect(JSON.parse(String(seen?.body))).toEqual({ model: 'test-model', messages, stream: false, max_tokens: 32_000 });
   });
 
-  it('returns optional non-stream token accounting without retaining payload text', async () => {
+  it('returns optional token accounting without retaining payload text', async () => {
     const result = await requestCompatibleCompletion({
       config,
       messages,
@@ -57,7 +57,7 @@ describe('compatible provider', () => {
       })),
     });
     expect(result).toEqual({
-      content: 'complete', streamed: false,
+      content: 'complete',
       usage: { promptTokens: 120, completionTokens: 16, totalTokens: 136, promptCacheHitTokens: 80, promptCacheMissTokens: 40 },
     });
   });
@@ -129,33 +129,13 @@ describe('compatible provider', () => {
     expect(fetched).toBe(false);
   });
 
-  it('joins only completed SSE delta events', async () => {
-    const stream = new ReadableStream<Uint8Array>({
-      start(controller) {
-        controller.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"content":"Hel"}}]}\n\n'));
-        controller.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"content":"lo"}}]}\n\ndata: [DONE]\n\n'));
-        controller.close();
-      },
-    });
-    const result = await requestCompatibleCompletion({
-      config: { ...config, streaming: true }, messages,
-      fetchImpl: async () => response(stream),
-    });
-    expect(result).toEqual({ content: 'Hello', streamed: true });
-  });
-
-  it('reads optional accounting from an SSE terminal event', async () => {
-    const stream = new ReadableStream<Uint8Array>({
-      start(controller) {
-        controller.enqueue(new TextEncoder().encode('data: {"choices":[{"delta":{"content":"ok"}}]}\n\ndata: {"choices":[],"usage":{"prompt_tokens":100,"completion_tokens":2,"prompt_cache_hit_tokens":64,"prompt_cache_miss_tokens":36}}\n\ndata: [DONE]\n\n'));
-        controller.close();
-      },
-    });
-    const result = await requestCompatibleCompletion({ config: { ...config, streaming: true }, messages, fetchImpl: async () => response(stream) });
-    expect(result).toEqual({
-      content: 'ok', streamed: true,
-      usage: { promptTokens: 100, completionTokens: 2, promptCacheHitTokens: 64, promptCacheMissTokens: 36 },
-    });
+  it.each([
+    ['invalid JSON', '{'],
+    ['missing choices', '{}'],
+    ['missing message content', '{"choices":[{"message":{}}]}'],
+  ])('rejects %s as an invalid JSON completion', async (_case, body) => {
+    await expect(requestCompatibleCompletion({ config, messages, fetchImpl: async () => response(body) }))
+      .rejects.toMatchObject({ code: 'invalid-response' });
   });
 
   it('accepts a valid completion when usage is absent or malformed', async () => {
@@ -163,7 +143,7 @@ describe('compatible provider', () => {
       config, messages,
       fetchImpl: async () => response(JSON.stringify({ choices: [{ message: { content: 'ok' } }], usage: { prompt_tokens: -1 } })),
     });
-    expect(result).toEqual({ content: 'ok', streamed: false });
+    expect(result).toEqual({ content: 'ok' });
   });
 
   it.each([
@@ -175,20 +155,45 @@ describe('compatible provider', () => {
       .rejects.toMatchObject({ code });
   });
 
-  it('classifies context, rate limits, invalid stream, and cancellation', async () => {
+  it('classifies context and rate limits', async () => {
     await expect(requestCompatibleCompletion({
       config, messages, fetchImpl: async () => response('maximum token limit exceeded', { status: 400 }),
     })).rejects.toMatchObject({ code: 'context-too-large' });
     await expect(requestCompatibleCompletion({
       config, messages, fetchImpl: async () => response('slow down', { status: 429, headers: { 'retry-after': '12' } }),
     })).rejects.toMatchObject({ code: 'rate-limited', retryAfterSeconds: 12 });
-    await expect(requestCompatibleCompletion({
-      config: { ...config, streaming: true }, messages, fetchImpl: async () => response('data: {"choices":[{"delta":{"content":"partial"}}]}\n\n'),
-    })).rejects.toMatchObject({ code: 'invalid-response' });
+  });
+
+  it('classifies cancellation before fetch and while reading JSON', async () => {
     const controller = new AbortController();
     controller.abort();
     await expect(requestCompatibleCompletion({ config, messages, signal: controller.signal }))
       .rejects.toMatchObject({ code: 'aborted' });
+
+    const inFlight = new AbortController();
+    await expect(requestCompatibleCompletion({
+      config, messages, signal: inFlight.signal,
+      fetchImpl: async (_input, init) => {
+        expect(init?.signal).toBe(inFlight.signal);
+        const result = response('{"choices":[{"message":{"content":"late"}}]}');
+        result.json = async () => {
+          inFlight.abort();
+          throw new DOMException('Aborted', 'AbortError');
+        };
+        return result;
+      },
+    })).rejects.toMatchObject({ code: 'aborted' });
+  });
+
+  it('classifies an aborted fetch as cancellation', async () => {
+    const controller = new AbortController();
+    await expect(requestCompatibleCompletion({
+      config, messages, signal: controller.signal,
+      fetchImpl: async () => {
+        controller.abort();
+        throw new DOMException('Aborted', 'AbortError');
+      },
+    })).rejects.toMatchObject({ code: 'aborted' });
   });
 });
 

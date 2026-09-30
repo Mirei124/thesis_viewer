@@ -39,9 +39,9 @@ flowchart LR
 - **模型层**：仅发送本次任务必需的论文文本/选区；本地解析并不意味着模型推理离线。首次配置以简短说明明确发送目的地。
 - **存储层**：全文、原文件、锚点、高亮、生成结果存 IndexedDB；小配置存扩展 storage.local。密钥默认只保留本次阅读器会话，可明确选择本地记住；不放 URL、日志、sync 或内容脚本消息。
 
-“兼容 API”首版契约：用户给包含 API 前缀的 base URL（例如 `https://provider.example/v1`）、model、API key；适配器追加 `/chat/completions`，使用 Bearer 鉴权、`model/messages/stream` 的文本请求语义，读取非流式 message.content 或 SSE delta.content。不自动重复追加 `/v1`；本地免密端点可不发 Authorization。该契约是本项目明确支持的兼容范围，不承诺所有称作“兼容”的服务都能无适配使用。
+“兼容 API”首版契约：用户给包含 API 前缀的 base URL（例如 `https://provider.example/v1`）、model、API key；适配器追加 `/chat/completions`，使用 Bearer 鉴权、`model/messages/stream:false` 的文本请求语义，读取非流式 `message.content`。不自动重复追加 `/v1`；本地免密端点可不发 Authorization。该契约是本项目明确支持的兼容范围，不承诺所有称作“兼容”的服务都能无适配使用。
 
-支持能力记录 `streaming / structuredOutput / contextLimit / outputLimit`，不根据模型名称猜测；输出 token 字段等差异由 provider profile 显式声明。基础文本输出必须可工作，JSON schema 是可选增强；不自动重试成另一种未知协议。首版一种兼容协议，更多供应商原生协议不在范围内。模型 ID 手工填写即可，不要求端点必须实现模型列表接口。
+支持能力记录 `structuredOutput / contextLimit / outputLimit`，不根据模型名称猜测；输出 token 字段等差异由 provider profile 显式声明。新安装默认使用官方 DeepSeek `/v1`、`deepseek-flash`、开启结构化输出和 32000 输出上限；已有保存配置继续生效。基础文本输出必须可工作，JSON object 是可关闭的增强；不自动重试成另一种未知协议。首版一种兼容协议，更多供应商原生协议不在范围内。模型 ID 手工填写即可，不要求端点必须实现模型列表接口。
 
 模型请求在扩展来源页面发出，按需申请用户选择端点的 host permission；公开 HTTPS 为默认，用户显式填写 localhost/127.0.0.1 时可支持本地 HTTP。错误页区分权限拒绝、网络、鉴权、模型不存在、上下文过长、限流和返回格式错误。
 
