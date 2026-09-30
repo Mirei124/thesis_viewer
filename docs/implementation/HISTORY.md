@@ -4,6 +4,7 @@
 
 | 日期 | 批次／事件 | 工作范围 | 结果与证据 | 下一步 |
 |---|---|---|---|---|
+| 2026-09-30 | [B078](batches/B078.md) | 本地 PDF 首次渲染竞态与文件选择入口核查 | Video-MME／3DGS 在独立 Chromium 均完成提取、概览入口可用；用户确认文件选择正常；187 项测试、typecheck、双端构建通过 | 后续按具体反馈继续 |
 | 2026-09-30 | [B077](batches/B077.md) | 扩展图标原生菜单增加阅读器与设置入口 | 用户在 `pw-main` 确认两项显示并打开正确；187 项测试、typecheck、双端构建与 manifest 检查通过 | 保留左键 PDF 判断，后续按用户反馈改进 |
 | 2026-09-30 | [B076](batches/B076.md) | 工具栏 PDF 入口与三行概览质量回归 | 用户确认 PDF 打开／非 PDF 提示；[五篇回放与三篇真实模型对照](evaluations/B076.md)补齐 3DGS 密度控制和缩放论文定量预测；185 项测试、typecheck、双端构建通过 | 保持 PDF 直链范围，后续依新论文样本回归 |
 | 2026-09-30 | [B075](batches/B075.md) | Chrome CRX/PEM 与 Firefox ZIP 汇集到 `dist/` | `pnpm package` 生成 CRX3 和私钥、复制 Firefox ZIP；私钥复用与 ID 稳定、`0600`、ZIP 一致性和 Git 排除均通过 | 备份 PEM 且不对外分发；Firefox 正式安装仍需 Mozilla 签名 |

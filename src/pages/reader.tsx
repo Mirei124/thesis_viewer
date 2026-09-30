@@ -2117,12 +2117,11 @@ function ReaderPage() {
       if (!isCurrent(requestId) || documentRef.current !== pdf) return;
       initialView.scale = await fittedScale(pdf, initialView, 'auto');
       setState({ kind: 'ready', fileName, pageCount: pdf.numPages, ...initialView });
-      if (!await renderPage(pdf, initialView, requestId)) return;
-      if (!isCurrent(requestId)) return;
-      if (requestedPageIndex !== undefined && initialView.pageIndex > 0) {
-        await sizeAllPageCanvases(pdf, initialView);
-        pageElementsRef.current.get(initialView.pageIndex)?.scrollIntoView({ behavior: 'instant', block: 'start' });
-      }
+      // A fit/resize update can replace this first render. Keep document
+      // indexing independent of that render so a harmless cancellation cannot
+      // leave Paper Insights waiting forever for extraction to start.
+      const initialRenderId = renderIdRef.current + 1;
+      const initialRenderPromise = renderPage(pdf, initialView, requestId);
       setThumbnailSession(requestId);
       const contentKey = await hashPromise;
       if (!isCurrent(requestId) || documentRef.current !== pdf) return;
@@ -2132,6 +2131,16 @@ function ReaderPage() {
       // explicitly not a stable cross-open document version.
       const documentVersion = contentKey ? `sha256:${contentKey}` : `unverified-session:${requestId}`;
       void extractPageBlocks(pdf, requestId, documentVersion);
+      const initialRenderSucceeded = await initialRenderPromise;
+      if (!isCurrent(requestId) || documentRef.current !== pdf) return;
+      // A superseding render owns the active surface. A failure without a
+      // successor is a real rendering error and must keep its error state.
+      if (!initialRenderSucceeded && renderIdRef.current === initialRenderId) return;
+      if (requestedPageIndex !== undefined && initialView.pageIndex > 0) {
+        await sizeAllPageCanvases(pdf, initialView);
+        if (!isCurrent(requestId) || documentRef.current !== pdf) return;
+        pageElementsRef.current.get(initialView.pageIndex)?.scrollIntoView({ behavior: 'instant', block: 'start' });
+      }
       if (!contentKey) {
         viewRestoreReadyRef.current = true;
         setViewStorageStatus(uiText('reader.view.noContentKey'));
@@ -2922,7 +2931,7 @@ function ReaderPage() {
 
   return (
     <main ref={readerPageRef} style={panelStyle} className={`reader-page reader-page--${state.kind === 'ready' ? 'loaded' : 'empty'}${leftRailOpen ? ' has-left-rail' : ''}${rightRailOpen ? ' has-right-rail' : ''}`} aria-labelledby="page-title" data-reader-shell="B053" data-reader-layout="edge-tabs">
-      <input ref={fileInputRef} id="local-pdf-input" className="file-picker-input" aria-label={t('reader.chooseLocalPdf')} type="file" accept="application/pdf,.pdf" onChange={onFileChange} />
+      <input ref={fileInputRef} id="local-pdf-input" className="file-picker-input" aria-label={t('reader.chooseLocalPdf')} tabIndex={-1} type="file" accept="application/pdf,.pdf" onChange={onFileChange} />
       {state.kind === 'ready' ? <header className="reader-header" aria-label={t('reader.toolbar')}>
         <div className="toolbar-document">
           <h1 id="page-title" title={state.fileName}>{state.fileName}</h1>
