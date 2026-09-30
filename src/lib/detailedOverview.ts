@@ -7,7 +7,7 @@ import {
   type ProgressiveEvidenceIncrement,
   type ProgressiveEvidenceSession,
 } from './evidencePacket';
-import type { EvidenceCandidate, EvidenceLedger } from './evidenceLedger';
+import type { EvidenceLedger } from './evidenceLedger';
 import type { PageExtraction } from './pdfPageBlocks';
 import type { VerifiedEvidenceRef } from './inlineEvidence';
 
@@ -22,7 +22,6 @@ export type DetailedSectionId = typeof DETAILED_SECTION_IDS[number];
 export type DetailedSectionStatus = 'available' | 'unavailable' | 'not_applicable';
 export type DetailedBlockType = 'paragraph' | 'step' | 'bullet' | 'equation';
 export type DetailedClaimKind = 'author_claim' | 'source_fact' | 'observed_result' | 'inference' | 'missing_information';
-export type LimitationKind = 'author_stated' | 'evidence_gap' | 'source_missing';
 
 export type DetailedOverviewBlock = {
   type: DetailedBlockType;
@@ -30,7 +29,6 @@ export type DetailedOverviewBlock = {
   evidenceIds: string[];
   evidenceRefs?: VerifiedEvidenceRef[];
   claimKind: DetailedClaimKind;
-  limitationKind?: LimitationKind;
 };
 
 export type DetailedOverviewSection = {
@@ -98,10 +96,6 @@ export function detailedEvidencePacket(ledger: EvidenceLedger, sectionId: Detail
   return createEvidencePacket(ledger, { purpose: sectionId });
 }
 
-function limitationKindFor(candidates: EvidenceCandidate[]): LimitationKind {
-  return candidates.some((candidate) => candidate.slot === 'author_limitation') ? 'author_stated' : 'evidence_gap';
-}
-
 /** Restores application-owned structure after binding aliases in the one packet sent for this section. */
 export function validateDetailedSectionResponse(
   sectionId: DetailedSectionId,
@@ -116,7 +110,6 @@ export function validateDetailedSectionResponse(
     type: 'paragraph', text: response.text, evidenceIds: candidates.map((candidate) => candidate.evidenceId),
     evidenceRefs: response.sources.map((alias) => ({ alias, evidenceIds: resolveEvidencePacketAliases(packet, [alias], ledger, pages).map((candidate) => candidate.evidenceId) })),
     claimKind: SECTION_CLAIM_KINDS[sectionId],
-    ...(sectionId === 'limitations' ? { limitationKind: limitationKindFor(candidates) } : {}),
   };
   return { id: sectionId, status: 'available', blocks: [block] };
 }
@@ -138,7 +131,6 @@ export function validateProgressiveDetailedSectionResponse(
     type: 'paragraph', text: response.text, evidenceIds: candidates.map((candidate) => candidate.evidenceId),
     evidenceRefs: response.sources.map((alias) => ({ alias, evidenceIds: resolveProgressiveEvidenceAliases(session, [alias], ledger, pages).map((candidate) => candidate.evidenceId) })),
     claimKind: SECTION_CLAIM_KINDS[sectionId],
-    ...(sectionId === 'limitations' ? { limitationKind: limitationKindFor(candidates) } : {}),
   };
   return { id: sectionId, status: 'available', blocks: [block] };
 }
@@ -151,7 +143,6 @@ export function unavailableDetailedSection(
 ): DetailedOverviewSection {
   const block: DetailedOverviewBlock = {
     type: 'paragraph', text, evidenceIds: [], claimKind: 'missing_information',
-    ...(sectionId === 'limitations' ? { limitationKind: 'source_missing' as const } : {}),
   };
   return { id: sectionId, status, blocks: [block] };
 }

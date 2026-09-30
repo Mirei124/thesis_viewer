@@ -68,6 +68,22 @@ describe('detailed overview compact section contract', () => {
     expect(section.blocks[0].evidenceRefs).toEqual([{ alias: 'S01', evidenceIds: [ledger.candidates[0].evidenceId] }]);
   });
 
+  it('keeps limitation text and verified sources without classifying a section-title slot as an author statement', () => {
+    const { page, ledger } = sample();
+    const response = parseDetailedSectionResponse('{"status":"available","text":"实验范围未覆盖此条件。","sources":["S01"]}');
+    for (const slot of ['author_limitation', 'evaluation_scope'] as const) {
+      const sourceLedger = { ...ledger, candidates: ledger.candidates.map((candidate, index) => index === 0 ? { ...candidate, slot } : candidate) };
+      const packet = detailedEvidencePacket(sourceLedger, 'limitations');
+      const section = validateDetailedSectionResponse('limitations', response, packet, sourceLedger, [page]);
+      expect(section).toMatchObject({ id: 'limitations', status: 'available', blocks: [{ text: response.text, claimKind: 'inference', evidenceIds: [sourceLedger.candidates[0].evidenceId] }] });
+      expect(section.blocks[0].evidenceRefs).toEqual([{ alias: 'S01', evidenceIds: [sourceLedger.candidates[0].evidenceId] }]);
+      expect(section.blocks[0]).not.toHaveProperty('limitationKind');
+    }
+    const fallback = unavailableDetailedSection('limitations');
+    expect(fallback).toMatchObject({ id: 'limitations', status: 'unavailable', blocks: [{ claimKind: 'missing_information', evidenceIds: [] }] });
+    expect(fallback.blocks[0]).not.toHaveProperty('limitationKind');
+  });
+
   it('rejects unsupported aliases and stale anchors without affecting independently assembled sections', () => {
     const { page, ledger } = sample();
     const packet = detailedEvidencePacket(ledger, 'method');
@@ -120,6 +136,9 @@ describe('detailed overview compact section contract', () => {
     const validated = validateProgressiveDetailedSectionResponse('method', valid, session, ledger, [page]);
     expect(validated.status).toBe('available');
     expect(validated.blocks[0].evidenceRefs?.[0]).toMatchObject({ alias: method.sources[0].alias, evidenceIds: [validated.blocks[0].evidenceIds[0]] });
+    const limitations = validateProgressiveDetailedSectionResponse('limitations', valid, session, ledger, [page]);
+    expect(limitations.blocks[0]).toMatchObject({ text: valid.text, claimKind: 'inference', evidenceRefs: validated.blocks[0].evidenceRefs });
+    expect(limitations.blocks[0]).not.toHaveProperty('limitationKind');
     const invalid = parseDetailedSectionResponse('{"status":"available","text":"不应通过。","sources":["E999"]}');
     expect(() => validateProgressiveDetailedSectionResponse('contributions', invalid, session, ledger, [page])).toThrow(/has not been sent/);
     expect(unavailableDetailedSection('contributions').blocks[0].evidenceIds).toEqual([]);

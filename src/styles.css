@@ -497,7 +497,9 @@ h1 { color: var(--text-strong); }
 .detailed-overview-section h5 { margin: 0 0 0.5rem; color: var(--text); font-size: 1.05rem; }
 .detailed-overview-block + .detailed-overview-block { margin-block-start: 1rem; }
 .detailed-overview-block .insight-text { margin: 0; color: var(--text); }
-.detailed-overview-kind, .overview-unavailable, .overview-uncertainties { color: var(--text-muted); font-size: 0.82rem; }
+.overview-unavailable, .overview-uncertainties { color: var(--text-muted); font-size: 0.82rem; }
+.insight-usage { margin-block: 1.1rem 0 !important; padding-block-start: 0.75rem; border-block-start: 1px solid var(--border); color: var(--text-muted) !important; font-size: 0.78rem !important; line-height: 1.5 !important; overflow-wrap: anywhere; }
+.insight-usage-note { display: block; }
 .overview-error { color: #b91c1c !important; }
 .reader-diagnostics, .overview-source-details, .detailed-overview-diagnostics { margin-block-start: 1.25rem; font-size: 0.85rem; color: var(--text-muted); }
 .reader-diagnostics { padding-block-start: 1rem; border-top: 1px solid var(--border); }

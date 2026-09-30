@@ -73,5 +73,11 @@ describe('verified overview cache', () => {
     expect(JSON.stringify(restored)).not.toContain('private');
     expect(verifiedCachedOverview({ ...result, sections: [{ ...result.sections[0], status: 'unavailable' }, ...result.sections.slice(1)] }, 'detailed', ledger, pages)).toBeUndefined();
     expect(verifiedCachedOverview({ ...result, sections: [{ ...result.sections[0], blocks: [{ ...block, evidenceIds: ['stale'] }] }, ...result.sections.slice(1)] }, 'detailed', ledger, pages)).toBeUndefined();
+    const legacySections = result.sections.map((section) => section.id === 'limitations'
+      ? { ...section, blocks: [{ ...block, limitationKind: 'author_stated' }] }
+      : section);
+    const restoredLegacy = verifiedCachedOverview({ ...result, sections: legacySections }, 'detailed', ledger, pages);
+    expect(restoredLegacy).toEqual(result);
+    expect(restoredLegacy?.sections[5].blocks[0]).not.toHaveProperty('limitationKind');
   });
 });

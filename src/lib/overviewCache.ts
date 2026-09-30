@@ -101,11 +101,9 @@ export function verifiedCachedOverview(value: unknown, kind: OverviewCacheKind, 
       if (!ids || ids.length === 0) return undefined;
       const refs = evidenceRefs(block.evidenceRefs, ids, ledger, pages, /^E\d{3}$/);
       if (!refs) return undefined;
-      if (block.limitationKind !== undefined && !['author_stated', 'evidence_gap'].includes(String(block.limitationKind))) return undefined;
       blocks.push({
         type: block.type as DetailedOverviewBlock['type'], text: block.text, evidenceIds: ids,
         evidenceRefs: refs, claimKind: block.claimKind as DetailedOverviewBlock['claimKind'],
-        ...(block.limitationKind ? { limitationKind: block.limitationKind as DetailedOverviewBlock['limitationKind'] } : {}),
       });
     }
     return { id: DETAILED_SECTION_IDS[index], status: 'available' as const, blocks };

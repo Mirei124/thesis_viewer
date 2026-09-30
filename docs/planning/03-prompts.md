@@ -206,7 +206,7 @@ F. 局限与未覆盖问题（约 10%）
   "uncertainties":[]
 }
 section.status 是 available / unavailable / not_applicable。
-block 字段为 type（paragraph / step / bullet / equation）、text、evidenceIds、claimKind（author_claim / source_fact / observed_result / inference / missing_information）；limitations 块额外含 limitationKind。
+block 字段为 type（paragraph / step / bullet / equation）、text、evidenceIds、claimKind（author_claim / source_fact / observed_result / inference / missing_information）。局限的依据区别应在正文和来源中明确，不输出应用无法可靠核验的分类标签。
 标题由应用按 section.id 渲染；text 可含受限 Markdown 和 LaTeX，不含原始 HTML、自造 URL 或页码链接。unavailable 区域仅写材料缺失原因，不能填充推测。无需输出上述比例或内部检查过程。
 ```
 

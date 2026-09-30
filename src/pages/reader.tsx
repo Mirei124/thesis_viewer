@@ -71,6 +71,7 @@ import {
 } from '../lib/pdfHighlightRepository';
 import { requestApiHostPermission } from '../lib/apiPermissions';
 import { CompatibleProviderError, requestCompatibleCompletion, type CompatibleUsage } from '../lib/compatibleProvider';
+import { summarizeInsightUsage } from '../lib/insightUsage';
 import { loadApiKey, loadModelConfig, type ModelConfig } from '../lib/modelConfig';
 import { parseTranslationResponse, translationMessages, type TranslationResult } from '../lib/translationResponse';
 import { TRANSLATION_PROMPT_VERSION, translationSourceForSelection } from '../lib/translationContext';
@@ -196,6 +197,12 @@ type ReaderTranslate = (key: MessageKey, values?: Record<string, string | number
 
 function tokenCountLabel(value: number | undefined, t: ReaderTranslate): string | undefined {
   return value === undefined ? undefined : t('reader.tools.tokens', { count: value });
+}
+
+function insightTokenCount(value: number, complete: boolean, requestCount: number, locale: string): string {
+  if (!complete && value === 0) return '—';
+  const count = new Intl.NumberFormat(locale).format(value);
+  return !complete && requestCount > 0 ? `≥${count}` : count;
 }
 
 function cacheRateLabel(usage: CompatibleUsage | undefined, t: ReaderTranslate): string | undefined {
@@ -657,6 +664,8 @@ function ReaderPage() {
   const [translationStorageStatus, setTranslationStorageStatus] = useState<ReaderUiText | ''>('');
   const [overview, setOverview] = useState<OverviewState | null>(null);
   const [detailedOverview, setDetailedOverview] = useState<DetailedOverviewState | null>(null);
+  const [insightUsages, setInsightUsages] = useState<(CompatibleUsage | undefined)[]>([]);
+  const insightUsage = summarizeInsightUsage(insightUsages);
   const [leftRailOpen, setLeftRailOpen] = useState(() => window.innerWidth > 1100);
   const [rightRailOpen, setRightRailOpen] = useState(() => window.innerWidth > 1100);
   const [leftRailTab, setLeftRailTab] = useState<'outline' | 'pages'>('outline');
@@ -1501,6 +1510,8 @@ function ReaderPage() {
           messages: threeLineOverviewMessages(packet),
           signal: controller.signal,
         });
+        if (requestToken !== overviewRequestRef.current || controller.signal.aborted) return;
+        setInsightUsages((current) => [...current, response.usage]);
         const result = validateThreeLineOverview(parseThreeLineOverview(response.content), packet, ledger, pages);
         if (requestToken !== overviewRequestRef.current || controller.signal.aborted) return;
         setOverview({ status: 'success', result });
@@ -1587,6 +1598,7 @@ function ReaderPage() {
         try {
           const response = await requestCompatibleCompletion({ config, apiKey: apiKeyRef.current, messages, signal: controller.signal });
           if (requestToken !== detailedOverviewRequestRef.current || controller.signal.aborted) return;
+          setInsightUsages((current) => [...current, response.usage]);
           diagnostic.usage = response.usage;
           // Keep the provider's exact content as history even if it fails the
           // local schema/evidence gate. The stable system prompt explicitly
@@ -1618,6 +1630,7 @@ function ReaderPage() {
   }
 
   function beginImport() {
+    setInsightUsages([]);
     setCurrentZoomChoice('auto');
     historyRestoreRef.current += 1;
     locationHistoryRef.current = { back: [], forward: [] };
@@ -3069,7 +3082,6 @@ function ReaderPage() {
                         {section.status !== 'available' && <p className="overview-unavailable">{t(section.status === 'not_applicable' ? 'reader.insights.notApplicable' : 'reader.insights.insufficient')}</p>}
                         {section.blocks.map((block, index) => <div key={`${section.id}-${index}`} className="detailed-overview-block">
                           <div className="insight-text">{renderInlineEvidence(section.status !== 'available' && block.text === UNGROUNDED_DETAILED_SECTION_FALLBACK ? t('reader.insights.ungroundedFallback') : block.text, block.evidenceRefs ?? [], true)}</div>
-                          {section.id === 'limitations' && block.limitationKind && <span className="detailed-overview-kind">{t(block.limitationKind === 'author_stated' ? 'reader.insights.limitationAuthor' : block.limitationKind === 'evidence_gap' ? 'reader.insights.limitationGap' : 'reader.insights.limitationMissing')}</span>}
                         </div>)}
                       </section>)}
                     </div>
@@ -3077,7 +3089,12 @@ function ReaderPage() {
                   </>}
                 </section>
               </section>
-
+              {(overview?.status === 'success' || detailedOverview?.status === 'success' || insightUsage.requestCount > 0) && <p className="insight-usage">
+                {t('reader.insights.usageLabel')}: {t('reader.insights.usageInput', { count: insightTokenCount(insightUsage.inputTokens, insightUsage.inputComplete, insightUsage.requestCount, locale) })}
+                {' · '}{t('reader.insights.usageOutput', { count: insightTokenCount(insightUsage.outputTokens, insightUsage.outputComplete, insightUsage.requestCount, locale) })}
+                {' · '}{t('reader.insights.usageCacheRate', { rate: insightUsage.cacheHitRate === undefined ? '—' : `${insightUsage.cacheHitRate}%` })}
+                {(!insightUsage.inputComplete || !insightUsage.outputComplete) && <span className="insight-usage-note">{t('reader.insights.usagePartial')}</span>}
+              </p>}
             </>}
         </section>}
 
