@@ -4,6 +4,7 @@ import {
   readerUrlForArxivPdf,
 } from '../src/lib/arxivPdfInterception';
 import { handleToolbarClick } from '../src/lib/toolbarPdfAction';
+import { registerActionMenu, type ActionMenuApi } from '../src/lib/actionMenu';
 
 type NavigationDetails = { tabId: number; frameId: number; url: string };
 type TabUpdateDetails = { url?: string };
@@ -15,7 +16,9 @@ type ExtensionApi = {
     request: (permissions: { origins: string[] }) => Promise<boolean>;
     onRemoved?: { addListener: (callback: (permissions: { origins?: string[] }) => void) => void };
   };
-  runtime?: { getURL: (path: string) => string };
+  runtime?: { getURL: (path: string) => string; onInstalled?: ActionMenuApi['runtime']['onInstalled'] };
+  menus?: ActionMenuApi['menus'];
+  contextMenus?: ActionMenuApi['menus'];
   tabs?: {
     update: (tabId: number, updateProperties: { url: string }) => Promise<unknown>;
     create: (createProperties: { url: string }) => Promise<unknown>;
@@ -72,6 +75,10 @@ async function mayOpenArxivPdf(details: NavigationDetails): Promise<void> {
 
 export default defineBackground(() => {
   const api = extensionApi();
+  const menus = api?.menus ?? api?.contextMenus;
+  if (menus && api?.runtime?.onInstalled && api.tabs) {
+    registerActionMenu({ menus, runtime: { getURL: api.runtime.getURL, onInstalled: api.runtime.onInstalled }, tabs: api.tabs });
+  }
   api?.action?.onClicked?.addListener((tab) => {
     handleToolbarClick(tab, api?.permissions && api.runtime && api.tabs
       ? { permissions: api.permissions, runtime: api.runtime, tabs: api.tabs }

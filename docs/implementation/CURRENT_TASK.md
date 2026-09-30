@@ -4,7 +4,7 @@
 
 ## 一、总体实现进度
 
-B001–B076 已完成。B076 的工具栏 PDF 入口和三行概览质量回归已归档至 [B076](batches/B076.md)，完整结果见[评估记录](evaluations/B076.md)。总体状态以 [IMPLEMENTATION_PROGRESS](../IMPLEMENTATION_PROGRESS.md) 为准。
+B001–B077 已完成。B077 的扩展图标原生菜单入口已归档至 [B077](batches/B077.md)。总体状态以 [IMPLEMENTATION_PROGRESS](../IMPLEMENTATION_PROGRESS.md) 为准。
 
 ## 二、当前细节目标清单
 
@@ -12,4 +12,4 @@ B001–B076 已完成。B076 的工具栏 PDF 入口和三行概览质量回归�
 
 ## 三、相关背景知识与执行边界
 
-继续保留 PDF 直链范围、按需来源权限、当前 PDF 原文锚点校验与 Paper Insights 的三行／六栏目结构。The Moonlight 只作内容组织参考；遇到新论文质量问题，先以本地离线回放定位实际发送素材，再验证真实模型输出。
+扩展图标左键继续检查当前地址是否为 PDF；图标原生菜单提供“打开阅读器”和“设置”。继续保留 PDF 直链范围、按需来源权限、当前 PDF 原文锚点校验与 Paper Insights 的三行／六栏目结构。
