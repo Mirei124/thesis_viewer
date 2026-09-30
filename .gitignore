@@ -2,3 +2,5 @@ node_modules/
 .output/
 .wxt/
 .playwright-cli/
+.hypha/.drafts
+*.pdf
