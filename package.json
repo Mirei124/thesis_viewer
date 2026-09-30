@@ -11,7 +11,10 @@
     "test": "vitest run",
     "replay:evidence": "node --experimental-strip-types scripts/replay-evidence.mjs",
     "build:chrome": "wxt build --browser chrome && node scripts/copy-license.mjs chrome",
-    "build:firefox": "wxt build --browser firefox && node scripts/copy-license.mjs firefox"
+    "build:firefox": "wxt build --browser firefox && node scripts/copy-license.mjs firefox",
+    "package": "pnpm package:chrome && pnpm package:firefox",
+    "package:chrome": "wxt zip --browser chrome",
+    "package:firefox": "wxt zip --browser firefox"
   },
   "dependencies": {
     "@wxt-dev/module-react": "^1.1.0",

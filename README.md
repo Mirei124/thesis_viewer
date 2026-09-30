@@ -24,6 +24,12 @@ pnpm build:firefox
 
 WXT writes Chrome output to `.output/chrome-mv3/` and Firefox output to `.output/firefox-mv3/`; each build copies the root `LICENSE` into its output directory. Open `reader.html` from the loaded extension's URL to use the reader. The extension management page's options command opens `options.html` in its own tab.
 
+## Package for distribution
+
+Run `pnpm package` to build both browsers and write ZIP archives under `.output/`. The Chrome and Firefox extension archives contain the manifest, bundled assets, icons, and `LICENSE` at the archive root. A separate Firefox sources archive contains only the files needed to rebuild the extension for add-on review. You can run `pnpm package:chrome` or `pnpm package:firefox` for one target.
+
+These are unsigned upload archives. Chrome users can load the unpacked build locally; persistent installation in Firefox release/beta requires [Mozilla signing](https://extensionworkshop.com/documentation/publish/signing-and-distribution-overview/). The Firefox sources archive is for review and is not an installable extension. The archives are ignored by Git.
+
 To inspect the detailed overview's local evidence packets without a model or browser, use Node 22+ with one or more local PDFs:
 
 ```sh
@@ -34,7 +40,7 @@ The JSON lists each document's six stages, new-source count and limit, total exc
 
 ## Load the built extension
 
-The `.output/` directories are build artifacts, ignored by Git, and are intended for local development loading rather than a signed store package.
+The `.output/` directories are build artifacts, ignored by Git, and are intended for local development loading. The ZIP archives above are unsigned distribution artifacts.
 
 - Chrome: open `chrome://extensions`, enable **Developer mode**, select **Load unpacked**, and choose `.output/chrome-mv3/`.
 - Firefox: open `about:debugging#/runtime/this-firefox`, select **Load Temporary Add-on**, and choose `.output/firefox-mv3/manifest.json`. Firefox removes a temporary add-on after restart.

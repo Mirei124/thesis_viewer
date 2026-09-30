@@ -1,8 +1,31 @@
 import { defineConfig } from 'wxt';
+import { copyFile } from 'node:fs/promises';
+import { join } from 'node:path';
 
 export default defineConfig({
   manifestVersion: 3,
   modules: ['@wxt-dev/module-react'],
+  hooks: {
+    'zip:extension:start': async (wxt) => {
+      await copyFile(join(wxt.config.root, 'LICENSE'), join(wxt.config.outDir, 'LICENSE'));
+    },
+  },
+  zip: {
+    excludeSources: ['**/*'],
+    includeSources: [
+      'src/**/!(*.test|*.spec).{ts,tsx,css}',
+      'entrypoints/**',
+      'public/**',
+      'scripts/copy-license.mjs',
+      'package.json',
+      'pnpm-lock.yaml',
+      'pnpm-workspace.yaml',
+      'tsconfig.json',
+      'wxt.config.ts',
+      'LICENSE',
+      'README.md',
+    ],
+  },
   manifest: {
     name: 'Thesis Viewer',
     description: 'A local-first paper reader extension.',

@@ -4,12 +4,12 @@
 
 ## 一、总体实现进度
 
-B001–B073 已完成双浏览器论文阅读、Paper Insights 质量优化，以及设置默认值、非流式兼容请求与可分发扩展图标。最新批次见 [B073](batches/B073.md)。
+B001–B074 已完成双浏览器 MV3 阅读扩展、Paper Insights、图标和可分发 ZIP 打包。最新批次见 [B074](batches/B074.md)。
 
 ## 二、当前细节目标清单
 
-暂无新派发目标。B073 设置页真实浏览器交互因本次执行环境无可附加 Playwright 会话，待会话恢复后复验；代码测试、类型检查及双端构建已通过。
+暂无新派发目标。`pnpm package` 可生成 Chrome/Firefox 扩展 ZIP 及 Firefox 源码 ZIP；安装到 Firefox release/beta 前仍需 Mozilla 签名。B073 设置页真实浏览器交互待 Playwright 会话恢复后复验。
 
 ## 三、相关背景知识与执行边界
 
-新安装默认使用官方 `https://api.deepseek.com/v1`、`deepseek-flash`、结构化输出开启、输出上限 32000。旧 `model-config:v1` 自定义配置继续生效，废弃的 `streaming` 字段在读取和保存时移除；模型请求始终发送 `stream:false` 并解析 JSON。四种尺寸的 PNG 图标已打包进 Chrome/Firefox MV3 产物。后续批次按 [协作流程](WORKFLOW.md)重新准备三部分任务包。
+打包复用 WXT 官方 zip 命令；ZIP 根目录包含 manifest、图标和 LICENSE。Firefox 源码 ZIP 按白名单收录生产源码及重建配置，排除测试、论文、调试文件和 Hypha；隔离重建与当前 Firefox 构建的 76 个文件字节一致。后续批次按 [协作流程](WORKFLOW.md)重新准备三部分任务包。
