@@ -2886,7 +2886,6 @@ function ReaderPage() {
           <div className="url-import-controls">
             <input id="pdf-url" type="url" value={urlValue} onChange={(event) => setUrlValue(event.target.value)} placeholder="https://example.org/paper.pdf" inputMode="url" required />
             <button type="submit" disabled={state.kind === 'loading' || state.kind === 'requesting-permission'} aria-label={t('reader.importPdfUrl')}>{state.kind === 'ready' ? t('reader.import') : <ReaderIcon name="next" />}</button>
-            {(state.kind === 'loading' || state.kind === 'requesting-permission') && <button type="button" className="secondary-button" onClick={cancelImport}>{t('reader.cancel')}</button>}
           </div>
           {state.kind !== 'ready' && <p>{t('reader.welcome.importHint')}</p>}
         </form>
@@ -2987,7 +2986,20 @@ function ReaderPage() {
           <button type="button" className="toolbar-icon-button" aria-label={t('reader.choosePdf')} title={t('reader.choosePdf')} aria-controls="local-pdf-input" onClick={() => fileInputRef.current?.click()}><ReaderIcon name="document" /></button>
           <a className="toolbar-icon-button" href="options.html" aria-label={t('reader.settings')} title={t('reader.settings')}><ReaderIcon name="settings" /></a>
         </div>
-      </header> : <section className="reader-welcome" aria-label={t('reader.welcome.open')}>
+      </header> : state.kind === 'loading' || state.kind === 'requesting-permission' ? <section className="reader-loading" aria-labelledby="page-title">
+        <div className="reader-loading-document" aria-hidden="true">
+          <ReaderIcon name="document" />
+          <span className="reader-loading-lines"><span /><span /><span /></span>
+        </div>
+        <h1 id="page-title">{t('reader.loading.title')}</h1>
+        <p id="reader-loading-copy" className="reader-loading-copy" role="status" aria-live="polite">
+          {t(state.kind === 'requesting-permission' ? 'reader.loading.requestingPermission' : 'reader.loading.opening')}
+        </p>
+        <p className="reader-loading-file" title={state.fileName}>{state.fileName}</p>
+        <div className="reader-loading-track" aria-hidden="true" />
+        <progress className="reader-loading-progress" aria-labelledby="reader-loading-copy" />
+        <button type="button" className="reader-loading-cancel" onClick={cancelImport}>{t('reader.cancel')}</button>
+      </section> : <section className="reader-welcome" aria-label={t('reader.welcome.open')}>
         <div className="welcome-mark"><ReaderIcon name="document" /></div>
         <p className="welcome-kicker">{t('reader.appName')}</p>
         <h1 id="page-title">{t('reader.welcome.title')}</h1>
@@ -2995,11 +3007,9 @@ function ReaderPage() {
         <button type="button" className="file-picker" aria-controls="local-pdf-input" onClick={() => fileInputRef.current?.click()}><ReaderIcon name="document" /> {t('reader.choosePdf')}</button>
         <p className="welcome-local-note">{t('reader.welcome.localNote')}</p>
       </section>}
-      {state.kind !== 'ready' && <section className="reader-import" aria-label={t('reader.welcome.import')}>{pdfImportForm}</section>}
-      {state.kind !== 'ready' && <a className="welcome-settings" href="options.html"><ReaderIcon name="settings" /> {t('reader.settings')}</a>}
-      <section className={`reader-status${state.kind === 'ready' || state.kind === 'idle' ? ' visually-hidden' : ''}`} aria-live="polite" role="status">
-        {state.kind === 'requesting-permission' && t('reader.status.requestingDownload', { file: state.fileName })}
-        {state.kind === 'loading' && t('reader.status.loading', { file: state.fileName })}
+      {state.kind !== 'ready' && state.kind !== 'loading' && state.kind !== 'requesting-permission' && <section className="reader-import" aria-label={t('reader.welcome.import')}>{pdfImportForm}</section>}
+      {state.kind !== 'ready' && state.kind !== 'loading' && state.kind !== 'requesting-permission' && <a className="welcome-settings" href="options.html"><ReaderIcon name="settings" /> {t('reader.settings')}</a>}
+      <section className={`reader-status${state.kind === 'ready' || state.kind === 'idle' || state.kind === 'loading' || state.kind === 'requesting-permission' ? ' visually-hidden' : ''}`} aria-live="polite" role="status">
         {state.kind === 'ready' && t('reader.status.ready', { page: state.pageIndex + 1, count: state.pageCount, zoom: Math.round(state.scale * 100) })}
         {(state.kind === 'cancelled' || state.kind === 'error') && display(state.message)}
       </section>
@@ -3021,8 +3031,7 @@ function ReaderPage() {
         <div className="rail-resize-handle rail-resize-handle--right" role="separator" tabIndex={0} aria-label={t('reader.rail.resizeResearch')} aria-orientation="vertical" aria-valuemin={panelWidthLimits('right').min} aria-valuemax={panelWidthLimits('right').max} aria-valuenow={panelWidths.right} onPointerDown={(event) => startPanelResize('right', event)} onPointerMove={movePanelResize} onPointerUp={endPanelResize} onPointerCancel={endPanelResize} onKeyDown={(event) => onPanelResizeKeyDown('right', event)} />
         <button type="button" className="rail-dismiss" aria-label={t('reader.rail.closeResearch')} onClick={() => closeRail('right')}><ReaderIcon name="close" /></button>
       {rightRailTab === 'overview' && <section className="extraction-diagnostics paper-insights" id="right-overview-panel" role="tabpanel" aria-labelledby="right-overview-tab">
-        <p className="panel-kicker">{t('reader.insights.kicker')}</p>
-        <h2 id="evidence-ledger-title">{t('reader.rail.overview')}</h2>
+        <h2 id="evidence-ledger-title" className="paper-insights-title">{t('reader.insights.kicker')}</h2>
         {evidenceLedger.kind === 'idle' || evidenceLedger.kind === 'building'
           ? <p aria-live="polite">{t('reader.insights.preparingEvidence')}</p>
           : evidenceLedger.kind === 'error'
