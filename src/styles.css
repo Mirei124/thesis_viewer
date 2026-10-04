@@ -471,21 +471,18 @@ h1 { color: var(--text-strong); }
 .insight-math-inline { overflow-wrap: normal; }
 .insight-math-display { display: block; max-inline-size: 100%; margin-block: 0.4rem; overflow-x: auto; overflow-y: hidden; text-align: center; }
 .insight-math-display .katex-display { margin: 0; }
-.inline-evidence-group { display: inline-block; margin-inline: 0.06em; vertical-align: baseline; }
-.inline-evidence-group > summary { display: inline; cursor: pointer; color: var(--text-link); font-weight: 650; text-decoration: underline; text-underline-offset: 0.16em; list-style: none; }
-.inline-evidence-group > summary::-webkit-details-marker { display: none; }
-.inline-evidence-group > summary::after { content: ' ▾'; font-size: 0.72em; text-decoration: none; }
-.inline-evidence-group[open] > summary::after { content: ' ▴'; }
-.inline-evidence-group > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
-.inline-evidence-group[open] { display: block; margin-block: 0.4rem; }
-.inline-evidence-group:not([open]) > .inline-evidence-excerpts { display: none; }
+.inline-evidence-dialog { inline-size: min(44rem, calc(100vw - 2rem)); max-block-size: calc(100dvh - 2rem); box-sizing: border-box; padding: 1rem; overflow: auto; border: 1px solid var(--border-strong); border-radius: 0.65rem; background: var(--surface); color: var(--text); box-shadow: 0 0.5rem 2rem var(--shadow); }
+.inline-evidence-dialog::backdrop { background: rgb(0 0 0 / 35%); }
+.inline-evidence-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.inline-evidence-dialog-header h2 { margin: 0; font-size: 1rem; }
+.inline-evidence-dialog-header button { flex-shrink: 0; font-size: 1.25rem; }
 .inline-evidence-excerpts { max-inline-size: 80ch; margin-block-start: 0.3rem; padding: 0.55rem 0.7rem; border: 1px solid var(--border); border-radius: 0.4rem; background: var(--surface); }
 .inline-evidence-excerpt { margin: 0; line-height: 1.65; overflow-wrap: anywhere; }
 .inline-evidence-excerpt + .inline-evidence-excerpt { margin-block-start: 0.55rem; padding-block-start: 0.5rem; border-block-start: 1px solid var(--border); }
 .inline-evidence-break { display: block; margin-block-end: 0.15rem; color: var(--text-muted); font-size: 0.82rem; }
-.overview-panel .inline-evidence-quote { display: inline; margin: 0; padding: 0; border: 0; border-radius: 0.1rem; background: transparent; color: inherit; font: inherit; text-align: start; text-decoration: underline; text-decoration-color: var(--text-link); text-decoration-thickness: 1px; text-underline-offset: 0.15em; }
-.overview-panel .inline-evidence-quote:hover { background: var(--surface-info); }
-.overview-panel .inline-evidence-quote:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.inline-evidence-dialog .inline-evidence-quote { display: inline; margin: 0; padding: 0; border: 0; border-radius: 0.1rem; background: transparent; color: inherit; font: inherit; text-align: start; text-decoration: underline; text-decoration-color: var(--text-link); text-decoration-thickness: 1px; text-underline-offset: 0.15em; }
+.inline-evidence-dialog .inline-evidence-quote:hover { background: var(--surface-info); }
+.inline-evidence-dialog .inline-evidence-quote:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .inline-evidence-unlocated { color: var(--text-muted); }
 .pdf-page .textLayer ::selection { background: rgb(245 158 11 / 55%); }
 .textLayer .evidence-source-block { background: rgb(245 158 11 / 42%); outline: 2px solid #b45309; outline-offset: 2px; }

@@ -59,7 +59,7 @@ import {
 import { appendProgressiveEvidenceStage, createProgressiveEvidenceSession } from '../lib/evidencePacket';
 import { createEvidencePassages } from '../lib/evidencePassages';
 import { inlineEvidenceLabel, inlineEvidenceParts, type VerifiedEvidenceRef } from '../lib/inlineEvidence';
-import { buildInlineEvidenceExcerpts } from '../lib/inlineEvidenceExcerpts';
+import { buildInlineEvidenceExcerpts, type InlineExcerptGroup } from '../lib/inlineEvidenceExcerpts';
 import { LimitedMath } from '../components/LimitedMath';
 import { createPassageRetrievalIndex, selectRankedPassagesForPurpose } from '../lib/retrievalIndex';
 import {
@@ -664,6 +664,18 @@ function ReaderPage() {
   const [translationStorageStatus, setTranslationStorageStatus] = useState<ReaderUiText | ''>('');
   const [overview, setOverview] = useState<OverviewState | null>(null);
   const [detailedOverview, setDetailedOverview] = useState<DetailedOverviewState | null>(null);
+  const evidenceDialogRef = useRef<HTMLDialogElement>(null);
+  const evidenceTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const [activeEvidence, setActiveEvidence] = useState<{ alias: string; category: string; count: number; groups: InlineExcerptGroup[] } | null>(null);
+  useEffect(() => {
+    const dialog = evidenceDialogRef.current;
+    if (!activeEvidence || !dialog) return;
+    dialog.showModal();
+    return () => {
+      dialog.close();
+      if (evidenceTriggerRef.current?.isConnected) evidenceTriggerRef.current.focus();
+    };
+  }, [activeEvidence]);
   const [insightUsages, setInsightUsages] = useState<(CompatibleUsage | undefined)[]>([]);
   const insightUsage = summarizeInsightUsage(insightUsages);
   const [leftRailOpen, setLeftRailOpen] = useState(() => window.innerWidth > 1100);
@@ -822,35 +834,34 @@ function ReaderPage() {
     });
   }, []);
 
+  // Each overview restores independently, including while the other is running or failed.
   useEffect(() => {
     const config = modelConfigRef.current;
-    if (!documentContentKey || !config || extraction.kind !== 'ready' || evidenceLedger.kind !== 'ready') return;
+    if (overview || !documentContentKey || !config || extraction.kind !== 'ready' || evidenceLedger.kind !== 'ready') return;
     if (evidenceLedger.ledger.documentVersion !== `sha256:${documentContentKey}`) return;
-    if (overview && overview.status !== 'success') return;
-    const requestId = requestIdRef.current;
-    const overviewToken = overviewRequestRef.current;
-    const detailedToken = detailedOverviewRequestRef.current;
-    const ledger = evidenceLedger.ledger;
-    const pages = extraction.pages;
+    const documentToken = requestIdRef.current;
+    const requestToken = overviewRequestRef.current;
     let cancelled = false;
-    const current = () => !cancelled && requestId === requestIdRef.current;
     void (async () => {
-      let hasThreeLine = overview?.status === 'success';
-      if (!hasThreeLine) {
-        const restored = await loadCachedOverview({ documentContentKey, kind: 'three-line', config }, ledger, pages).catch(() => undefined);
-        if (!current() || overviewToken !== overviewRequestRef.current) return;
-        if (restored?.kind === 'three_line') {
-          setOverview({ status: 'success', result: restored });
-          hasThreeLine = true;
-        }
-      }
-      if (!hasThreeLine || detailedOverview) return;
-      const restored = await loadCachedOverview({ documentContentKey, kind: 'detailed', config }, ledger, pages).catch(() => undefined);
-      if (!current() || overviewToken !== overviewRequestRef.current || detailedToken !== detailedOverviewRequestRef.current) return;
-      if (restored?.kind === 'detailed') setDetailedOverview({ status: 'success', result: restored });
+      const restored = await loadCachedOverview({ documentContentKey, kind: 'three-line', config }, evidenceLedger.ledger, extraction.pages).catch(() => undefined);
+      if (!cancelled && documentToken === requestIdRef.current && requestToken === overviewRequestRef.current && restored?.kind === 'three_line') setOverview({ status: 'success', result: restored });
     })();
     return () => { cancelled = true; };
-  }, [documentContentKey, extraction, evidenceLedger, modelConfigEpoch, overview, detailedOverview]);
+  }, [documentContentKey, extraction, evidenceLedger, modelConfigEpoch, overview]);
+
+  useEffect(() => {
+    const config = modelConfigRef.current;
+    if (detailedOverview || !documentContentKey || !config || extraction.kind !== 'ready' || evidenceLedger.kind !== 'ready') return;
+    if (evidenceLedger.ledger.documentVersion !== `sha256:${documentContentKey}`) return;
+    const documentToken = requestIdRef.current;
+    const requestToken = detailedOverviewRequestRef.current;
+    let cancelled = false;
+    void (async () => {
+      const restored = await loadCachedOverview({ documentContentKey, kind: 'detailed', config }, evidenceLedger.ledger, extraction.pages).catch(() => undefined);
+      if (!cancelled && documentToken === requestIdRef.current && requestToken === detailedOverviewRequestRef.current && restored?.kind === 'detailed') setDetailedOverview({ status: 'success', result: restored });
+    })();
+    return () => { cancelled = true; };
+  }, [documentContentKey, extraction, evidenceLedger, modelConfigEpoch, detailedOverview]);
 
   useEffect(() => {
     if (state.kind !== 'ready' || !documentContentKey || !viewRestoreReadyRef.current) return;
@@ -1534,10 +1545,6 @@ function ReaderPage() {
 
   function startDetailedOverview() {
     if (evidenceLedger.kind !== 'ready' || extraction.kind !== 'ready') return;
-    if (overview?.status !== 'success') {
-      setDetailedOverview({ status: 'error', message: uiText('reader.insights.needThreeLine') });
-      return;
-    }
     if (evidenceLedger.ledger.candidates.length === 0) {
       setDetailedOverview({ status: 'error', message: uiText('reader.insights.noDetailedEvidence') });
       return;
@@ -1640,6 +1647,7 @@ function ReaderPage() {
     invalidateTranslation();
     cancelThreeLineOverview();
     cancelDetailedOverview();
+    setActiveEvidence(null);
     requestIdRef.current += 1;
     renderIdRef.current += 1;
     renderTaskRef.current?.cancel();
@@ -2676,7 +2684,7 @@ function ReaderPage() {
 
   useEffect(() => {
     const onEscape = (event: globalThis.KeyboardEvent) => {
-      if (event.key !== 'Escape') return;
+      if (event.key !== 'Escape' || evidenceDialogRef.current?.open) return;
       const focused = document.activeElement;
       if (focused?.closest('.reader-navigation')) {
         setLeftRailOpen(false);
@@ -2917,32 +2925,41 @@ function ReaderPage() {
         evidenceLedger.kind === 'ready' ? evidenceLedger.ledger.candidates : [],
         extraction.kind === 'ready' ? extraction.pages : [],
       );
-      const first = groups[0]?.members[0];
-      if (part.evidenceIds.length === 1) {
-        if (!first?.location) return part.alias;
-        const description = t('reader.evidence.goTo', { category, alias: part.alias, member: '', page: first.location.pageIndex + 1, precision: t(`reader.evidence.precision.${first.location.precision}` as MessageKey) });
-        return <button type="button" className="inline-evidence-button" key={`${part.alias}-${index}`} aria-label={description} title={description} onClick={() => goToEvidenceCandidate(first.evidenceId)}>{inlineEvidenceLabel(part)}</button>;
-      }
-      return <details className="inline-evidence-group" key={`${part.alias}-${index}`}>
-        <summary aria-label={t('reader.evidence.showMembers', { category, alias: part.alias, count: part.evidenceIds.length })}>{inlineEvidenceLabel(part)}</summary>
-        <div className="inline-evidence-excerpts">
-          {groups.map((group, groupIndex) => <p className="inline-evidence-excerpt" key={groupIndex}>
-            {groupIndex > 0 && <span className="inline-evidence-break">{t('reader.evidence.separateExcerpt')}</span>}
-            {group.members.map((item) => {
-              const member = t('reader.evidence.member', { index: item.index, count: part.evidenceIds.length });
-              const description = item.location && t('reader.evidence.goTo', { category, alias: part.alias, member, page: item.location.pageIndex + 1, precision: t(`reader.evidence.precision.${item.location.precision}` as MessageKey) });
-              return <span key={item.evidenceId}>{item.separatorBefore}{description
-                ? <button type="button" className="inline-evidence-quote" aria-label={`${item.quote}; ${description}`} title={description} onClick={() => goToEvidenceCandidate(item.evidenceId)}>{item.displayQuote}</button>
-                : <span className="inline-evidence-unlocated">{item.displayQuote || t('reader.evidence.unavailable')} <small>({t('reader.evidence.unlocated')})</small></span>}</span>;
-            })}
-          </p>)}
-        </div>
-      </details>;
+      return <button type="button" className="inline-evidence-button" key={`${part.alias}-${index}`} aria-haspopup="dialog"
+        aria-label={t('reader.evidence.showMembers', { category, alias: part.alias, count: part.evidenceIds.length })}
+        onClick={(event) => {
+          evidenceTriggerRef.current = event.currentTarget;
+          setActiveEvidence({ alias: part.alias, category, count: part.evidenceIds.length, groups });
+        }}>{inlineEvidenceLabel(part)}</button>;
     });
   }
 
   return (
     <main ref={readerPageRef} style={panelStyle} className={`reader-page reader-page--${state.kind === 'ready' ? 'loaded' : 'empty'}${leftRailOpen ? ' has-left-rail' : ''}${rightRailOpen ? ' has-right-rail' : ''}`} aria-labelledby="page-title" data-reader-shell="B053" data-reader-layout="edge-tabs">
+      {activeEvidence && <dialog ref={evidenceDialogRef} className="inline-evidence-dialog" aria-labelledby="inline-evidence-title"
+        onCancel={() => setActiveEvidence(null)} onClose={() => setActiveEvidence(null)}
+        onClick={(event) => {
+          if (event.target !== event.currentTarget) return;
+          const rect = event.currentTarget.getBoundingClientRect();
+          if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) setActiveEvidence(null);
+        }}>
+        <header className="inline-evidence-dialog-header">
+          <h2 id="inline-evidence-title">{activeEvidence.category} {activeEvidence.alias}</h2>
+          <button type="button" autoFocus aria-label={t('reader.evidence.close')} onClick={() => setActiveEvidence(null)}>×</button>
+        </header>
+        <div className="inline-evidence-excerpts">
+          {activeEvidence.groups.map((group, groupIndex) => <p className="inline-evidence-excerpt" key={groupIndex}>
+            {groupIndex > 0 && <span className="inline-evidence-break">{t('reader.evidence.separateExcerpt')}</span>}
+            {group.members.map((item) => {
+              const member = t('reader.evidence.member', { index: item.index, count: activeEvidence.count });
+              const description = item.location && t('reader.evidence.goTo', { category: activeEvidence.category, alias: activeEvidence.alias, member, page: item.location.pageIndex + 1, precision: t(`reader.evidence.precision.${item.location.precision}` as MessageKey) });
+              return <span key={item.evidenceId}>{item.separatorBefore}{description
+                ? <button type="button" className="inline-evidence-quote" aria-label={`${item.quote}; ${description}`} title={description} onClick={() => { setActiveEvidence(null); goToEvidenceCandidate(item.evidenceId); }}>{item.displayQuote}</button>
+                : <span className="inline-evidence-unlocated">{item.displayQuote || t('reader.evidence.unavailable')} <small>({t('reader.evidence.unlocated')})</small></span>}</span>;
+            })}
+          </p>)}
+        </div>
+      </dialog>}
       <input ref={fileInputRef} id="local-pdf-input" className="file-picker-input" aria-label={t('reader.chooseLocalPdf')} tabIndex={-1} type="file" accept="application/pdf,.pdf" onChange={onFileChange} />
       {state.kind === 'ready' ? <header className="reader-header" aria-label={t('reader.toolbar')}>
         <div className="toolbar-document">
@@ -3070,7 +3087,7 @@ function ReaderPage() {
                 <section className="detailed-overview-panel" aria-labelledby="detailed-overview-title">
                   <div className="insight-heading-row">
                     <h4 id="detailed-overview-title">{t('reader.insights.detailed')}</h4>
-                    <button type="button" className="insight-generate-button" aria-label={t('reader.insights.generateDetailed')} title={t('reader.insights.generateDetailed')} onClick={startDetailedOverview} disabled={overview?.status !== 'success' || detailedOverview?.status === 'preparing' || detailedOverview?.status === 'generating'}><ReaderIcon name="generate" /></button>
+                    <button type="button" className="insight-generate-button" aria-label={t('reader.insights.generateDetailed')} title={t('reader.insights.generateDetailed')} onClick={startDetailedOverview} disabled={detailedOverview?.status === 'preparing' || detailedOverview?.status === 'generating'}><ReaderIcon name="generate" /></button>
                   </div>
                   {detailedOverview?.status === 'preparing' && <p role="status">{t('reader.insights.requestingPermission')}</p>}
                   {detailedOverview?.status === 'generating' && <p role="status">{t('reader.insights.generatingDetailed')} <button type="button" onClick={cancelDetailedOverview}>{t('reader.cancel')}</button></p>}
