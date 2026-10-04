@@ -6,6 +6,7 @@ import {
   loadModelConfig,
   loadApiKey,
   saveModelConfig,
+  normalizeModelConfig,
   saveApiKey,
   type ModelConfig,
 } from '../lib/modelConfig';
@@ -14,12 +15,16 @@ import { ArxivAutoOpenControl } from './ArxivAutoOpenControl';
 import { LocalePreferenceControl, useUiLocale } from './LocalePreferenceControl';
 import { message, type MessageKey } from '../lib/i18n';
 
+import { requestApiHostPermission } from '../lib/apiPermissions';
+import { DEFAULT_OVERVIEW_PREFERENCES, loadOverviewPreferences, saveOverviewPreferences, type OverviewPreferences } from '../lib/overviewPreferences';
+
 type SettingsState = 'loading' | 'ready' | 'saving' | 'error';
 
 export function ModelSettings() {
   const [locale, setLocale] = useUiLocale();
   const t = (key: MessageKey) => message(locale, key);
   const [config, setConfig] = useState<ModelConfig>(DEFAULT_MODEL_CONFIG);
+  const [overviewPreferences, setOverviewPreferences] = useState<OverviewPreferences>(DEFAULT_OVERVIEW_PREFERENCES);
   const [apiKey, setApiKey] = useState('');
   const [rememberKey, setRememberKey] = useState(false);
   const [hasRememberedKey, setHasRememberedKey] = useState(false);
@@ -28,10 +33,11 @@ export function ModelSettings() {
 
   useEffect(() => {
     let active = true;
-    void Promise.all([loadModelConfig(), loadApiKey()])
-      .then(([savedConfig, savedKey]) => {
+    void Promise.all([loadModelConfig(), loadApiKey(), loadOverviewPreferences()])
+      .then(([savedConfig, savedKey, savedPreferences]) => {
         if (!active) return;
         setConfig(savedConfig);
+        setOverviewPreferences(savedPreferences);
         setApiKey(savedKey.apiKey ?? '');
         setRememberKey(savedKey.remembered);
         setHasRememberedKey(Boolean(savedKey.apiKey));
@@ -68,12 +74,20 @@ export function ModelSettings() {
     setState('saving');
     setStatusMessage(t('settings.saving'));
     try {
-      const saved = await saveModelConfig({ ...config, apiKey });
+      const validated = normalizeModelConfig({ ...config, apiKey });
+      // Initiate permission synchronously in the submit gesture, before any storage await.
+      const permissionRequest = overviewPreferences.threeLine || overviewPreferences.detailed
+        ? requestApiHostPermission(validated.baseUrl) : undefined;
+      const permission = permissionRequest ? await permissionRequest : undefined;
+      const preferences = permission && !permission.granted ? DEFAULT_OVERVIEW_PREFERENCES : overviewPreferences;
+      const saved = await saveModelConfig(validated);
       await saveApiKey(apiKey, rememberKey);
+      await saveOverviewPreferences(preferences);
+      setOverviewPreferences(preferences);
       setConfig(saved);
       setHasRememberedKey(rememberKey && Boolean(apiKey.trim()));
       setState('ready');
-      setStatusMessage(t('settings.saved'));
+      setStatusMessage(t(permission && !permission.granted ? 'settings.autoPermissionDenied' : 'settings.saved'));
     } catch (error) {
       setState('error');
       setStatusMessage(error instanceof Error ? error.message : t('settings.saveError'));
@@ -124,6 +138,13 @@ export function ModelSettings() {
               <label htmlFor="contextLimit">{t('settings.contextLimit')} <input id="contextLimit" name="contextLimit" type="number" min="1" step="1" value={config.contextLimit} onChange={updateText} /></label>
               <label htmlFor="outputLimit">{t('settings.outputLimit')} <input id="outputLimit" name="outputLimit" type="number" min="1" step="1" value={config.outputLimit} onChange={updateText} /></label>
             </div>
+          </fieldset>
+
+          <fieldset disabled={busy}>
+            <legend>{t('settings.autoOverview')}</legend>
+            <label className="check-row"><input name="autoThreeLine" type="checkbox" checked={overviewPreferences.threeLine} onChange={(event) => { const checked = event.currentTarget.checked; setOverviewPreferences((current) => ({ ...current, threeLine: checked })); }} /> {t('settings.autoThreeLine')}</label>
+            <label className="check-row"><input name="autoDetailed" type="checkbox" checked={overviewPreferences.detailed} onChange={(event) => { const checked = event.currentTarget.checked; setOverviewPreferences((current) => ({ ...current, detailed: checked })); }} /> {t('settings.autoDetailed')}</label>
+            <p className="field-help">{t('settings.autoOverviewHelp')}</p>
           </fieldset>
 
           <LocalePreferenceControl locale={locale} onChange={setLocale} label={t} />

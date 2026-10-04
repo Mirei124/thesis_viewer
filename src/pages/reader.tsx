@@ -69,7 +69,8 @@ import {
   putPdfHighlight,
   type StoredPdfHighlight,
 } from '../lib/pdfHighlightRepository';
-import { requestApiHostPermission } from '../lib/apiPermissions';
+import { DEFAULT_OVERVIEW_PREFERENCES, loadOverviewPreferences, type OverviewPreferences } from '../lib/overviewPreferences';
+import { containsApiHostPermission, requestApiHostPermission } from '../lib/apiPermissions';
 import { CompatibleProviderError, requestCompatibleCompletion, type CompatibleUsage } from '../lib/compatibleProvider';
 import { summarizeInsightUsage } from '../lib/insightUsage';
 import { loadApiKey, loadModelConfig, type ModelConfig } from '../lib/modelConfig';
@@ -595,6 +596,8 @@ function ReaderPage() {
   const abortControllerRef = useRef<AbortController | null>(null);
   const translationAbortRef = useRef<AbortController | null>(null);
   const translationRequestRef = useRef(0);
+  const automaticOverviewAttemptRef = useRef({ threeLine: false, detailed: false });
+  const [overviewPreferences, setOverviewPreferences] = useState<OverviewPreferences | null>(null);
   const overviewAbortRef = useRef<AbortController | null>(null);
   const overviewRequestRef = useRef(0);
   const detailedOverviewAbortRef = useRef<AbortController | null>(null);
@@ -831,37 +834,66 @@ function ReaderPage() {
       setModelConfigEpoch((epoch) => epoch + 1);
     }).catch(() => {
       modelConfigLoadErrorRef.current = uiText('reader.error.modelSettingsLoad');
+      setModelConfigEpoch((epoch) => epoch + 1);
     });
   }, []);
+
+  useEffect(() => {
+    refreshOverviewPreferences(requestIdRef.current);
+  }, []);
+
+  function refreshOverviewPreferences(documentToken: number) {
+    setOverviewPreferences(null);
+    void (async () => {
+      let preferences: OverviewPreferences;
+      try { preferences = await loadOverviewPreferences(); }
+      catch { preferences = DEFAULT_OVERVIEW_PREFERENCES; }
+      if (documentToken === requestIdRef.current) setOverviewPreferences(preferences);
+    })();
+  }
 
   // Each overview restores independently, including while the other is running or failed.
   useEffect(() => {
     const config = modelConfigRef.current;
-    if (overview || !documentContentKey || !config || extraction.kind !== 'ready' || evidenceLedger.kind !== 'ready') return;
+    if (!modelConfigEpoch || overview || !documentContentKey || extraction.kind !== 'ready' || evidenceLedger.kind !== 'ready') return;
     if (evidenceLedger.ledger.documentVersion !== `sha256:${documentContentKey}`) return;
     const documentToken = requestIdRef.current;
     const requestToken = overviewRequestRef.current;
     let cancelled = false;
     void (async () => {
-      const restored = await loadCachedOverview({ documentContentKey, kind: 'three-line', config }, evidenceLedger.ledger, extraction.pages).catch(() => undefined);
-      if (!cancelled && documentToken === requestIdRef.current && requestToken === overviewRequestRef.current && restored?.kind === 'three_line') setOverview({ status: 'success', result: restored });
+      const restored = config ? await loadCachedOverview({ documentContentKey, kind: 'three-line', config }, evidenceLedger.ledger, extraction.pages).catch(() => undefined) : undefined;
+      if (cancelled || documentToken !== requestIdRef.current || requestToken !== overviewRequestRef.current) return;
+      if (restored?.kind === 'three_line') {
+        setOverview({ status: 'success', result: restored });
+        return;
+      }
+      if (!overviewPreferences?.threeLine || automaticOverviewAttemptRef.current.threeLine) return;
+      automaticOverviewAttemptRef.current.threeLine = true;
+      startThreeLineOverview('automatic');
     })();
     return () => { cancelled = true; };
-  }, [documentContentKey, extraction, evidenceLedger, modelConfigEpoch, overview]);
+  }, [documentContentKey, extraction, evidenceLedger, modelConfigEpoch, overviewPreferences, overview]);
 
   useEffect(() => {
     const config = modelConfigRef.current;
-    if (detailedOverview || !documentContentKey || !config || extraction.kind !== 'ready' || evidenceLedger.kind !== 'ready') return;
+    if (!modelConfigEpoch || detailedOverview || !documentContentKey || extraction.kind !== 'ready' || evidenceLedger.kind !== 'ready') return;
     if (evidenceLedger.ledger.documentVersion !== `sha256:${documentContentKey}`) return;
     const documentToken = requestIdRef.current;
     const requestToken = detailedOverviewRequestRef.current;
     let cancelled = false;
     void (async () => {
-      const restored = await loadCachedOverview({ documentContentKey, kind: 'detailed', config }, evidenceLedger.ledger, extraction.pages).catch(() => undefined);
-      if (!cancelled && documentToken === requestIdRef.current && requestToken === detailedOverviewRequestRef.current && restored?.kind === 'detailed') setDetailedOverview({ status: 'success', result: restored });
+      const restored = config ? await loadCachedOverview({ documentContentKey, kind: 'detailed', config }, evidenceLedger.ledger, extraction.pages).catch(() => undefined) : undefined;
+      if (cancelled || documentToken !== requestIdRef.current || requestToken !== detailedOverviewRequestRef.current) return;
+      if (restored?.kind === 'detailed') {
+        setDetailedOverview({ status: 'success', result: restored });
+        return;
+      }
+      if (!overviewPreferences?.detailed || automaticOverviewAttemptRef.current.detailed) return;
+      automaticOverviewAttemptRef.current.detailed = true;
+      startDetailedOverview('automatic');
     })();
     return () => { cancelled = true; };
-  }, [documentContentKey, extraction, evidenceLedger, modelConfigEpoch, detailedOverview]);
+  }, [documentContentKey, extraction, evidenceLedger, modelConfigEpoch, overviewPreferences, detailedOverview]);
 
   useEffect(() => {
     if (state.kind !== 'ready' || !documentContentKey || !viewRestoreReadyRef.current) return;
@@ -1479,7 +1511,8 @@ function ReaderPage() {
     }
   }
 
-  function startThreeLineOverview() {
+  function startThreeLineOverview(trigger: 'manual' | 'automatic' = 'manual') {
+    automaticOverviewAttemptRef.current.threeLine = true;
     if (evidenceLedger.kind !== 'ready' || extraction.kind !== 'ready') return;
     if (evidenceLedger.ledger.candidates.length === 0) {
       setOverview({ status: 'error', message: uiText('reader.insights.noEvidence') });
@@ -1487,12 +1520,12 @@ function ReaderPage() {
     }
     const config = modelConfigRef.current;
     if (!config || !config.baseUrl || !config.model) {
-      setOverview({ status: 'error', message: modelConfigLoadErrorRef.current ?? uiText('reader.insights.configureModel') });
+      setOverview({ status: 'error', message: trigger === 'automatic' ? uiText('reader.insights.autoUnavailable') : modelConfigLoadErrorRef.current ?? uiText('reader.insights.configureModel') });
       return;
     }
     // Keep permission invocation in the click call stack so browsers retain
     // the user gesture. The ledger itself is the only source supplied later.
-    const permissionRequest = requestApiHostPermission(config.baseUrl);
+    const permissionRequest = trigger === 'automatic' ? containsApiHostPermission(config.baseUrl) : requestApiHostPermission(config.baseUrl);
     const requestToken = ++overviewRequestRef.current;
     overviewAbortRef.current?.abort();
     const controller = new AbortController();
@@ -1510,7 +1543,7 @@ function ReaderPage() {
       const permission = await permissionRequest;
       if (requestToken !== overviewRequestRef.current) return;
       if (!permission.granted) {
-        setOverview({ status: 'error', message: uiText(permission.reason === 'denied' ? 'reader.insights.permissionDenied' : 'reader.error.apiPermissionUnavailable') });
+        setOverview({ status: 'error', message: trigger === 'automatic' ? uiText('reader.insights.autoUnavailable') : uiText(permission.reason === 'denied' ? 'reader.insights.permissionDenied' : 'reader.error.apiPermissionUnavailable') });
         return;
       }
       setOverview({ status: 'generating' });
@@ -1543,7 +1576,8 @@ function ReaderPage() {
     setOverview(null);
   }
 
-  function startDetailedOverview() {
+  function startDetailedOverview(trigger: 'manual' | 'automatic' = 'manual') {
+    automaticOverviewAttemptRef.current.detailed = true;
     if (evidenceLedger.kind !== 'ready' || extraction.kind !== 'ready') return;
     if (evidenceLedger.ledger.candidates.length === 0) {
       setDetailedOverview({ status: 'error', message: uiText('reader.insights.noDetailedEvidence') });
@@ -1551,10 +1585,10 @@ function ReaderPage() {
     }
     const config = modelConfigRef.current;
     if (!config || !config.baseUrl || !config.model) {
-      setDetailedOverview({ status: 'error', message: modelConfigLoadErrorRef.current ?? uiText('reader.insights.configureDetailedModel') });
+      setDetailedOverview({ status: 'error', message: trigger === 'automatic' ? uiText('reader.insights.autoUnavailable') : modelConfigLoadErrorRef.current ?? uiText('reader.insights.configureDetailedModel') });
       return;
     }
-    const permissionRequest = requestApiHostPermission(config.baseUrl);
+    const permissionRequest = trigger === 'automatic' ? containsApiHostPermission(config.baseUrl) : requestApiHostPermission(config.baseUrl);
     const requestToken = ++detailedOverviewRequestRef.current;
     detailedOverviewAbortRef.current?.abort();
     const controller = new AbortController();
@@ -1568,7 +1602,7 @@ function ReaderPage() {
       const permission = await permissionRequest;
       if (requestToken !== detailedOverviewRequestRef.current) return;
       if (!permission.granted) {
-        setDetailedOverview({ status: 'error', message: uiText(permission.reason === 'denied' ? 'reader.insights.detailedPermissionDenied' : 'reader.error.apiPermissionUnavailable') });
+        setDetailedOverview({ status: 'error', message: trigger === 'automatic' ? uiText('reader.insights.autoUnavailable') : uiText(permission.reason === 'denied' ? 'reader.insights.detailedPermissionDenied' : 'reader.error.apiPermissionUnavailable') });
         return;
       }
       setDetailedOverview({ status: 'generating' });
@@ -1637,6 +1671,7 @@ function ReaderPage() {
   }
 
   function beginImport() {
+    automaticOverviewAttemptRef.current = { threeLine: false, detailed: false };
     setInsightUsages([]);
     setCurrentZoomChoice('auto');
     historyRestoreRef.current += 1;
@@ -1649,6 +1684,7 @@ function ReaderPage() {
     cancelDetailedOverview();
     setActiveEvidence(null);
     requestIdRef.current += 1;
+    refreshOverviewPreferences(requestIdRef.current);
     renderIdRef.current += 1;
     renderTaskRef.current?.cancel();
     renderTaskRef.current = null;
@@ -3070,7 +3106,7 @@ function ReaderPage() {
               <section className="overview-panel" aria-labelledby="paper-overview-title">
                 <div className="insight-heading-row">
                   <h3 id="paper-overview-title">{t('reader.insights.threeLine')}</h3>
-                  <button type="button" className="insight-generate-button" aria-label={t('reader.insights.generateThreeLine')} title={t('reader.insights.generateThreeLine')} onClick={startThreeLineOverview} disabled={overview?.status === 'preparing' || overview?.status === 'generating'}><ReaderIcon name="generate" /></button>
+                  <button type="button" className="insight-generate-button" aria-label={t('reader.insights.generateThreeLine')} title={t('reader.insights.generateThreeLine')} onClick={() => startThreeLineOverview()} disabled={overview?.status === 'preparing' || overview?.status === 'generating'}><ReaderIcon name="generate" /></button>
                 </div>
                 {overview?.status === 'preparing' && <p role="status">{t('reader.insights.requestingPermission')}</p>}
                 {overview?.status === 'generating' && <p role="status">{t('reader.insights.generatingThreeLine')} <button type="button" onClick={cancelThreeLineOverview}>{t('reader.cancel')}</button></p>}
@@ -3087,7 +3123,7 @@ function ReaderPage() {
                 <section className="detailed-overview-panel" aria-labelledby="detailed-overview-title">
                   <div className="insight-heading-row">
                     <h4 id="detailed-overview-title">{t('reader.insights.detailed')}</h4>
-                    <button type="button" className="insight-generate-button" aria-label={t('reader.insights.generateDetailed')} title={t('reader.insights.generateDetailed')} onClick={startDetailedOverview} disabled={detailedOverview?.status === 'preparing' || detailedOverview?.status === 'generating'}><ReaderIcon name="generate" /></button>
+                    <button type="button" className="insight-generate-button" aria-label={t('reader.insights.generateDetailed')} title={t('reader.insights.generateDetailed')} onClick={() => startDetailedOverview()} disabled={detailedOverview?.status === 'preparing' || detailedOverview?.status === 'generating'}><ReaderIcon name="generate" /></button>
                   </div>
                   {detailedOverview?.status === 'preparing' && <p role="status">{t('reader.insights.requestingPermission')}</p>}
                   {detailedOverview?.status === 'generating' && <p role="status">{t('reader.insights.generatingDetailed')} <button type="button" onClick={cancelDetailedOverview}>{t('reader.cancel')}</button></p>}

@@ -1,6 +1,7 @@
 import type { readerEn } from './reader-en';
 
 export const readerZhCN: Record<keyof typeof readerEn, string> = {
+  'reader.insights.autoUnavailable': '自动生成未能启动。请检查模型设置和 API 权限，也可手动点击生成。',
   'reader.appName': 'THESIS VIEWER',
   'reader.welcome.title': '留一方空间，专心阅读。',
   'reader.welcome.description': '打开论文，发现它的要点。',

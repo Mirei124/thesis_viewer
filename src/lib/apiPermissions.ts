@@ -1,6 +1,7 @@
 import { normalizeBaseUrl } from './modelConfig';
 
 type OptionalPermissionsApi = {
+  contains?: (permissions: { origins: string[] }) => Promise<boolean>;
   request: (permissions: { origins: string[] }) => Promise<boolean>;
 };
 
@@ -45,4 +46,17 @@ export function requestApiHostPermission(baseUrl: string): Promise<ApiPermission
     granted => granted ? { granted: true, origin } : { granted: false, origin, reason: 'denied' },
     () => ({ granted: false, origin, reason: 'request-failed' }),
   );
+}
+
+/** Automatic tasks can only inspect an existing grant; never prompt without a gesture. */
+export async function containsApiHostPermission(baseUrl: string): Promise<ApiPermissionResult> {
+  const origin = apiHostPermissionPattern(baseUrl);
+  const permissions = optionalPermissionsApi();
+  if (!permissions?.contains) return { granted: false, origin, reason: 'unavailable' };
+  try {
+    return await permissions.contains({ origins: [origin] })
+      ? { granted: true, origin } : { granted: false, origin, reason: 'denied' };
+  } catch {
+    return { granted: false, origin, reason: 'request-failed' };
+  }
 }

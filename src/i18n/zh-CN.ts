@@ -2,6 +2,11 @@ import type { en } from './en';
 import { readerZhCN } from './reader-zh-CN';
 
 export const zhCN: Record<keyof typeof en, string> = {
+  'settings.autoOverview': '打开 PDF 时',
+  'settings.autoThreeLine': '自动生成三行概览',
+  'settings.autoDetailed': '自动生成详细概览',
+  'settings.autoOverviewHelp': '两个设置独立生效，优先复用有效缓存。开启任一项并保存时会请求 API 访问权限；无缓存时会将 PDF 证据发送到该接口，可能产生模型费用。',
+  'settings.autoPermissionDenied': '模型设置已保存。未获得 API 访问权限，自动概览已关闭；可重新勾选并保存以授权。',
   'settings.eyebrow': '设置',
   'settings.title': '兼容 API 配置',
   'settings.intro': '任务只会将完成该任务所需的文本发送至你输入的端点。本地 PDF 解析不代表模型处理在离线状态完成。',

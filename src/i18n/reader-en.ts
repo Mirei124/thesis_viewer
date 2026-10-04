@@ -1,5 +1,6 @@
 /** Reader-owned interface copy. PDF text, provider output and user input never enter this catalog. */
 export const readerEn = {
+  'reader.insights.autoUnavailable': 'Automatic generation could not start. Check model settings and API access; you can generate manually.',
   'reader.appName': 'THESIS VIEWER',
   'reader.welcome.title': 'A little space to read.',
   'reader.welcome.description': 'Open a paper. Find its ideas.',

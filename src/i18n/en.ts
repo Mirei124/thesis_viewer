@@ -1,6 +1,11 @@
 import { readerEn } from './reader-en';
 
 export const en = {
+  'settings.autoOverview': 'On opening a PDF',
+  'settings.autoThreeLine': 'Automatically generate the three-line overview',
+  'settings.autoDetailed': 'Automatically generate the detailed overview',
+  'settings.autoOverviewHelp': 'Each option runs independently and reuses valid cached results. Enabling either option requests access to your API endpoint. Uncached generation sends PDF evidence to that endpoint and may incur provider charges.',
+  'settings.autoPermissionDenied': 'Model settings saved. Automatic overviews are off because API access was not granted. Enable them and save again to allow access.',
   'settings.eyebrow': 'Settings',
   'settings.title': 'Compatible API configuration',
   'settings.intro': 'Tasks send only the text needed for that task to the endpoint you enter. Local PDF parsing does not make model processing offline.',
