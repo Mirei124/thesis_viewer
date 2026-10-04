@@ -560,3 +560,14 @@ h1 { color: var(--text-strong); }
 .pdf-native-link { position: absolute; display: block; pointer-events: auto; padding: 0; margin: 0; border: 0; background: transparent; border-radius: 0; cursor: pointer; }
 .pdf-native-link:hover { background: rgb(37 99 235 / 12%); }
 .pdf-native-link:focus-visible { outline: 2px solid #2563eb; outline-offset: 1px; background: rgb(37 99 235 / 12%); }
+
+/* Local reference presentation hints retain the complete original entry. */
+.citation-reference-list .citation-reference-card { min-width: 0; padding: 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem; background: var(--surface); overflow-wrap: anywhere; }
+.citation-popover .citation-reference-label { margin: 0; color: var(--text-muted); font-size: 0.8rem; }
+.citation-reference-title { margin: 0.55rem 0 0; color: var(--text-strong); font-size: 1.12rem; line-height: 1.4; text-wrap: balance; }
+.citation-popover .citation-reference-authors, .citation-popover .citation-reference-meta { color: var(--text-muted); font-size: 0.85rem; line-height: 1.5; }
+.citation-reference-original { margin-top: 0.65rem; color: var(--text-muted); font-size: 0.85rem; }
+.citation-reference-original summary { cursor: pointer; border-radius: 0.2rem; }
+.citation-reference-original summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.citation-reference-original[open] .citation-reference-text { color: var(--text); }
+.citation-actions > * { max-width: 100%; overflow-wrap: anywhere; }

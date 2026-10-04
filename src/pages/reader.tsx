@@ -1,3 +1,4 @@
+import { ReferenceCard } from '../components/ReferenceCard';
 import { createRoot } from 'react-dom/client';
 import { type ChangeEvent, type CSSProperties, type FormEvent, type KeyboardEvent, type MouseEvent, type PointerEvent as ReactPointerEvent, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import {
@@ -1334,6 +1335,7 @@ function ReaderPage() {
   useEffect(() => {
     const onPointerDown = (event: PointerEvent) => {
       const target = event.target instanceof Node ? event.target : null;
+      if (translation && (!target || !translationPopoverRef.current?.contains(target))) closeTranslation();
       if (target && (citationPopoverRef.current?.contains(target) || (target instanceof Element && target.closest('[data-citation-id]')))) return;
       if (activeCitation) dismissCitationPopover();
       if (target && (pdfPageRef.current?.contains(target) || highlightToolbarRef.current?.contains(target) || translationPopoverRef.current?.contains(target))) return;
@@ -3483,14 +3485,15 @@ function ReaderPage() {
         </div>
         {activeCitation.references.length > 0
           ? <ol className="citation-reference-list" role="list">
-            {activeCitation.references.map((reference) => <li key={reference.refId}>
-              <p><strong>{t('reader.citation.referenceCandidate', { number: reference.number, page: reference.anchor.pageIndex + 1 })}</strong></p>
-              <p className="citation-reference-text">{reference.rawText}</p>
-              <div className="citation-actions">
-                <button type="button" onClick={() => goToCitationReference(reference)}>{t('reader.citation.goToReference', { page: reference.anchor.pageIndex + 1 })}</button>
-                {reference.sourceUrl && <a href={reference.sourceUrl} target="_blank" rel="noopener noreferrer">{t('reader.citation.openUrl')}</a>}
-              </div>
-            </li>)}
+            {activeCitation.references.map((reference) => <ReferenceCard
+              key={reference.refId}
+              reference={reference}
+              label={t('reader.citation.referenceCandidate', { number: reference.number, page: reference.anchor.pageIndex + 1 })}
+              rawLabel={t('reader.citation.originalEntry')}
+              goLabel={t('reader.citation.goToReference', { page: reference.anchor.pageIndex + 1 })}
+              urlLabel={t('reader.citation.openUrl')}
+              onNavigate={() => goToCitationReference(reference)}
+            />)}
           </ol>
           : <p className="citation-unresolved">{t('reader.citation.unresolved')}</p>}
         {citationIndex.kind === 'ready' && citationIndex.index.referenceHeading
