@@ -100,6 +100,7 @@ import { useThemePreference } from '../components/ThemePreferenceControl';
 import { useUiLocale } from '../components/LocalePreferenceControl';
 import { message, type MessageKey } from '../lib/i18n';
 import { readerFragmentErrorKey, readerModelErrorKey } from '../lib/readerUiErrors';
+import { createReaderZoomPreferences, type ReaderZoomPreference } from '../lib/readerZoomPreferences';
 import { clampZoomScale, fittedZoomScale, manualZoomChoice, MAX_ZOOM_SCALE, MIN_ZOOM_SCALE, parseZoomPercentInput, shouldCommitZoomOnKeyDown, ZOOM_CHOICES, zoomChoiceMode, zoomChoiceScale, zoomPercentDisplay, type ZoomChoice, type ZoomMode } from '../lib/readerZoom';
 
 GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
@@ -127,7 +128,6 @@ type LocalStorageArea = {
 
 type SavedView = {
   pageIndex: number;
-  scale: number;
   rotation: number;
 };
 
@@ -455,11 +455,10 @@ function byteLimitMessage(size?: number): string {
 function savedView(value: unknown, pageCount: number): SavedView | undefined {
   if (!value || typeof value !== 'object') return undefined;
   const candidate = value as Partial<SavedView>;
-  const { pageIndex, scale, rotation } = candidate;
+  const { pageIndex, rotation } = candidate;
   if (typeof pageIndex !== 'number' || !Number.isInteger(pageIndex) || pageIndex < 0 || pageIndex >= pageCount) return undefined;
-  if (typeof scale !== 'number' || !Number.isFinite(scale) || scale < MIN_SCALE || scale > MAX_SCALE) return undefined;
   if (rotation !== 0 && rotation !== 90 && rotation !== 180 && rotation !== 270) return undefined;
-  return { pageIndex, scale, rotation };
+  return { pageIndex, rotation };
 }
 
 async function readPdfResponse(response: Response, requestId: number, isCurrent: (requestId: number) => boolean): Promise<Uint8Array> {
@@ -569,6 +568,9 @@ function ReaderPage() {
   const pageElementsRef = useRef(new Map<number, HTMLDivElement>());
   const stageRef = useRef<HTMLElement>(null);
   const activePageIndexRef = useRef(0);
+  const zoomPreferencesRef = useRef(createReaderZoomPreferences(getLocalStorageArea));
+  const zoomPreferenceRef = useRef<ReaderZoomPreference>({ mode: 'auto' });
+  const zoomInteractionRef = useRef(0);
   const zoomModeRef = useRef<ZoomMode>('auto');
   const zoomChoiceRef = useRef<ZoomChoice>('auto');
   const zoomInputDirtyRef = useRef(false);
@@ -906,7 +908,7 @@ function ReaderPage() {
     }
     if (viewSaveTimerRef.current) clearTimeout(viewSaveTimerRef.current);
     const savedSession = viewSessionRef.current;
-    const view: SavedView = { pageIndex: state.pageIndex, scale: state.scale, rotation: state.rotation };
+    const view: SavedView = { pageIndex: state.pageIndex, rotation: state.rotation };
     viewSaveTimerRef.current = setTimeout(() => {
       void (async () => {
         try {
@@ -2143,6 +2145,7 @@ function ReaderPage() {
         return;
       }
 
+      const zoomPreferencePromise = zoomPreferencesRef.current.load();
       const hashPromise = sha256Hex(bytes).catch(() => undefined);
       const loadingTask = getDocument({ data: bytes });
       loadingTaskRef.current = loadingTask;
@@ -2164,7 +2167,12 @@ function ReaderPage() {
       documentRef.current = pdf;
       const initialView: ViewState = { pageIndex: Math.min(requestedPageIndex ?? 0, pdf.numPages - 1), scale: 1.35, rotation: 0 };
       activePageIndexRef.current = initialView.pageIndex;
-      setCurrentZoomChoice('auto');
+      const preference = await zoomPreferencePromise;
+      if (!isCurrent(requestId) || documentRef.current !== pdf) return;
+      zoomPreferenceRef.current = preference;
+      setCurrentZoomChoice(preference.mode === 'manual' ? manualZoomChoice(preference.scale) : preference.mode);
+      if (preference.mode === 'manual') initialView.scale = preference.scale;
+      const initialZoomRevision = zoomInteractionRef.current;
       void loadOutline(pdf, requestId);
       // The continuous reader mounts its page canvases from ready state. Commit
       // that state before asking PDF.js to render, then wait for the canvas and
@@ -2174,13 +2182,14 @@ function ReaderPage() {
       setState({ kind: 'ready', fileName, pageCount: pdf.numPages, ...initialView });
       await new Promise<void>((resolve) => window.requestAnimationFrame(() => window.requestAnimationFrame(() => resolve())));
       if (!isCurrent(requestId) || documentRef.current !== pdf) return;
-      initialView.scale = await fittedScale(pdf, initialView, 'auto');
-      setState({ kind: 'ready', fileName, pageCount: pdf.numPages, ...initialView });
+      if (preference.mode !== 'manual') initialView.scale = await fittedScale(pdf, initialView, preference.mode);
+      if (!isCurrent(requestId) || documentRef.current !== pdf) return;
+      if (initialZoomRevision === zoomInteractionRef.current) setState({ kind: 'ready', fileName, pageCount: pdf.numPages, ...initialView });
       // A fit/resize update can replace this first render. Keep document
       // indexing independent of that render so a harmless cancellation cannot
       // leave Paper Insights waiting forever for extraction to start.
       const initialRenderId = renderIdRef.current + 1;
-      const initialRenderPromise = renderPage(pdf, initialView, requestId);
+      const initialRenderPromise = initialZoomRevision === zoomInteractionRef.current ? renderPage(pdf, initialView, requestId) : Promise.resolve(true);
       setThumbnailSession(requestId);
       const contentKey = await hashPromise;
       if (!isCurrent(requestId) || documentRef.current !== pdf) return;
@@ -2195,7 +2204,7 @@ function ReaderPage() {
       // A superseding render owns the active surface. A failure without a
       // successor is a real rendering error and must keep its error state.
       if (!initialRenderSucceeded && renderIdRef.current === initialRenderId) return;
-      if (requestedPageIndex !== undefined && initialView.pageIndex > 0) {
+      if (requestedPageIndex !== undefined && initialView.pageIndex > 0 && initialZoomRevision === zoomInteractionRef.current) {
         await sizeAllPageCanvases(pdf, initialView);
         if (!isCurrent(requestId) || documentRef.current !== pdf) return;
         pageElementsRef.current.get(initialView.pageIndex)?.scrollIntoView({ behavior: 'instant', block: 'start' });
@@ -2218,6 +2227,7 @@ function ReaderPage() {
       }
       const restoreSession = viewSessionRef.current;
       const restoreRevision = viewInteractionRevisionRef.current;
+      const restoreZoomRevision = zoomInteractionRef.current;
       const storage = getLocalStorageArea();
       if (!storage) {
         viewRestoreReadyRef.current = true;
@@ -2228,17 +2238,20 @@ function ReaderPage() {
       setViewStorageStatus(uiText('reader.view.restoring'));
       try {
         const values = await storage.get(`${VIEW_STORAGE_PREFIX}${contentKey}`);
-        if (!isCurrent(requestId) || documentRef.current !== pdf || restoreSession !== viewSessionRef.current || restoreRevision !== viewInteractionRevisionRef.current) return;
-        const restoredView = savedView(values[`${VIEW_STORAGE_PREFIX}${contentKey}`], pdf.numPages);
-        if (restoredView) {
-          // Restore the interactive page before PDF.js uses its text-layer ref.
-          // Stored views predate zoom modes; retain their exact scale as manual.
-          setCurrentZoomChoice(manualZoomChoice(restoredView.scale));
+        if (!isCurrent(requestId) || documentRef.current !== pdf || restoreSession !== viewSessionRef.current || restoreRevision !== viewInteractionRevisionRef.current || restoreZoomRevision !== zoomInteractionRef.current) return;
+        const restoredPosition = savedView(values[`${VIEW_STORAGE_PREFIX}${contentKey}`], pdf.numPages);
+        if (restoredPosition) {
+          const currentPreference = zoomPreferenceRef.current;
+          const restoredView: ViewState = { ...restoredPosition, scale: currentPreference.mode === 'manual' ? currentPreference.scale : initialView.scale };
+          if (currentPreference.mode !== 'manual') restoredView.scale = await fittedScale(pdf, restoredView, currentPreference.mode);
+          if (!isCurrent(requestId) || documentRef.current !== pdf || restoreSession !== viewSessionRef.current || restoreRevision !== viewInteractionRevisionRef.current || restoreZoomRevision !== zoomInteractionRef.current) return;
+          // Restore only document position and rotation; zoom belongs to all PDFs.
           activePageIndexRef.current = restoredView.pageIndex;
           setState({ kind: 'ready', fileName, pageCount: pdf.numPages, ...restoredView });
           await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
+          if (!isCurrent(requestId) || documentRef.current !== pdf || restoreRevision !== viewInteractionRevisionRef.current || restoreZoomRevision !== zoomInteractionRef.current) return;
           if (!await renderPage(pdf, restoredView, requestId)) return;
-          if (!isCurrent(requestId) || documentRef.current !== pdf || restoreSession !== viewSessionRef.current || restoreRevision !== viewInteractionRevisionRef.current) return;
+          if (!isCurrent(requestId) || documentRef.current !== pdf || restoreSession !== viewSessionRef.current || restoreRevision !== viewInteractionRevisionRef.current || restoreZoomRevision !== zoomInteractionRef.current) return;
           setPageInput(String(restoredView.pageIndex + 1));
           setState({ kind: 'ready', fileName, pageCount: pdf.numPages, ...restoredView });
           pageElementsRef.current.get(restoredView.pageIndex)?.scrollIntoView({ block: 'start' });
@@ -2645,6 +2658,14 @@ function ReaderPage() {
     });
   }
 
+  function persistUserZoom(choice: ZoomChoice, scale: number) {
+    zoomInteractionRef.current += 1;
+    const mode = zoomChoiceMode(choice);
+    const preference: ReaderZoomPreference = mode === 'manual' ? { mode, scale } : { mode };
+    zoomPreferenceRef.current = preference;
+    void zoomPreferencesRef.current.save(preference);
+  }
+
   function changeZoomChoice(choice: ZoomChoice) {
     if (state.kind !== 'ready' || !ZOOM_CHOICES.includes(choice)) return;
     setCurrentZoomChoice(choice);
@@ -2655,6 +2676,7 @@ function ReaderPage() {
       zoomMenuRef.current.querySelector('summary')?.focus();
     }
     const fixedScale = zoomChoiceScale(choice);
+    persistUserZoom(choice, fixedScale ?? state.scale);
     if (fixedScale !== undefined) {
       if (fixedScale !== state.scale) void applyZoomView({ pageIndex: state.pageIndex, scale: fixedScale, rotation: state.rotation });
     } else recomputeFittedZoom();
@@ -2673,6 +2695,7 @@ function ReaderPage() {
     setZoomInputInvalid(false);
     const scale = percentage / 100;
     setCurrentZoomChoice(manualZoomChoice(scale));
+    persistUserZoom(manualZoomChoice(scale), scale);
     if (scale !== state.scale) void applyZoomView({ pageIndex: state.pageIndex, scale, rotation: state.rotation });
   }
 
@@ -2856,6 +2879,7 @@ function ReaderPage() {
     setZoomInputEditing(false);
     zoomInputDirtyRef.current = false;
     setCurrentZoomChoice(manualZoomChoice(scale));
+    persistUserZoom(manualZoomChoice(scale), scale);
     if (scale !== state.scale) void applyZoomView({ pageIndex: state.pageIndex, scale, rotation: state.rotation });
   }
 
