@@ -1,6 +1,26 @@
 import type { readerEn } from './reader-en';
 
 export const readerZhCN: Record<keyof typeof readerEn, string> = {
+  'reader.reading.title': '历史阅读',
+  'reader.reading.search': '搜索标题或网址',
+  'reader.reading.clear': '清空历史',
+  'reader.reading.clearConfirm': '清空所有阅读历史及活动统计？高亮、翻译和概览将保留。',
+  'reader.reading.error': '无法保存或读取阅读历史，可继续阅读。',
+  'reader.reading.loading': '正在读取历史…',
+  'reader.reading.noResults': '没有匹配的论文。',
+  'reader.reading.empty': '成功打开的论文会记录在这里。',
+  'reader.reading.online': '在线 PDF',
+  'reader.reading.local': '本地 PDF',
+  'reader.reading.more': '加载更多',
+  'reader.reading.activity': '近一年阅读活动',
+  'reader.reading.summary': '{days} 个活跃日，共打开 {count} 篇次不同 PDF。同一 PDF 在同一天只计一次。',
+  'reader.reading.activityCaption': '最近 365 个日历日每天成功打开的不同 PDF 数量。',
+  'reader.reading.weekday': '星期',
+  'reader.reading.dayCount': '打开 {count} 个 PDF',
+  'reader.reading.dailyDetails': '查看每日数量',
+  'reader.reading.chooseAgain': '请重新选择本地 PDF：{title}',
+  'reader.reading.home': '返回首页',
+
   'reader.links.internal': '跳转到 PDF 目标位置',
   'reader.links.unavailable': '此 PDF 链接的目标不可用。',
   'reader.links.positionUnavailable': '已打开目标页面，无法定位到具体位置。',

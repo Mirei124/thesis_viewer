@@ -1,3 +1,6 @@
+import { ReadingActivity, ReadingHistoryList } from '../components/ReadingHistory';
+import { clearReadingHistory, readReadingHistory, recordReading, type ReadingHistoryEntry, type ReadingSnapshot, type ReadingSource } from '../lib/readingHistory';
+import { extractPdfTitle } from '../lib/pdfTitle';
 import { ReferenceCard } from '../components/ReferenceCard';
 import { createRoot } from 'react-dom/client';
 import { type ChangeEvent, type CSSProperties, type FormEvent, type KeyboardEvent, type MouseEvent, type PointerEvent as ReactPointerEvent, useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -532,10 +535,11 @@ function OutlineItems({ items, depth, onNavigate, label }: {
   );
 }
 
-type ReaderIconName = 'document' | 'search' | 'previous' | 'next' | 'minus' | 'plus' | 'generate' | 'rotate' | 'left' | 'right' | 'settings' | 'close' | 'more' | 'link' | 'outline' | 'pages' | 'insights' | 'tools' | 'historyBack' | 'historyForward';
+type ReaderIconName = 'document' | 'search' | 'previous' | 'next' | 'minus' | 'plus' | 'generate' | 'rotate' | 'left' | 'right' | 'settings' | 'close' | 'more' | 'link' | 'outline' | 'pages' | 'insights' | 'tools' | 'historyBack' | 'historyForward' | 'reading';
 
 function ReaderIcon({ name }: { name: ReaderIconName }) {
   const paths: Record<ReaderIconName, string> = {
+    reading: 'M3 12a9 9 0 1 0 3-6.7M3 3v5h5M12 7v5l3 2',
     document: 'M6 3h8l4 4v14H6z M14 3v5h4 M9 12h6 M9 16h6',
     search: 'M20 20l-5-5 M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0',
     previous: 'M14 6l-6 6 6 6', next: 'M10 6l6 6-6 6',
@@ -581,6 +585,44 @@ function ReaderPage() {
   const historyRestoreRef = useRef(0);
   const readerPageRef = useRef<HTMLElement>(null);
   const panelDragRef = useRef<{ side: PanelSide; pointerId: number; startX: number; startWidth: number } | null>(null);
+  const [readingSnapshot, setReadingSnapshot] = useState<ReadingSnapshot>({ entries: [], activities: [] });
+  const [readingLoading, setReadingLoading] = useState(true);
+  const [readingError, setReadingError] = useState(false);
+  const [readingNotice, setReadingNotice] = useState('');
+  const readingEpochRef = useRef(0);
+  const readingRefreshRef = useRef(0);
+  const readingChannelRef = useRef<BroadcastChannel | null>(null);
+  async function refreshReadingHistory() {
+    const revision = ++readingRefreshRef.current;
+    try { const snapshot = await readReadingHistory(); if (revision === readingRefreshRef.current) { setReadingSnapshot(snapshot); setReadingError(false); } } catch { if (revision === readingRefreshRef.current) setReadingError(true); } finally { if (revision === readingRefreshRef.current) setReadingLoading(false); }
+  }
+  useEffect(() => {
+    void refreshReadingHistory();
+    let channel: BroadcastChannel | null = null;
+    try { channel = new BroadcastChannel('thesis-viewer-reading-history'); channel.onmessage = (event) => { if (event.data === 'clear') readingEpochRef.current += 1; void refreshReadingHistory(); }; readingChannelRef.current = channel; } catch { /* window focus fallback */ }
+    const focus = () => { void refreshReadingHistory(); }; window.addEventListener('focus', focus);
+    return () => { readingRefreshRef.current += 1; window.removeEventListener('focus', focus); channel?.close(); readingChannelRef.current = null; };
+  }, []);
+  async function clearSavedReadingHistory() {
+    readingEpochRef.current += 1;
+    try { await clearReadingHistory(); readingChannelRef.current?.postMessage('clear'); await refreshReadingHistory(); } catch { setReadingError(true); }
+  }
+  async function saveSuccessfulReading(pdf: PDFDocumentProxy, name: string, hash: string, source: ReadingSource, openedAt: number) {
+    const epoch = readingEpochRef.current;
+    const title = await extractPdfTitle(pdf, name);
+    if (epoch !== readingEpochRef.current) return;
+    try { await recordReading({ hash, source, ...title }, openedAt, () => epoch === readingEpochRef.current); readingChannelRef.current?.postMessage('record'); await refreshReadingHistory(); } catch { setReadingError(true); }
+  }
+  function openReadingEntry(entry: ReadingHistoryEntry) {
+    if (entry.source.kind === 'local') { setReadingNotice(t('reader.reading.chooseAgain', { title: entry.title })); fileInputRef.current?.click(); return; }
+    void importUrl({ preventDefault() {} } as FormEvent<HTMLFormElement>, entry.source.url);
+  }
+  function returnReaderHome() {
+    const requestId = beginImport(); const address = new URL(window.location.href); address.hash = ''; address.searchParams.delete('arxivPdfUrl'); window.history.replaceState(null, '', address);
+    setState({ kind: 'idle' }); setLeftRailOpen(false); setRightRailOpen(false); window.scrollTo(0, 0);
+    void clearPreviousDocument().then(() => { if (isCurrent(requestId)) void refreshReadingHistory(); });
+  }
+  const readingListProps = { snapshot: readingSnapshot, loading: readingLoading, error: readingError, t, locale, onOpen: openReadingEntry, onClear: () => { void clearSavedReadingHistory(); } };
   const fileInputRef = useRef<HTMLInputElement>(null);
   const textLayerRef = useRef<HTMLDivElement>(null);
   const pendingEvidenceRef = useRef<{ evidenceId: string; pageIndex: number; requestId: number } | null>(null);
@@ -688,7 +730,7 @@ function ReaderPage() {
   const insightUsage = summarizeInsightUsage(insightUsages);
   const [leftRailOpen, setLeftRailOpen] = useState(() => window.innerWidth > 1100);
   const [rightRailOpen, setRightRailOpen] = useState(() => window.innerWidth > 1100);
-  const [leftRailTab, setLeftRailTab] = useState<'outline' | 'pages'>('outline');
+  const [leftRailTab, setLeftRailTab] = useState<'outline' | 'pages' | 'reading'>('outline');
   const [rightRailTab, setRightRailTab] = useState<'overview' | 'search' | 'tools'>('overview');
 
   useEffect(() => {
@@ -733,7 +775,7 @@ function ReaderPage() {
   }
 
   function onRailTabKeyDown(event: KeyboardEvent<HTMLElement>, side: 'left' | 'right') {
-    const tabs = side === 'left' ? ['outline', 'pages'] : ['overview', 'search', 'tools'];
+    const tabs = side === 'left' ? ['outline', 'pages', 'reading'] : ['overview', 'search', 'tools'];
     const current = side === 'left' ? leftRailTab : rightRailTab;
     if (event.key === 'Escape') { event.preventDefault(); closeRail(side); return; }
     if (!['ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
@@ -2139,7 +2181,7 @@ function ReaderPage() {
     });
   }
 
-  async function loadPdf(bytes: Uint8Array, fileName: string, requestId: number, requestedPageIndex?: number, localSource = false) {
+  async function loadPdf(bytes: Uint8Array, fileName: string, requestId: number, requestedPageIndex?: number, localSource = false, onlineUrl?: string) {
     if (!isCurrent(requestId)) return;
     try {
       if (!isPdfSignature(bytes)) {
@@ -2217,6 +2259,7 @@ function ReaderPage() {
         setViewRestoreEpoch((epoch) => epoch + 1);
         return;
       }
+      void saveSuccessfulReading(pdf, fileName, contentKey, localSource ? { kind: 'local' } : { kind: 'online', url: onlineUrl! }, Date.now());
       setDocumentContentKey(contentKey);
       highlightDocumentKeyRef.current = contentKey;
       void restoreSavedHighlights(contentKey, highlightStorageSessionRef.current);
@@ -2358,7 +2401,7 @@ function ReaderPage() {
         setState({ kind: 'error', message: uiText(responseKind === 'html' ? 'reader.import.htmlResponse' : 'reader.import.notPdfResponse') });
         return;
       }
-      await loadPdf(bytes, url.pathname.split('/').pop() || url.hostname, requestId, requestedPageIndex);
+      await loadPdf(bytes, url.pathname.split('/').pop() || url.hostname, requestId, requestedPageIndex, false, url.href);
       if (isCurrent(requestId) && documentRef.current) updateReaderSourceAddress(url, activePageIndexRef.current);
     } catch (error) {
       if (!isCurrent(requestId)) return;
@@ -2374,11 +2417,11 @@ function ReaderPage() {
     }
   }
 
-  async function importUrl(event: FormEvent<HTMLFormElement>) {
+  async function importUrl(event: FormEvent<HTMLFormElement>, historyUrl?: string) {
     event.preventDefault();
     let url: URL;
     try {
-      url = new URL(urlValue);
+      url = new URL(historyUrl ?? urlValue);
     } catch {
       setState({ kind: 'error', message: uiText('reader.import.completeUrl') });
       return;
@@ -3052,6 +3095,7 @@ function ReaderPage() {
           </p>)}
         </div>
       </dialog>}
+      <div className={state.kind === 'ready' ? 'reader-loaded-header' : 'reader-first-screen'}>
       <input ref={fileInputRef} id="local-pdf-input" className="file-picker-input" aria-label={t('reader.chooseLocalPdf')} tabIndex={-1} type="file" accept="application/pdf,.pdf" onChange={onFileChange} />
       {state.kind === 'ready' ? <header className="reader-header" aria-label={t('reader.toolbar')}>
         <div className="toolbar-document">
@@ -3106,6 +3150,7 @@ function ReaderPage() {
             </div>
           </details>
           <button type="button" className="toolbar-icon-button" aria-label={t('reader.choosePdf')} title={t('reader.choosePdf')} aria-controls="local-pdf-input" onClick={() => fileInputRef.current?.click()}><ReaderIcon name="document" /></button>
+          <button type="button" className="toolbar-icon-button" aria-label={t('reader.reading.home')} title={t('reader.reading.home')} onClick={returnReaderHome}><ReaderIcon name="reading" /></button>
           <a className="toolbar-icon-button" href="options.html" aria-label={t('reader.settings')} title={t('reader.settings')}><ReaderIcon name="settings" /></a>
         </div>
       </header> : state.kind === 'loading' || state.kind === 'requesting-permission' ? <section className="reader-loading" aria-labelledby="page-title">
@@ -3135,12 +3180,15 @@ function ReaderPage() {
         {state.kind === 'ready' && t('reader.status.ready', { page: state.pageIndex + 1, count: state.pageCount, zoom: Math.round(state.scale * 100) })}
         {(state.kind === 'cancelled' || state.kind === 'error') && display(state.message)}
       </section>
+      {readingNotice && <p className="reading-reopen-notice" role="status">{readingNotice}</p>}
+      </div>
+      {state.kind !== 'ready' && state.kind !== 'loading' && state.kind !== 'requesting-permission' && <section className="reading-dashboard" aria-label={t('reader.reading.title')}><ReadingActivity snapshot={readingSnapshot} t={t} locale={locale} /><h2>{t('reader.reading.title')}</h2><ReadingHistoryList {...readingListProps} /></section>}
       <div className="reader-workspace">
         {state.kind === 'ready' && (leftRailOpen || rightRailOpen) && <button type="button" className="rail-backdrop" aria-label={t('reader.rail.closeSide')} tabIndex={-1} onClick={() => { setLeftRailOpen(false); setRightRailOpen(false); }} />}
         {state.kind === 'ready' && <>
           <nav className="edge-rail edge-rail-left" aria-label={t('reader.rail.documentPanels')} onKeyDown={(event) => onRailTabKeyDown(event, 'left')}>
             <div role="tablist" aria-label={t('reader.rail.documentPanels')} aria-orientation="vertical">
-              {([{ id: 'outline', label: 'reader.rail.outline', icon: 'outline' }, { id: 'pages', label: 'reader.rail.pages', icon: 'pages' }] as const).map((tab) => <button type="button" role="tab" id={`left-${tab.id}-tab`} key={tab.id} aria-label={t(tab.label)} title={t(tab.label)} aria-selected={leftRailOpen && leftRailTab === tab.id} aria-expanded={leftRailOpen && leftRailTab === tab.id} aria-controls={`left-${tab.id}-panel`} tabIndex={leftRailTab === tab.id ? 0 : -1} onClick={() => openRailTab('left', tab.id, true)}><ReaderIcon name={tab.icon} /></button>)}
+              {([{ id: 'outline', label: 'reader.rail.outline', icon: 'outline' }, { id: 'pages', label: 'reader.rail.pages', icon: 'pages' }, { id: 'reading', label: 'reader.reading.title', icon: 'reading' }] as const).map((tab) => <button type="button" role="tab" id={`left-${tab.id}-tab`} key={tab.id} aria-label={t(tab.label)} title={t(tab.label)} aria-selected={leftRailOpen && leftRailTab === tab.id} aria-expanded={leftRailOpen && leftRailTab === tab.id} aria-controls={`left-${tab.id}-panel`} tabIndex={leftRailTab === tab.id ? 0 : -1} onClick={() => openRailTab('left', tab.id, true)}><ReaderIcon name={tab.icon} /></button>)}
             </div>
           </nav>
           <nav className="edge-rail edge-rail-right" aria-label={t('reader.rail.researchPanels')} onKeyDown={(event) => onRailTabKeyDown(event, 'right')}>
@@ -3326,6 +3374,7 @@ function ReaderPage() {
           <div className="rail-resize-handle rail-resize-handle--left" role="separator" tabIndex={0} aria-label={t('reader.rail.resizeDocument')} aria-orientation="vertical" aria-valuemin={panelWidthLimits('left').min} aria-valuemax={panelWidthLimits('left').max} aria-valuenow={panelWidths.left} onPointerDown={(event) => startPanelResize('left', event)} onPointerMove={movePanelResize} onPointerUp={endPanelResize} onPointerCancel={endPanelResize} onKeyDown={(event) => onPanelResizeKeyDown('left', event)} />
           <button type="button" className="rail-dismiss" aria-label={t('reader.rail.closeDocument')} onClick={() => closeRail('left')}><ReaderIcon name="close" /></button>
 
+          {leftRailTab === 'reading' && <section className="navigation-panel" id="left-reading-panel" role="tabpanel" aria-labelledby="left-reading-tab"><h2>{t('reader.reading.title')}</h2><ReadingHistoryList {...readingListProps} /></section>}
           {leftRailTab === 'outline' &&
           <section className="navigation-panel" id="left-outline-panel" role="tabpanel" aria-labelledby="left-outline-tab">
             <h2 id="outline-title">{t('reader.rail.outline')}</h2>
