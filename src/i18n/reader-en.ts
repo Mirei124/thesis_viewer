@@ -1,5 +1,8 @@
 /** Reader-owned interface copy. PDF text, provider output and user input never enter this catalog. */
 export const readerEn = {
+  'reader.links.internal': 'Go to PDF destination',
+  'reader.links.unavailable': 'This PDF link destination is unavailable.',
+  'reader.links.positionUnavailable': 'Opened the destination page; its exact position is unavailable.',
   'reader.insights.autoUnavailable': 'Automatic generation could not start. Check model settings and API access; you can generate manually.',
   'reader.appName': 'THESIS VIEWER',
   'reader.welcome.title': 'A little space to read.',

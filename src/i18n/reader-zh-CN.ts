@@ -1,6 +1,9 @@
 import type { readerEn } from './reader-en';
 
 export const readerZhCN: Record<keyof typeof readerEn, string> = {
+  'reader.links.internal': '跳转到 PDF 目标位置',
+  'reader.links.unavailable': '此 PDF 链接的目标不可用。',
+  'reader.links.positionUnavailable': '已打开目标页面，无法定位到具体位置。',
   'reader.insights.autoUnavailable': '自动生成未能启动。请检查模型设置和 API 权限，也可手动点击生成。',
   'reader.appName': 'THESIS VIEWER',
   'reader.welcome.title': '留一方空间，专心阅读。',

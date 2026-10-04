@@ -60,6 +60,8 @@ import { appendProgressiveEvidenceStage, createProgressiveEvidenceSession } from
 import { createEvidencePassages } from '../lib/evidencePassages';
 import { inlineEvidenceLabel, inlineEvidenceParts, type VerifiedEvidenceRef } from '../lib/inlineEvidence';
 import { buildInlineEvidenceExcerpts, type InlineExcerptGroup } from '../lib/inlineEvidenceExcerpts';
+import { PdfLinkLayer } from '../components/PdfLinkLayer';
+import { pdfDestinationPoint, resolvePdfLinkDestination } from '../lib/pdfLinks';
 import { LimitedMath } from '../components/LimitedMath';
 import { createPassageRetrievalIndex, selectRankedPassagesForPurpose } from '../lib/retrievalIndex';
 import {
@@ -2011,7 +2013,7 @@ function ReaderPage() {
           const previousTask = pageRenderTasksRef.current.get(pageIndex);
           if (previousTask) await previousTask.promise.catch(() => undefined);
           if (cancelled || !isCurrent(requestId) || pageIndex === activePageIndexRef.current) continue;
-          const viewport = page.getViewport({ scale: state.scale, rotation: state.rotation });
+          const viewport = page.getViewport({ scale: state.scale, rotation: (page.rotate + state.rotation) % 360 });
           const outputScale = window.devicePixelRatio || 1;
           const context = canvas.getContext('2d');
           if (!context) continue;
@@ -2056,7 +2058,7 @@ function ReaderPage() {
         if (pageRenderTasksRef.current.get(view.pageIndex) === passiveTask) pageRenderTasksRef.current.delete(view.pageIndex);
       }
       if (!isCurrentRender(requestId, renderId)) return false;
-      const viewport = page.getViewport({ scale: view.scale, rotation: view.rotation });
+      const viewport = page.getViewport({ scale: view.scale, rotation: (page.rotate + view.rotation) % 360 });
       let canvas = passivePageCanvasesRef.current.get(view.pageIndex);
       let textLayer = textLayerRef.current;
       // React can replace the active page node while an evidence/search jump
@@ -2127,7 +2129,7 @@ function ReaderPage() {
     pages.forEach((page, index) => {
       const canvas = passivePageCanvasesRef.current.get(index);
       if (!canvas) return;
-      const viewport = page.getViewport({ scale: view.scale, rotation: view.rotation });
+      const viewport = page.getViewport({ scale: view.scale, rotation: (page.rotate + view.rotation) % 360 });
       canvas.style.width = `${Math.floor(viewport.width)}px`;
       canvas.style.height = `${Math.floor(viewport.height)}px`;
     });
@@ -2552,10 +2554,38 @@ function ReaderPage() {
     void restoreLocation(target);
   }
 
-  function goToPage(pageIndex: number, evidenceId?: string) {
+  async function navigatePdfLink(dest: string | unknown[]) {
+    const pdf = documentRef.current;
+    const requestId = requestIdRef.current;
+    if (!pdf || state.kind !== 'ready') return;
+    try {
+      const { pageIndex, destination } = await resolvePdfLinkDestination(pdf, dest);
+      const page = await pdf.getPage(pageIndex + 1);
+      if (!isCurrent(requestId) || documentRef.current !== pdf) return;
+      const viewport = page.getViewport({ scale: state.scale, rotation: (page.rotate + state.rotation) % 360 });
+      const point = pdfDestinationPoint(destination, viewport);
+      goToPage(pageIndex, undefined, true);
+      const navigationId = historyRestoreRef.current;
+      window.requestAnimationFrame(() => {
+        if (!isCurrent(requestId) || documentRef.current !== pdf || historyRestoreRef.current !== navigationId) return;
+        const element = pageElementsRef.current.get(pageIndex);
+        if (element && point) {
+          const pageTop = pageScrollTop(pageIndex);
+          if (pageTop !== null) window.scrollTo({ top: Math.max(0, pageTop + point[1]), behavior: 'instant' });
+        }
+        element?.focus({ preventScroll: true });
+        const mode = (destination[1] as { name?: string } | undefined)?.name;
+        if (!point && mode !== 'Fit' && mode !== 'FitB') setEvidenceNavigationNotice(uiText('reader.links.positionUnavailable'));
+      });
+    } catch {
+      if (isCurrent(requestId) && documentRef.current === pdf) setEvidenceNavigationNotice(uiText('reader.links.unavailable'));
+    }
+  }
+
+  function goToPage(pageIndex: number, evidenceId?: string, forceHistory = false) {
     if (state.kind !== 'ready' || pageIndex < 0 || pageIndex >= state.pageCount) return;
     historyRestoreRef.current += 1;
-    recordActiveJump(pageIndex, Boolean(evidenceId));
+    recordActiveJump(pageIndex, Boolean(evidenceId) || forceHistory);
     clearEvidenceVisual();
     setEvidenceNavigationNotice('');
     pendingEvidenceRef.current = evidenceId ? { evidenceId, pageIndex, requestId: requestIdRef.current } : null;
@@ -2577,7 +2607,7 @@ function ReaderPage() {
 
   async function fittedScale(pdf: PDFDocumentProxy, view: ViewState, mode: Exclude<ZoomMode, 'manual'>): Promise<number> {
     const page = await pdf.getPage(view.pageIndex + 1);
-    const viewport = page.getViewport({ scale: 1, rotation: view.rotation });
+    const viewport = page.getViewport({ scale: 1, rotation: (page.rotate + view.rotation) % 360 });
     const stage = stageRef.current;
     const styles = stage && getComputedStyle(stage);
     const availableWidth = stage ? stage.clientWidth - parseFloat(styles!.paddingLeft) - parseFloat(styles!.paddingRight) : window.innerWidth - 32;
@@ -3354,6 +3384,18 @@ function ReaderPage() {
             }}
             aria-label={t('reader.page.renderedPage', { page: pageIndex + 1 })}
           />
+          {documentRef.current && <PdfLinkLayer pdf={documentRef.current} pageIndex={pageIndex} scale={state.scale} rotation={state.rotation} internalLabel={t('reader.links.internal')} interceptClick={(event) => {
+            if (pageIndex !== state.pageIndex) return false;
+            const bounds = pdfPageRef.current?.getBoundingClientRect();
+            if (!bounds) return false;
+            const linkBounds = event.currentTarget.getBoundingClientRect();
+            const x = event.detail === 0 ? linkBounds.left + linkBounds.width / 2 : event.clientX;
+            const y = event.detail === 0 ? linkBounds.top + linkBounds.height / 2 : event.clientY;
+            const hit = citationHitRegions.find((region) => region.rects.some((rect) => x - bounds.left >= rect.left && x - bounds.left <= rect.left + rect.width && y - bounds.top >= rect.top && y - bounds.top <= rect.top + rect.height));
+            if (!hit) return false;
+            openCitation(hit.occurrenceId, event.currentTarget);
+            return true;
+          }} onDestination={(dest) => { void navigatePdfLink(dest); }} />}
           {pageIndex === state.pageIndex ? <>
             <div className="highlight-layer" aria-hidden="true">
               {visibleHighlights.flatMap((highlight) => highlight.rects.map((rect, index) => {

@@ -151,7 +151,7 @@ p {
 .pdf-highlight-pink, .highlight-color-pink { background: #f472b6; }
 .pdf-highlight.is-active { outline: 2px solid #1d4ed8; outline-offset: -1px; opacity: 0.62; }
 .pdf-page .textLayer { z-index: 2; }
-.citation-hit-layer { position: absolute; z-index: 3; inset: 0; pointer-events: none; }
+.citation-hit-layer { position: absolute; z-index: 4; inset: 0; pointer-events: none; }
 .citation-hit-region { position: absolute; display: block; pointer-events: none; cursor: pointer; border: 0; border-bottom: 2px dotted #1d4ed8; border-radius: 0; background: transparent; color: transparent; font: inherit; margin: 0; padding: 0; }
 .citation-hit-region:focus-visible { background: rgb(191 219 254 / 62%); outline: 2px solid #1d4ed8; outline-offset: 1px; }
 .citation-popover { position: fixed; z-index: 20; width: min(25rem, calc(100vw - 1rem)); max-height: min(32rem, calc(100vh - 1rem)); overflow: auto; padding: 0.8rem; border: 1px solid #64748b; border-radius: 0.65rem; background: #fff; box-shadow: 0 0.35rem 1.25rem rgb(15 23 42 / 28%); color: #1e293b; }
@@ -555,3 +555,8 @@ h1 { color: var(--text-strong); }
 @media (prefers-reduced-motion: reduce) {
   .reader-page * { scroll-behavior: auto; }
 }
+
+.pdf-link-layer { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.pdf-native-link { position: absolute; display: block; pointer-events: auto; padding: 0; margin: 0; border: 0; background: transparent; border-radius: 0; cursor: pointer; }
+.pdf-native-link:hover { background: rgb(37 99 235 / 12%); }
+.pdf-native-link:focus-visible { outline: 2px solid #2563eb; outline-offset: 1px; background: rgb(37 99 235 / 12%); }
