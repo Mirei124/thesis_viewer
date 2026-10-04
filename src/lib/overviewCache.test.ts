@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { DETAILED_SECTION_IDS, type DetailedOverview } from './detailedOverview';
+import { DETAILED_SECTION_IDS, PROGRESSIVE_DETAILED_OVERVIEW_PROMPT_VERSION, type DetailedOverview } from './detailedOverview';
 import { pdfEvidenceLedgerFromPages } from './evidenceLedger';
 import type { ModelConfig } from './modelConfig';
 import { normalizePdfTextItem, PDF_PAGE_BLOCK_EXTRACTION_VERSION, type PageExtraction, type PdfPageTextBlock } from './pdfPageBlocks';
 import { overviewCacheContextValid, overviewCacheKey, verifiedCachedOverview } from './overviewCache';
-import type { ThreeLineOverview } from './threeLineOverview';
+import { THREE_LINE_OVERVIEW_PROMPT_VERSION, type ThreeLineOverview } from './threeLineOverview';
 
 const documentContentKey = 'a'.repeat(64);
 const documentVersion = `sha256:${documentContentKey}`;
@@ -40,6 +40,20 @@ describe('verified overview cache', () => {
     for (const field of ['baseUrl', 'model', 'structuredOutput', 'contextLimit', 'outputLimit'] as const) {
       const changed = { ...config, [field]: typeof config[field] === 'boolean' ? !config[field] : typeof config[field] === 'number' ? config[field] + 1 : `${config[field]}-other` };
       expect(overviewCacheKey({ ...input, config: changed })).not.toBe(key);
+    }
+  });
+
+  it('invalidates both prior language-policy generations without changing other cache dimensions', () => {
+    for (const [kind, currentVersion, previousVersion] of [
+      ['three-line', THREE_LINE_OVERVIEW_PROMPT_VERSION, 'research-overview-zh-v7'],
+      ['detailed', PROGRESSIVE_DETAILED_OVERVIEW_PROMPT_VERSION, 'research-detailed-overview-zh-v13'],
+    ] as const) {
+      const key = overviewCacheKey({ documentContentKey, kind, config });
+      const previousParts: unknown[] = JSON.parse(key);
+      expect(previousParts[5]).toBe(currentVersion);
+      previousParts[5] = previousVersion;
+      expect(JSON.stringify(previousParts)).not.toBe(key);
+      expect(key).not.toContain(previousVersion);
     }
   });
 
