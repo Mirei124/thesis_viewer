@@ -64,7 +64,7 @@ Hypha 保存总体任务的长期身份、验收要求、状态、范围变更�
 
 状态使用：未开始、待派发、实现中、待主 agent 验收、需返工、阻塞、已完成。阶段内仅部分目标完成时保持实现中，说明已验收部分；不要用目标勾选比例代替整体完成度。任务等待前置条件不算异常阻塞。
 
-当前执行批次：无。B096详细概览精简已完成，两篇同输入方法总篇幅约原来的55%，275测试、类型检查和双端构建通过；见[评测](implementation/evaluations/B096.md)。下一批为用户确认的三行自然段/贡献选材改进。B095无附录轻筛选与可选复核已完成，274测试、双端构建、八篇输入回放及两篇单请求真实回归通过，见[评测](implementation/evaluations/B095.md)。B091–B094已完成，八篇deepseek-flash方法均生成并完成原文复核，失败与语义残余已归档。段落/章节、五栏、预算分批、方法原文复核已接入，265测试、类型检查和双端构建通过，见[生产评测](implementation/evaluations/B094.md)。B089 阅读历史与热力图已验收，见 [批次记录](implementation/batches/B089.md) 与 [验收记录](implementation/evaluations/B089.md)。B088 概览英文术语保留已验收。B087 引用卡片已完成验收。B085 已完成全局缩放缓存并验收。B084已补齐PDF原生链接：各连续页HTTP(S)外链／内部named与explicit跳转、坐标与PDF页自身旋转、cite浮窗优先。201项测试、typecheck、双端构建及Chromium真实论文与fixture回归通过；见[批次记录](implementation/batches/B084.md)。本批未做Firefox实际扩展交互。
+当前执行批次：无。B097已实现详细概览栏目完成即显示，取消保留已完成内容；279测试、类型检查、双端构建和独立Chromium回归通过，见[评测](implementation/evaluations/B097.md)。B096详细概览精简已完成，两篇同输入方法总篇幅约原来的55%，275测试、类型检查和双端构建通过；见[评测](implementation/evaluations/B096.md)。下一批为用户确认的三行自然段/贡献选材改进。B095无附录轻筛选与可选复核已完成，274测试、双端构建、八篇输入回放及两篇单请求真实回归通过，见[评测](implementation/evaluations/B095.md)。B091–B094已完成，八篇deepseek-flash方法均生成并完成原文复核，失败与语义残余已归档。段落/章节、五栏、预算分批、方法原文复核已接入，265测试、类型检查和双端构建通过，见[生产评测](implementation/evaluations/B094.md)。B089 阅读历史与热力图已验收，见 [批次记录](implementation/batches/B089.md) 与 [验收记录](implementation/evaluations/B089.md)。B088 概览英文术语保留已验收。B087 引用卡片已完成验收。B085 已完成全局缩放缓存并验收。B084已补齐PDF原生链接：各连续页HTTP(S)外链／内部named与explicit跳转、坐标与PDF页自身旋转、cite浮窗优先。201项测试、typecheck、双端构建及Chromium真实论文与fixture回归通过；见[批次记录](implementation/batches/B084.md)。本批未做Firefox实际扩展交互。
 
 
 当前阻塞：无。交付已如实记录无文字、密码、损坏、超限样本未测和 reader chunk 大小警告；GPL-3.0-only 已在根目录及可分发构建产物提供。B078–B080 均以独立 Chromium 完成所需浏览器验收，用户确认 B078 文件选择正常。

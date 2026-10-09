@@ -51,6 +51,7 @@ import {
 } from '../lib/threeLineOverview';
 import {
   type DetailedOverview,
+  type DetailedOverviewSection,
   type DetailedSectionId,
 } from '../lib/detailedOverview';
 import { generateDetailedOverview } from '../lib/detailedOverviewPipeline';
@@ -172,7 +173,8 @@ type OverviewState = {
 };
 
 type DetailedOverviewState = {
-  status: 'preparing' | 'generating' | 'success' | 'error';
+  status: 'preparing' | 'generating' | 'success' | 'error' | 'cancelled';
+  completedSections?: readonly DetailedOverviewSection[];
   result?: DetailedOverview;
   /** Kept only for a completed click; never includes model/PDF text or secrets. */
   diagnostics?: DetailedOverviewDiagnostics;
@@ -1658,10 +1660,11 @@ function ReaderPage() {
     const pages = extraction.pages;
     const contentKey = documentContentKey;
     const documentRequestId = requestIdRef.current;
+    const isCurrentGeneration = () => requestToken === detailedOverviewRequestRef.current && documentRequestId === requestIdRef.current && !controller.signal.aborted;
     setDetailedOverview({ status: 'preparing' });
     void (async () => {
       const permission = await permissionRequest;
-      if (requestToken !== detailedOverviewRequestRef.current) return;
+      if (!isCurrentGeneration()) return;
       if (!permission.granted) {
         setDetailedOverview({ status: 'error', message: trigger === 'automatic' ? uiText('reader.insights.autoUnavailable') : uiText(permission.reason === 'denied' ? 'reader.insights.detailedPermissionDenied' : 'reader.error.apiPermissionUnavailable') });
         return;
@@ -1673,20 +1676,23 @@ function ReaderPage() {
         const { result, diagnostics } = await generateDetailedOverview({
           ledger, pages, config, signal: controller.signal,
           request: (request) => requestCompatibleCompletion({ ...request, apiKey: generationApiKey }),
+          onSectionComplete: (completedSections) => {
+            if (isCurrentGeneration()) setDetailedOverview({ status: 'generating', completedSections });
+          },
           onUsage: (usage) => {
-            if (requestToken === detailedOverviewRequestRef.current && !controller.signal.aborted) {
+            if (isCurrentGeneration()) {
               setInsightUsages((current) => [...current, usage]);
             }
           },
         });
-        if (requestToken !== detailedOverviewRequestRef.current || controller.signal.aborted) return;
+        if (!isCurrentGeneration()) return;
         setDetailedOverview({ status: 'success', result, diagnostics: { sections: diagnostics } });
         if (contentKey && documentRequestId === requestIdRef.current) {
           void cacheVerifiedOverview({ documentContentKey: contentKey, kind: 'detailed', config }, result, ledger, pages).catch(() => undefined);
         }
       } catch (error) {
-        if (requestToken !== detailedOverviewRequestRef.current || controller.signal.aborted) return;
-        setDetailedOverview({ status: 'error', message: overviewErrorMessage(error) });
+        if (!isCurrentGeneration()) return;
+        setDetailedOverview((current) => ({ ...current, status: 'error', message: overviewErrorMessage(error) }));
       }
     })();
   }
@@ -1695,7 +1701,7 @@ function ReaderPage() {
     detailedOverviewRequestRef.current += 1;
     detailedOverviewAbortRef.current?.abort();
     detailedOverviewAbortRef.current = null;
-    setDetailedOverview(null);
+    setDetailedOverview((current) => current ? { ...current, status: 'cancelled' } : null);
   }
 
   function beginImport() {
@@ -1710,6 +1716,7 @@ function ReaderPage() {
     invalidateTranslation();
     cancelThreeLineOverview();
     cancelDetailedOverview();
+    setDetailedOverview(null);
     setActiveEvidence(null);
     requestIdRef.current += 1;
     refreshOverviewPreferences(requestIdRef.current);
@@ -3212,9 +3219,10 @@ function ReaderPage() {
                   {detailedOverview?.status === 'preparing' && <p role="status">{t('reader.insights.requestingPermission')}</p>}
                   {detailedOverview?.status === 'generating' && <p role="status">{t('reader.insights.generatingDetailed')} <button type="button" onClick={cancelDetailedOverview}>{t('reader.cancel')}</button></p>}
                   {detailedOverview?.status === 'error' && <p className="overview-error" role="alert">{display(detailedOverview.message)} <a href="options.html">{t('reader.insights.openSettings')}</a></p>}
-                  {detailedOverview?.status === 'success' && detailedOverview.result && <>
+                  {detailedOverview?.status === 'cancelled' && <p role="status">{t('reader.error.overviewCancelled')}</p>}
+                  {(detailedOverview?.result || detailedOverview?.completedSections?.length) ? <>
                     <div className="detailed-overview-sections">
-                      {detailedOverview.result.sections.map((section) => <section key={section.id} className="detailed-overview-section">
+                      {(detailedOverview.result?.sections ?? detailedOverview.completedSections ?? []).map((section) => <section key={section.id} className="detailed-overview-section">
                         <h5>{t(DETAILED_SECTION_LABEL_KEYS[section.id])}</h5>
                         {section.status !== 'available' && <p className="overview-unavailable">{t(section.status === 'not_applicable' ? 'reader.insights.notApplicable' : 'reader.insights.insufficient')}</p>}
                         {section.blocks.map((block, index) => <div key={`${section.id}-${index}`} className="detailed-overview-block">
@@ -3222,8 +3230,8 @@ function ReaderPage() {
                         </div>)}
                       </section>)}
                     </div>
-                    {detailedOverview.result.uncertainties.length > 0 && <p className="overview-uncertainties">{t('reader.insights.uncertainties', { text: detailedOverview.result.uncertainties.map((item) => item.text).join(' ') })}</p>}
-                  </>}
+                    {!!detailedOverview.result?.uncertainties.length && <p className="overview-uncertainties">{t('reader.insights.uncertainties', { text: detailedOverview.result.uncertainties.map((item) => item.text).join(' ') })}</p>}
+                  </> : null}
                 </section>
               </section>
               {(overview?.status === 'success' || detailedOverview?.status === 'success' || insightUsage.requestCount > 0) && <p className="insight-usage">

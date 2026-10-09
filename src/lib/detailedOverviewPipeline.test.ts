@@ -6,6 +6,7 @@ import { createDetailedEvidenceLedger, createStructuredPaper } from './structure
 import { requestBudget, selectDetailedContext } from './detailedContext';
 import type { CompatibleRequest } from './compatibleProvider';
 import type { ModelConfig } from './modelConfig';
+import type { DetailedOverviewSection } from './detailedOverview';
 const config: ModelConfig = { baseUrl: 'https://example.test/v1', model: 'test', structuredOutput: true, contextLimit: 128000, outputLimit: 16000 };
 function fixture(count = 3, extraSections = false) {
   const pages = Array.from({ length: count }, (_, p) => pageBlocksFromTextContent({
@@ -24,6 +25,82 @@ function completion(request: CompatibleRequest) {
   return { content: JSON.stringify({ status: 'available', text: `完整解释 ${sources[0]}。`, sources }), usage: { promptTokens: 100, completionTokens: 50 } };
 }
 describe('complete chapter overview pipeline', () => {
+  it('publishes each completed column before later requests with detached immutable anchors', async () => {
+    const snapshots: Array<readonly DetailedOverviewSection[]> = [];
+    const output = await generateDetailedOverview({ ...fixture(5, true), config,
+      onSectionComplete: sections => snapshots.push(sections),
+      request: async request => {
+        if (payload(request).section === 'method') {
+          expect(snapshots).toHaveLength(1);
+          expect(snapshots[0].map(section => section.id)).toEqual(['problem']);
+          expect(snapshots[0][0].blocks[0].evidenceRefs?.[0].evidenceIds.length).toBeGreaterThan(0);
+        }
+        return completion(request);
+      },
+    });
+    expect(snapshots.map(sections => sections.length)).toEqual([1, 2, 3, 4, 5]);
+    expect(snapshots[4]).toEqual(output.result.sections);
+    expect(snapshots[0][0]).not.toBe(snapshots[4][0]);
+    expect(Object.isFrozen(snapshots[0])).toBe(true);
+    expect(Object.isFrozen(snapshots[0][0].blocks[0].evidenceRefs?.[0].evidenceIds)).toBe(true);
+    output.result.sections[0].blocks[0].text = 'mutated return';
+    expect(snapshots[0][0].blocks[0].text).not.toBe('mutated return');
+  });
+
+  it('withholds a method draft until repair and semantic review finish', async () => {
+    const snapshots: Array<readonly DetailedOverviewSection[]> = [];
+    let reviews = 0;
+    const output = await generateDetailedOverview({ ...fixture(), config: { ...config, semanticReview: true },
+      onSectionComplete: sections => snapshots.push(sections),
+      request: async request => {
+        if (payload(request).section === 'method') {
+          expect(snapshots).toHaveLength(1);
+          if (request.messages.at(-1)!.content.includes('method_semantic_review')) {
+            reviews++;
+            const response = completion(request);
+            return { ...response, content: response.content.replace('完整解释', 'verified replacement') };
+          }
+          return { content: '{broken method draft' };
+        }
+        return completion(request);
+      },
+    });
+    expect(reviews).toBe(1);
+    expect(snapshots[1][1].blocks).toHaveLength(reviews);
+    expect(snapshots[1][1].blocks.every(block => block.text.includes('verified replacement'))).toBe(true);
+    expect(snapshots[1][1]).toEqual(output.result.sections[1]);
+  });
+
+  it('keeps the published first column unchanged when cancelled during a later request', async () => {
+    const snapshots: Array<readonly DetailedOverviewSection[]> = [];
+    const controller = new AbortController();
+    let requests = 0;
+    await expect(generateDetailedOverview({ ...fixture(), config, signal: controller.signal,
+      onSectionComplete: sections => snapshots.push(sections),
+      request: async request => {
+        requests++;
+        if (payload(request).section === 'method') controller.abort();
+        return completion(request);
+      },
+    })).rejects.toMatchObject({ name: 'AbortError' });
+    expect(requests).toBe(2);
+    expect(snapshots).toHaveLength(1);
+    expect(snapshots[0][0].status).toBe('available');
+  });
+
+  it('publishes a failed column without discarding earlier verified output or exposing invalid prose', async () => {
+    const snapshots: Array<readonly DetailedOverviewSection[]> = [];
+    await generateDetailedOverview({ ...fixture(), config,
+      onSectionComplete: sections => snapshots.push(sections),
+      request: async request => payload(request).section === 'method'
+        ? { content: JSON.stringify({ status: 'available', text: 'UNSUPPORTED E999', sources: ['E999'] }) }
+        : completion(request),
+    });
+    expect(snapshots[1][0]).toEqual(snapshots[0][0]);
+    expect(snapshots[1][1].status).toBe('unavailable');
+    expect(JSON.stringify(snapshots)).not.toContain('UNSUPPORTED');
+  });
+
   it('sends full intro and method paragraphs without the old 5-source or 1500-character truncation', async () => {
     const source = fixture(7);
     const requests: CompatibleRequest[] = [];
@@ -47,7 +124,15 @@ describe('complete chapter overview pipeline', () => {
     const source = fixture(8);
     const small = { ...config, contextLimit: 6500, outputLimit: 1500 };
     const requests: CompatibleRequest[] = [];
-    const output = await generateDetailedOverview({ ...source, config: small, request: async request => { requests.push(request); return completion(request); } });
+    const snapshots: Array<readonly DetailedOverviewSection[]> = [];
+    const output = await generateDetailedOverview({ ...source, config: small,
+      onSectionComplete: sections => snapshots.push(sections),
+      request: async request => {
+        if (payload(request).section === 'method') expect(snapshots).toHaveLength(1);
+        requests.push(request); return completion(request);
+      },
+    });
+    expect(snapshots[1][1]).toEqual(output.result.sections[1]);
     const method = requests.filter(request => payload(request).section === 'method');
     expect(method.length).toBeGreaterThan(1);
     expect(method.every(request => payload(request).instruction.includes('不得每批各写一份整栏篇幅'))).toBe(true);

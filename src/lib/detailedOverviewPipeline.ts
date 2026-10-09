@@ -32,6 +32,8 @@ export type DetailedOverviewPipelineOptions = {
   signal?: AbortSignal;
   request: (request: CompatibleRequest) => Promise<CompatibleResponse>;
   onUsage?: (usage: CompatibleUsage) => void;
+  /** Completed columns only, after repair/review and all source-bound batches. */
+  onSectionComplete?: (sections: readonly DetailedOverviewSection[]) => void;
 };
 type PreparedBatch = {
   session: ProgressiveEvidenceSession;
@@ -115,6 +117,21 @@ export async function generateDetailedOverview(options: DetailedOverviewPipeline
   const paper = createStructuredPaper(ledger, pages);
   const sections: DetailedOverviewSection[] = [];
   const diagnostics: DetailedPipelineDiagnostic[] = [];
+  const publishCompleted = async () => {
+    checkAbort(signal);
+    if (options.onSectionComplete) {
+      // Detach every nested anchor array so consumers never share mutable runner state.
+      const snapshot = structuredClone(sections);
+      const freeze = (value: object): void => {
+        Object.values(value).forEach(child => { if (child && typeof child === 'object') freeze(child); });
+        Object.freeze(value);
+      };
+      freeze(snapshot);
+      options.onSectionComplete(snapshot);
+    }
+    // Let React paint the finished column before preparing the next request.
+    await yieldForCancellation(signal);
+  };
   let aliasOffset = 0;
   for (const id of DETAILED_SECTION_IDS) {
     checkAbort(signal);
@@ -126,6 +143,7 @@ export async function generateDetailedOverview(options: DetailedOverviewPipeline
     diagnostics.push(diagnostic);
     if (!selection.paragraphs.length) {
       sections.push(unavailableDetailedSection(id));
+      await publishCompleted();
       continue;
     }
     const batches = await prepareBatches(id, selection, ledger, config, signal);
@@ -224,6 +242,7 @@ export async function generateDetailedOverview(options: DetailedOverviewPipeline
     }
     diagnostic.warnings = [...new Set(diagnostic.warnings)];
     sections.push({ id, status: pieces.every(piece => piece.status === 'available') ? 'available' : pieces.every(piece => piece.status === 'not_applicable') ? 'not_applicable' : 'unavailable', blocks: pieces.flatMap(piece => piece.blocks) });
+    await publishCompleted();
   }
   return { result: assembleDetailedOverview(sections), diagnostics };
 }
