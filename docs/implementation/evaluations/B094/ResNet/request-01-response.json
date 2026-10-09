@@ -1,0 +1,12 @@
+{
+  "index": 1,
+  "elapsedMs": 6474,
+  "content": "{\"status\":\"available\",\"text\":\"深层网络依赖 depth，但单纯堆叠更多层并不奏效：深度增加时 accuracy 先饱和、随后迅速下降，且这并非 overfitting——更深的模型反而 training error 更高（E020, E017）。作者指出，vanishing/exploding gradients 已被 normalized initialization 与中间 normalization layers 大幅缓解，故 degradation 另有原因（E019）：按构造，浅层模型加层后只需新增层取 identity mapping 即可，但现有 solver 找不到同等好的解（E021, E029）。因此本文改为让堆叠层拟合 residual mapping F(x):=H(x)−x，原映射改写为 F(x)+x，并用 parameter-free 的 identity shortcut connections 实现，假设该残差形式更易优化（E030, E031）。\",\"sources\":[\"E017\",\"E019\",\"E020\",\"E021\",\"E029\",\"E030\",\"E031\"]}",
+  "usage": {
+    "promptTokens": 6552,
+    "completionTokens": 1044,
+    "totalTokens": 7596,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 6040
+  }
+}

@@ -120,8 +120,8 @@ describe('compact evidence packet', () => {
     const ordered = selectRankedPassagesForPurpose(createPassageRetrievalIndex(passages), 'relative_novelty', { maxCandidates: 24, maxCandidatesPerPage: 2 });
     const session = createProgressiveEvidenceSession(ledger, { maxExcerptChars: 1500 });
     for (const stage of PROGRESSIVE_EVIDENCE_STAGES) {
-      const increment = appendProgressiveEvidenceStage(session, stage, { orderedPassages: stage === 'relative_novelty' ? ordered : [] });
-      if (stage !== 'relative_novelty') continue;
+      const increment = appendProgressiveEvidenceStage(session, stage, { orderedPassages: stage === 'contributions_novelty' ? ordered : [] });
+      if (stage !== 'contributions_novelty') continue;
       const source = increment.sources.find((item) => item.excerpt.includes('four key features'))!;
       expect(source.excerpt).toContain('manual labeling by expert annotators');
       expect(source.excerpt).not.toMatch(/…$/);
@@ -263,8 +263,7 @@ describe('compact evidence packet', () => {
     const { ledger } = sample();
     const session = createProgressiveEvidenceSession(ledger, {
       maxCandidatesByStage: {
-        problem_motivation: 1, method: 1, contributions: 1,
-        relative_novelty: 1, experiments_ablations: 1, limitations: 1,
+        problem_motivation: 1, method: 1, contributions_novelty: 1, experiments_ablations: 1, limitations: 1,
       },
       maxExcerptChars: 12,
     });
@@ -279,7 +278,7 @@ describe('compact evidence packet', () => {
     expect(method.sources[0].excerpt).toMatch(/…$/);
     expect(method.sources[0].excerpt).not.toBe(problem.sources[0].excerpt);
 
-    const contribution = appendProgressiveEvidenceStage(session, 'contributions');
+    const contribution = appendProgressiveEvidenceStage(session, 'contributions_novelty');
     expect(contribution.sources.map((source) => source.alias)).toEqual(['E003']);
     expect(new Set([...problem.sources, ...method.sources, ...contribution.sources].map((source) => source.excerpt)).size).toBe(3);
   });
@@ -290,7 +289,7 @@ describe('compact evidence packet', () => {
     appendProgressiveEvidenceStage(session, 'problem_motivation');
     expect(() => resolveProgressiveEvidenceAliases(session, ['E002'], ledger, pages)).toThrow(/has not been sent/);
     expect(() => resolveProgressiveEvidenceAliases(session, ['E001', 'E001'], ledger, pages)).toThrow(/repeated a progressive/);
-    expect(() => appendProgressiveEvidenceStage(session, 'contributions')).toThrow(/application-defined order/);
+    expect(() => appendProgressiveEvidenceStage(session, 'contributions_novelty')).toThrow(/application-defined order/);
 
     const method = appendProgressiveEvidenceStage(session, 'method');
     expect(resolveProgressiveEvidenceAliases(session, ['E001', method.sources[0].alias], ledger, pages)).toHaveLength(2);
@@ -324,7 +323,7 @@ describe('compact evidence packet', () => {
     expect(resolved.map((candidate) => candidate.evidenceId)).toEqual(joined.members.map((member) => member.candidate.evidenceId));
   });
 
-  it('requires a new isolated session and the fixed six-stage sequence for every user request', () => {
+  it('requires a new isolated session and the fixed five-stage sequence for every user request', () => {
     const { ledger } = sample();
     const one = createProgressiveEvidenceSession(ledger);
     const two = createProgressiveEvidenceSession(ledger);

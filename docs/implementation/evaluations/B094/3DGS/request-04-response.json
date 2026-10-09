@@ -1,0 +1,12 @@
+{
+  "index": 4,
+  "elapsedMs": 19515,
+  "content": "{\"status\":\"available\",\"text\":\"实验设置：评测覆盖13个真实场景（Mip-NeRF360 全套场景、Tanks&Temples 两场景、Hedman et al. 两场景）与合成 Blender 数据集，按 Mip-NeRF360 的做法每8张取1张作测试，报告 PSNR、SSIM、LPIPS；除 Mip-NeRF360 在其自身数据集上的数字为原文复制外，其余均为作者自跑(E121)(E124)。Table 1 上 Ours-30K 训练41m33s、134 FPS、PSNR 27.21，Mip-NeRF360 为 PSNR 27.69、48h、0.06 FPS，其中48h是由4-GPU A100 节点训练12h换算，且 A100 快于 A6000；帧率用基于 SIBR 的交互 viewer 测(E103)(E138)(E113)。合成场景从100K 个随机 Gaussian 初始化，自动剪枝到6–10K，30K 迭代后每场景200–500K，平均 PSNR 33.32，渲染180–300 FPS(E136)(E111)(E141)。消融 Table 3 只给出 Truck-5K、Garden-5K、Bicycle-5K、Truck-30K 的 PSNR，图像先手工降采样到统一渲染分辨率：Full 为22.71/25.82/23.18/24.81，No-Split 为18.31/23.98/22.21/20.59，No-Clone 为22.29/25.61/22.15/24.82，表明 split 影响背景重建、clone 利于细结构与更快收敛(E126)(E129)(E146)。Limited-BW（仅前10个 splat 获梯度）使 Truck 下降11dB(E162)；Isotropic 用单标量半径、损害表面贴合质量，Ficus 两配置均限5k Gaussians(E163)(E173)；No-SH 显示 SH 补偿视角相关效应(E164)；Random Init 在背景与覆盖不足区域遗留更多 floaters(E145)。\",\"sources\":[\"E121\",\"E124\",\"E103\",\"E138\",\"E113\",\"E136\",\"E111\",\"E141\",\"E126\",\"E129\",\"E146\",\"E162\",\"E163\",\"E173\",\"E164\",\"E145\"]}",
+  "usage": {
+    "promptTokens": 22588,
+    "completionTokens": 4269,
+    "totalTokens": 26857,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 22076
+  }
+}

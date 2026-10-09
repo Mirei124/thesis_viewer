@@ -1,0 +1,42 @@
+{
+  "paper": "Video-MME",
+  "arm": "D",
+  "model": "deepseek-flash",
+  "requestSha256": "e8c10d225470081402bf9dabe1a3fd950258e451415aa948df70b4ba4b94ec8a",
+  "outputLimit": 32000,
+  "requestChars": 29727,
+  "elapsedSeconds": 43.37,
+  "usage": {
+    "prompt_tokens": 9152,
+    "completion_tokens": 10395,
+    "total_tokens": 19547,
+    "prompt_tokens_details": {
+      "cached_tokens": 512
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 9570
+    },
+    "prompt_cache_hit_tokens": 512,
+    "prompt_cache_miss_tokens": 8640
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"**任务、输入与输出**\\nVideo-MME 评估 MLLMs 的视频理解能力：输入是一段视频以及可选的 subtitles 与 audio tracks，输出是在 multiple-choice question 的四个候选选项中选出答案，并与 ground-truth answer 比对。[P003][P051] 数据集包含 900 videos、2,700 QA pairs，每题四个选项，视频长度覆盖 11 seconds 到 1 hour。[P003]\\n\\n**分层采集与时长控制**\\n构建分三步：video collection、question-answer annotation、quality review。[P051] 视频采集先从 YouTube 建立 domain hierarchy，覆盖 6 个 domain，并细分为 30 个 fine-grained categories。[P003][P051] 每个 category 内按 duration 分三层收集：short（< 2 minutes）、medium（4–15 minutes）、long（30–60 minutes），以保证评测覆盖不同 temporal context。[P051] 采集视频时同步获取 meta-information：subtitles（若提供）和 audios，用于后续多模态条件控制。[P051] 最终得到 900 videos；并非每段视频都有 subtitles，但每段都有 audio，因此可分别构造字幕与音频条件。[P051][P053]\\n\\n**人工 QA 标注**\\n标注采用 multiple-choice QA 格式，以方便直接且灵活的评测。[P051] 招募的 annotators 需要较强 English proficiency 和 vision-language learning 研究经验；每人完整观看视频后，围绕视频迭代创建 3 个问题，每个问题配 4 个 candidate options，最终形成 2,700 QA pairs。[P051] 问题覆盖 12 种 task types，包括 perception、reasoning 和 information synthesis，且每题都必须紧密依赖视频内容，使模型不能不看视频就作答。[P051]\\n\\n**独立复核与 text-only 过滤**\\n质量复核先由另一位 annotator 独立检查每道 QA：语言是否清晰精确、问题是否可答且 candidate options 逻辑一致、指定 correct answer 是否合适。[P051] 然后进行 text-only 过滤：把只有文本的问题交给 Gemini 1.5 Pro，剔除仅凭文本问题就能答对的 QA pair；例如关于 Argentina 的 number 10 在 2022 年最大成就的问题可被推断为 World Cup victory，因此被排除。[P052] 不符合标准的题目退回原 annotator 修改；统计显示 Gemini 1.5 Pro 在 text-only 设置下准确率低于 15%，说明过滤后的问题确实需要视频内容。[P052]\\n\\n**被评模型的输入方式**\\n评测时遵循各被评模型的 official configurations，并尽量使用更多 frames 来适配视频输入。[P132] 对于 image-based models，则通过扩展到 multi-frame images 让其参与视频评测。[P004] 对每段视频，输入形式可在 frames only、frames with subtitles、frames with audio 三种 modality setting 间切换，以分别考察视觉、字幕和音频信息的作用。[P177] 在 with subtitles 设置中，subtitles 选取与 sampled video frames 对应的部分。[P127] 评测按 short、medium、long 三个 duration subset 分别进行，并可在 without subtitles 与 with subtitles 两种条件下比较。[P127]\\n\\n**accuracy 评分**\\naccuracy 通过直接比较模型输出与 ground-truth answer 计算，不调用 ChatGPT 等外部模型做判定。[P132][P178] 评测整体还围绕 modality 与 duration 展开分析，以观察帧、字幕、音频和视频长度对结果的影响。[P129][P177]\",\"sources\":[\"P003\",\"P004\",\"P051\",\"P052\",\"P053\",\"P127\",\"P129\",\"P132\",\"P177\",\"P178\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "**任务、输入与输出**\nVideo-MME 评估 MLLMs 的视频理解能力：输入是一段视频以及可选的 subtitles 与 audio tracks，输出是在 multiple-choice question 的四个候选选项中选出答案，并与 ground-truth answer 比对。[P003][P051] 数据集包含 900 videos、2,700 QA pairs，每题四个选项，视频长度覆盖 11 seconds 到 1 hour。[P003]\n\n**分层采集与时长控制**\n构建分三步：video collection、question-answer annotation、quality review。[P051] 视频采集先从 YouTube 建立 domain hierarchy，覆盖 6 个 domain，并细分为 30 个 fine-grained categories。[P003][P051] 每个 category 内按 duration 分三层收集：short（< 2 minutes）、medium（4–15 minutes）、long（30–60 minutes），以保证评测覆盖不同 temporal context。[P051] 采集视频时同步获取 meta-information：subtitles（若提供）和 audios，用于后续多模态条件控制。[P051] 最终得到 900 videos；并非每段视频都有 subtitles，但每段都有 audio，因此可分别构造字幕与音频条件。[P051][P053]\n\n**人工 QA 标注**\n标注采用 multiple-choice QA 格式，以方便直接且灵活的评测。[P051] 招募的 annotators 需要较强 English proficiency 和 vision-language learning 研究经验；每人完整观看视频后，围绕视频迭代创建 3 个问题，每个问题配 4 个 candidate options，最终形成 2,700 QA pairs。[P051] 问题覆盖 12 种 task types，包括 perception、reasoning 和 information synthesis，且每题都必须紧密依赖视频内容，使模型不能不看视频就作答。[P051]\n\n**独立复核与 text-only 过滤**\n质量复核先由另一位 annotator 独立检查每道 QA：语言是否清晰精确、问题是否可答且 candidate options 逻辑一致、指定 correct answer 是否合适。[P051] 然后进行 text-only 过滤：把只有文本的问题交给 Gemini 1.5 Pro，剔除仅凭文本问题就能答对的 QA pair；例如关于 Argentina 的 number 10 在 2022 年最大成就的问题可被推断为 World Cup victory，因此被排除。[P052] 不符合标准的题目退回原 annotator 修改；统计显示 Gemini 1.5 Pro 在 text-only 设置下准确率低于 15%，说明过滤后的问题确实需要视频内容。[P052]\n\n**被评模型的输入方式**\n评测时遵循各被评模型的 official configurations，并尽量使用更多 frames 来适配视频输入。[P132] 对于 image-based models，则通过扩展到 multi-frame images 让其参与视频评测。[P004] 对每段视频，输入形式可在 frames only、frames with subtitles、frames with audio 三种 modality setting 间切换，以分别考察视觉、字幕和音频信息的作用。[P177] 在 with subtitles 设置中，subtitles 选取与 sampled video frames 对应的部分。[P127] 评测按 short、medium、long 三个 duration subset 分别进行，并可在 without subtitles 与 with subtitles 两种条件下比较。[P127]\n\n**accuracy 评分**\naccuracy 通过直接比较模型输出与 ground-truth answer 计算，不调用 ChatGPT 等外部模型做判定。[P132][P178] 评测整体还围绕 modality 与 duration 展开分析，以观察帧、字幕、音频和视频长度对结果的影响。[P129][P177]",
+    "sources": [
+      "P003",
+      "P004",
+      "P051",
+      "P052",
+      "P053",
+      "P127",
+      "P129",
+      "P132",
+      "P177",
+      "P178"
+    ]
+  },
+  "parseError": null,
+  "unknownAliases": []
+}

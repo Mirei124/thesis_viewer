@@ -1,0 +1,12 @@
+{
+  "index": 1,
+  "elapsedMs": 7185,
+  "content": "{\"status\":\"available\",\"text\":\"本文目标是从多视角照片捕获的场景实现实时渲染，并让优化时间接近此前最高效的方法（E003）。作者观察到：mesh 与 point 显式表示适合快速的 GPU/CUDA rasterization，而 NeRF 类连续表示虽便于优化，却依赖代价高昂的随机采样并引入噪声（E002）；点基方法多依赖 MVS 几何而继承 over-/under-reconstruction 伪影，用 CNN 渲染还常造成 temporal flickering（E019、E026）。快速方法如 InstantNGP、Plenoxels 受结构化网格限制，质量不及需训练约 48 小时的 Mip-NeRF360（E006、E023）。因此作者以 3D Gaussians 作为可微、且能高效投影并 rasterization 的表示（E007）。\",\"sources\":[\"E002\",\"E003\",\"E006\",\"E007\",\"E019\",\"E023\",\"E026\"]}",
+  "usage": {
+    "promptTokens": 6917,
+    "completionTokens": 1473,
+    "totalTokens": 8390,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 6405
+  }
+}

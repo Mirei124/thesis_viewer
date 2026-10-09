@@ -1,0 +1,51 @@
+{
+  "paper": "LoopVL",
+  "arm": "D",
+  "model": "deepseek-flash",
+  "requestSha256": "01a5b0cc3ccd5214098a4ee6c69857c6c41625118a5f34fd711f79b063e98b58",
+  "outputLimit": 32000,
+  "requestChars": 41793,
+  "elapsedSeconds": 43.03,
+  "usage": {
+    "prompt_tokens": 10989,
+    "completion_tokens": 9923,
+    "total_tokens": 20912,
+    "prompt_tokens_details": {
+      "cached_tokens": 512
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 8464
+    },
+    "prompt_cache_hit_tokens": 512,
+    "prompt_cache_miss_tokens": 10477
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"LoopVL 将 recurrent computation 扩展到 vision–language modeling：输入是一张图像与一条 instruction（连同 conditioning header，训练时还给出 reference response），输出是文本 response。它先把视觉输入编码成 visual tokens，再与 instruction tokens 一起送入由共享参数反复调用的 recurrent backbone，最后从最终 H state 经 LM Head 产生 response。P002 P042 P046\\n\\n视觉侧由 frozen Penguin Vision Encoder 对每个保留的 image patch 产生 1024 维特征。trainable visual interface 中的 two-layer GELU projector 先把 1024 维映射到 1536 维 hidden，再输出 1536 维 visual embedding；这些 embedding 替换序列中预留给图像的 visual slots，该序列同时包含 conditioning header、image、instruction 和 response。视觉接口还对视觉特征做 parameter-free RMS normalization，并校准到语言 embedding 向量的 median RMS 后再进入 backbone。Penguin 与 language backbone 使用 BF16，projector 保持 FP32。P042 P189\\n\\nrecurrent backbone 由独立的 L 与 H 参数栈组成，各 16 层 Transformer；每栈参数在重复调用间共享，L 与 H 互不共享。一次 L 或 H 符号表示一次完整 module invocation，而非单层 attention，因此完整前向会执行 128 次 Transformer-layer call；默认 H2L3 调度为 L→L→L→H→L→L→L→H，即 [L×3→H]×2。Module-Loop 反复调用完整 L 栈，Model-Loop 反复执行耦合的 L/H 更新 cycle，二者构成嵌套循环。P036 P042 P045\\n\\n每个 L/H module 内部含 normalization、gated self-attention、residual paths 和 SwiGLU FFN；attention 内的 gate 调制其输出路径，这些操作在模块再次调用时复用。recurrent computation 维护耦合的 L state 与 H state：H state 由 scaled input embeddings 初始化，L state 初始化为零并在 model cycles 间保留。每个 cycle 内，L 在当前 high-level condition 下被反复更新，随后 H update 吸收 refined L state；最终 H state 送入 LM Head。每个 model cycle 开始时，模型把来自初始 projected visual embeddings 的固定 anchor 重新注入 H state 的 visual positions，注入强度由 query-conditioned token-wise visual gate 与可学习 cycle-specific scale 控制。训练时 forward 仍执行全部 recurrent invocations，但 selective backpropagation 的 active backward graph 在 warmup 中从最后两个 invocation（L6、H2）逐步扩展到最后五个（L4、L5、L6、H1、H2），更早的 L1–L3 不参与梯度计算。P036 P045 P046 P049\\n\\nattention 使用 PrefixLM mask：header、image 与 instruction 位置共同形成 bidirectional prefix；response 位置可看 prefix 及更早 response，但 prefix 位置不能看 response。视觉与文本 token 使用不同 rotary positional encodings：visual tokens 用 two-dimensional spatial RoPE，以图像网格上的 row、column 坐标编码空间位置；text tokens 也被赋予二维坐标，但两坐标沿文本序列同步推进，效果等价于 original one-dimensional RoPE。P045 P046\\n\\nStage 1: Visual Language Alignment 从 text-pretrained 的 H2L3 language checkpoint 与 Penguin 预训练初始化出发，冻结 Penguin Vision Encoder 与 language backbone，只训练 visual interface（projector 随机初始化）。该阶段用 LLaVA-559K WebDataset、0.33B tokens，最大序列 2048，每图 256–1024 visual tokens，以 image–caption 监督在 response tokens 上计算 loss；目标是建立稳定视觉输入通路，使视觉特征经可训练接口进入 frozen recurrent backbone，并保留 input-gradient 路径把学习信号传回 visual interface。P186 P189 P195\\n\\nStage 2: Multimodal Mid-Training 从 aligned checkpoint 继续，不继承上一阶段 optimizer/scheduler；Penguin 冻结，language backbone 与 visual interface 可训练。该阶段用 OneVision-1.5 Mid-Training-85M（49B tokens），最大序列 3072，global batch 128，visual-token 范围仍为 256–1024；语言主干与视觉接口联合训练，采用 response-only objective，目标是让 recurrent model 适应 instruction-conditioned 的多模态回答，包括通用视觉、文本密集图像、图表、数学与短答。P198 P200\\n\\nSFT 使用 16.81B tokens，混合 OneVision-1.5 Instruct-22M、OneVision Spatial-4M、LLaVA v1.5 Mix665K 与 Vision-R1-Cold；继续用 PrefixLM mask，把 image 与 instruction 作为双向 conditioning prefix，response 位置只 attend 到 prefix 及更早 response。训练用 teacher forcing，最小化 valid response tokens 上的 mean cross-entropy 并 mask padding；θ 为可训练参数。P215 P219 P221 P232\\n\\nVisual Reinforcement Learning 从 SFT 模型继续，使用 Group Relative Policy Optimization（GRPO）：对每个 image–question 采样一组 response，最终答案与 reference answer 匹配得正 reward，否则零；GRPO 由 group-normalized rewards 计算 advantages，并用 probability-ratio clipping 与相对 reference policy 的 KL regularization 更新策略。该阶段还采用 Progressive Thinking Suppression Training，把最大 generation length 从 2048 提到 4096，并随生成上限提高而减少每输入候选数，以鼓励先短后长的推理。P215 P235 P236\\n\\n推理时，图像只经 frozen Penguin 一次，visual interface 产生 visual slots，并与 conditioning header、instruction 一起构成 PrefixLM prefix；recurrent backbone 按 L/H schedule 反复调用共享参数，L state 与 H state 持续更新，视觉 token 的表示和相对重要性在 invocation 间被重新选择和分配，而无需再次经过 visual encoder。每个 model cycle 开始时 visual anchor 重新注入 H state 的 visual positions；cycle 结束后最终 H state 送入 LM Head，产生 logits 并以自回归方式输出文本，其条件概率按 pθ(y∣x)=∏_t pθ(y_t∣x,y_<t) 分解。P046 P109 P223\\n\",\"sources\":[\"P002\",\"P036\",\"P042\",\"P045\",\"P046\",\"P049\",\"P109\",\"P186\",\"P189\",\"P195\",\"P198\",\"P200\",\"P215\",\"P219\",\"P221\",\"P223\",\"P232\",\"P235\",\"P236\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "LoopVL 将 recurrent computation 扩展到 vision–language modeling：输入是一张图像与一条 instruction（连同 conditioning header，训练时还给出 reference response），输出是文本 response。它先把视觉输入编码成 visual tokens，再与 instruction tokens 一起送入由共享参数反复调用的 recurrent backbone，最后从最终 H state 经 LM Head 产生 response。P002 P042 P046\n\n视觉侧由 frozen Penguin Vision Encoder 对每个保留的 image patch 产生 1024 维特征。trainable visual interface 中的 two-layer GELU projector 先把 1024 维映射到 1536 维 hidden，再输出 1536 维 visual embedding；这些 embedding 替换序列中预留给图像的 visual slots，该序列同时包含 conditioning header、image、instruction 和 response。视觉接口还对视觉特征做 parameter-free RMS normalization，并校准到语言 embedding 向量的 median RMS 后再进入 backbone。Penguin 与 language backbone 使用 BF16，projector 保持 FP32。P042 P189\n\nrecurrent backbone 由独立的 L 与 H 参数栈组成，各 16 层 Transformer；每栈参数在重复调用间共享，L 与 H 互不共享。一次 L 或 H 符号表示一次完整 module invocation，而非单层 attention，因此完整前向会执行 128 次 Transformer-layer call；默认 H2L3 调度为 L→L→L→H→L→L→L→H，即 [L×3→H]×2。Module-Loop 反复调用完整 L 栈，Model-Loop 反复执行耦合的 L/H 更新 cycle，二者构成嵌套循环。P036 P042 P045\n\n每个 L/H module 内部含 normalization、gated self-attention、residual paths 和 SwiGLU FFN；attention 内的 gate 调制其输出路径，这些操作在模块再次调用时复用。recurrent computation 维护耦合的 L state 与 H state：H state 由 scaled input embeddings 初始化，L state 初始化为零并在 model cycles 间保留。每个 cycle 内，L 在当前 high-level condition 下被反复更新，随后 H update 吸收 refined L state；最终 H state 送入 LM Head。每个 model cycle 开始时，模型把来自初始 projected visual embeddings 的固定 anchor 重新注入 H state 的 visual positions，注入强度由 query-conditioned token-wise visual gate 与可学习 cycle-specific scale 控制。训练时 forward 仍执行全部 recurrent invocations，但 selective backpropagation 的 active backward graph 在 warmup 中从最后两个 invocation（L6、H2）逐步扩展到最后五个（L4、L5、L6、H1、H2），更早的 L1–L3 不参与梯度计算。P036 P045 P046 P049\n\nattention 使用 PrefixLM mask：header、image 与 instruction 位置共同形成 bidirectional prefix；response 位置可看 prefix 及更早 response，但 prefix 位置不能看 response。视觉与文本 token 使用不同 rotary positional encodings：visual tokens 用 two-dimensional spatial RoPE，以图像网格上的 row、column 坐标编码空间位置；text tokens 也被赋予二维坐标，但两坐标沿文本序列同步推进，效果等价于 original one-dimensional RoPE。P045 P046\n\nStage 1: Visual Language Alignment 从 text-pretrained 的 H2L3 language checkpoint 与 Penguin 预训练初始化出发，冻结 Penguin Vision Encoder 与 language backbone，只训练 visual interface（projector 随机初始化）。该阶段用 LLaVA-559K WebDataset、0.33B tokens，最大序列 2048，每图 256–1024 visual tokens，以 image–caption 监督在 response tokens 上计算 loss；目标是建立稳定视觉输入通路，使视觉特征经可训练接口进入 frozen recurrent backbone，并保留 input-gradient 路径把学习信号传回 visual interface。P186 P189 P195\n\nStage 2: Multimodal Mid-Training 从 aligned checkpoint 继续，不继承上一阶段 optimizer/scheduler；Penguin 冻结，language backbone 与 visual interface 可训练。该阶段用 OneVision-1.5 Mid-Training-85M（49B tokens），最大序列 3072，global batch 128，visual-token 范围仍为 256–1024；语言主干与视觉接口联合训练，采用 response-only objective，目标是让 recurrent model 适应 instruction-conditioned 的多模态回答，包括通用视觉、文本密集图像、图表、数学与短答。P198 P200\n\nSFT 使用 16.81B tokens，混合 OneVision-1.5 Instruct-22M、OneVision Spatial-4M、LLaVA v1.5 Mix665K 与 Vision-R1-Cold；继续用 PrefixLM mask，把 image 与 instruction 作为双向 conditioning prefix，response 位置只 attend 到 prefix 及更早 response。训练用 teacher forcing，最小化 valid response tokens 上的 mean cross-entropy 并 mask padding；θ 为可训练参数。P215 P219 P221 P232\n\nVisual Reinforcement Learning 从 SFT 模型继续，使用 Group Relative Policy Optimization（GRPO）：对每个 image–question 采样一组 response，最终答案与 reference answer 匹配得正 reward，否则零；GRPO 由 group-normalized rewards 计算 advantages，并用 probability-ratio clipping 与相对 reference policy 的 KL regularization 更新策略。该阶段还采用 Progressive Thinking Suppression Training，把最大 generation length 从 2048 提到 4096，并随生成上限提高而减少每输入候选数，以鼓励先短后长的推理。P215 P235 P236\n\n推理时，图像只经 frozen Penguin 一次，visual interface 产生 visual slots，并与 conditioning header、instruction 一起构成 PrefixLM prefix；recurrent backbone 按 L/H schedule 反复调用共享参数，L state 与 H state 持续更新，视觉 token 的表示和相对重要性在 invocation 间被重新选择和分配，而无需再次经过 visual encoder。每个 model cycle 开始时 visual anchor 重新注入 H state 的 visual positions；cycle 结束后最终 H state 送入 LM Head，产生 logits 并以自回归方式输出文本，其条件概率按 pθ(y∣x)=∏_t pθ(y_t∣x,y_<t) 分解。P046 P109 P223\n",
+    "sources": [
+      "P002",
+      "P036",
+      "P042",
+      "P045",
+      "P046",
+      "P049",
+      "P109",
+      "P186",
+      "P189",
+      "P195",
+      "P198",
+      "P200",
+      "P215",
+      "P219",
+      "P221",
+      "P223",
+      "P232",
+      "P235",
+      "P236"
+    ]
+  },
+  "parseError": null,
+  "unknownAliases": []
+}

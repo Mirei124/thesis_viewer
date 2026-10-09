@@ -1,0 +1,12 @@
+{
+  "index": 1,
+  "elapsedMs": 6793,
+  "content": "{\"status\":\"available\",\"text\":\"作者旨在构建分割 foundation model（E003）；因分割缺乏 web-scale 数据源（E005、E008），提出 promptable segmentation task 作预训练目标（E006）。\",\"sources\":[\"E003\",\"E005\",\"E006\",\"E008\"]}",
+  "usage": {
+    "promptTokens": 2374,
+    "completionTokens": 1710,
+    "totalTokens": 4084,
+    "promptCacheHitTokens": 384,
+    "promptCacheMissTokens": 1990
+  }
+}

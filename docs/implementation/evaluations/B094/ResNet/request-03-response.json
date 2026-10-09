@@ -1,0 +1,12 @@
+{
+  "index": 3,
+  "elapsedMs": 17144,
+  "content": "{\"status\":\"available\",\"text\":\"论文提出 residual learning framework：让若干堆叠层拟合 residual mapping F(x):=H(x)−x，把原映射改写为 F(x)+x，并以 identity mapping 的 shortcut connections 实现；作者假设残差形式比未引用的原映射更易优化，若 identity mapping 最优则只需把非线性层权重推向零 [E030][E047]。与 highway networks 那种带门控、含参数的 shortcut 不同，本文 shortcut 无参数且永不关闭 [E040]。\",\"sources\":[\"E030\",\"E040\",\"E047\"],\"blocks\":[{\"text\":\"论文提出 residual learning framework：让若干堆叠层拟合 residual mapping F(x):=H(x)−x，把原映射改写为 F(x)+x，并以 identity mapping 的 shortcut connections 实现；作者假设残差形式比未引用的原映射更易优化，若 identity mapping 最优则只需把非线性层权重推向零 [E030][E047]。与 highway networks 那种带门控、含参数的 shortcut 不同，本文 shortcut 无参数且永不关闭 [E040]。\",\"sources\":[\"E030\",\"E040\",\"E047\"],\"claimKind\":\"author_claim\"},{\"text\":\"该形式不增加参数与计算量，使 plain 与 residual 网络能在相同 depth、width 和计算代价下比较；其适用边界是 x 与 F 的维度须相等，维度变化时用投影 W_s 匹配，而实验显示 identity mapping 已足以应对 degradation，投影仅用于对齐维度 [E057][E058][E060]。\",\"sources\":[\"E057\",\"E058\",\"E060\"],\"claimKind\":\"source_fact\"},{\"text\":\"ImageNet 上 34-layer plain net 的训练与验证误差全程高于 18-layer plain net，说明 degradation 并非过拟合；加入 shortcut 后趋势反转，34-layer ResNet 比 18-layer 优约 2.8%，比 plain-34 降低 top-1 误差 3.5%，152-layer 单模型 top-5 验证误差 4.49%，ensemble 在 test set 达 3.57% [E085][E130][E137][E154][E173][E175]。\",\"sources\":[\"E085\",\"E130\",\"E137\",\"E154\",\"E173\",\"E175\"],\"claimKind\":\"observed_result\"},{\"text\":\"在检测任务上，以 ResNet-101 替换 VGG-16 且保持 Faster R-CNN 实现相同，COCO 的 mAP@[.5,.95] 提升 6.0%（相对 28%），作者将增益归于表征本身，并获 ImageNet detection、ImageNet localization、COCO detection、COCO segmentation 第一 [E248][E249]。\",\"sources\":[\"E248\",\"E249\"],\"claimKind\":\"observed_result\"},{\"text\":\"适用边界在于：CIFAR-10 上 1202-layer 网络训练误差已低于 0.1%，但测试误差 7.93%，劣于 110-layer，作者解读为该小数据集上的过拟合；plain net 的退化在 ImageNet 与 CIFAR-10 均出现，提示该优化困难不限于单一数据集 [E195][E237][E246]。\",\"sources\":[\"E195\",\"E237\",\"E246\"],\"claimKind\":\"inference\"}]}",
+  "usage": {
+    "promptTokens": 21189,
+    "completionTokens": 3960,
+    "totalTokens": 25149,
+    "promptCacheHitTokens": 640,
+    "promptCacheMissTokens": 20549
+  }
+}

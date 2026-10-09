@@ -1,0 +1,12 @@
+{
+  "index": 3,
+  "elapsedMs": 41797,
+  "content": "{\"status\":\"available\",\"text\":\"提出 promptable segmentation task：任意 segmentation prompt 返回有效 mask，兼作预训练/下游接口（E006）。相对 CLIP/ALIGN 的 paired text and images 范式，本文把 foundation model 目标移到 image segmentation（E002, E003）。SAM 分离 image encoder、prompt encoder、lightweight mask decoder，约 50ms 出 mask，歧义时输出多 mask（E007）。data engine 三阶段产出 SA-1B：11M 图像、1.1B masks，比既有 segmentation 数据集多 400×（E008, E009, E014）。23 个 segmentation 数据集单点提示接近人工 mask，并 zero-shot 迁移，但仍有改进空间（E011）。\",\"sources\":[\"E002\",\"E003\",\"E006\",\"E007\",\"E008\",\"E009\",\"E011\",\"E014\"],\"blocks\":[{\"text\":\"提出 promptable segmentation task：任意 segmentation prompt 返回有效 mask，兼作预训练/下游接口（E006）。\",\"sources\":[\"E006\"],\"claimKind\":\"author_claim\"},{\"text\":\"相对 CLIP/ALIGN 的 paired text and images 范式，本文把 foundation model 目标移到 image segmentation（E002, E003）。\",\"sources\":[\"E002\",\"E003\"],\"claimKind\":\"inference\"},{\"text\":\"SAM 分离 image encoder、prompt encoder、lightweight mask decoder，约 50ms 出 mask，歧义时输出多 mask（E007）。\",\"sources\":[\"E007\"],\"claimKind\":\"source_fact\"},{\"text\":\"data engine 三阶段产出 SA-1B：11M 图像、1.1B masks，比既有 segmentation 数据集多 400×（E008, E009, E014）。\",\"sources\":[\"E008\",\"E009\",\"E014\"],\"claimKind\":\"source_fact\"},{\"text\":\"23 个 segmentation 数据集单点提示接近人工 mask，并 zero-shot 迁移，但仍有改进空间（E011）。\",\"sources\":[\"E011\"],\"claimKind\":\"observed_result\"}]}",
+  "usage": {
+    "promptTokens": 3081,
+    "completionTokens": 10028,
+    "totalTokens": 13109,
+    "promptCacheHitTokens": 384,
+    "promptCacheMissTokens": 2697
+  }
+}

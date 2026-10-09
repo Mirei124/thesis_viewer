@@ -1,0 +1,133 @@
+{
+  "documents": [
+    {
+      "pdfPath": "/tmp/B090/SAM.pdf",
+      "totalChars": 166475,
+      "selectedChars": 60047,
+      "selectedParagraphs": 222,
+      "invalidMembers": 0,
+      "unrepresentedBlockCount": 0,
+      "appendices": [
+        "A. Segment Anything Model and Task Details",
+        "D. Experiment Implementation Details",
+        "D.1. Zero-Shot Single Point Valid Mask Evaluation",
+        "D.2. Zero-Shot Edge Detection",
+        "D.3. Zero-Shot Object Proposals",
+        "D.4. Zero-Shot Instance Segmentation",
+        "D.5. Zero-Shot Text-to-Mask",
+        "D.6. Probing the Latent Space of SAM"
+      ]
+    },
+    {
+      "pdfPath": "/tmp/B090/3DGS.pdf",
+      "totalChars": 78696,
+      "selectedChars": 45736,
+      "selectedParagraphs": 261,
+      "invalidMembers": 0,
+      "unrepresentedBlockCount": 0,
+      "appendices": [
+        "A DETAILS OF GRADIENT COMPUTATION",
+        "B OPTIMIZATION AND DENSIFICATION ALGORITHM",
+        "C DETAILS OF THE RASTERIZER",
+        "Algorithm 2 GPU software rasterization of 3D Gaussians"
+      ]
+    },
+    {
+      "pdfPath": "/tmp/B090/Transformer.pdf",
+      "totalChars": 38300,
+      "selectedChars": 24306,
+      "selectedParagraphs": 172,
+      "invalidMembers": 0,
+      "unrepresentedBlockCount": 0,
+      "appendices": []
+    },
+    {
+      "pdfPath": "/tmp/B090/Chinchilla.pdf",
+      "totalChars": 94270,
+      "selectedChars": 58670,
+      "selectedParagraphs": 448,
+      "invalidMembers": 0,
+      "unrepresentedBlockCount": 0,
+      "appendices": [
+        "A. Training dataset",
+        "B. Optimal cosine cycle length",
+        "C. Consistency of scaling results across datasets",
+        "D. Details on the scaling analyses",
+        "D.3. Predicted compute optimal frontier for all three methods",
+        "E. Curvature of the FLOP-loss frontier",
+        "F. FLOPs computation",
+        "G. Other differences between Chinchilla and Gopher",
+        "2.65 AdamW w/ High Precision",
+        "2.85 AdamW No High Precision",
+        "Model Details",
+        "Organization Developing the Model DeepMind",
+        "Model Date March 2022"
+      ]
+    },
+    {
+      "pdfPath": "/home/k/Documents/agent_ws/thesis_viewer/Video-MME.pdf",
+      "totalChars": 54215,
+      "selectedChars": 24556,
+      "selectedParagraphs": 108,
+      "invalidMembers": 0,
+      "unrepresentedBlockCount": 0,
+      "appendices": [
+        "7. Detailed Experimental Settings"
+      ]
+    },
+    {
+      "pdfPath": "/tmp/b084-2609.38426.pdf",
+      "totalChars": 110755,
+      "selectedChars": 47224,
+      "selectedParagraphs": 215,
+      "invalidMembers": 0,
+      "unrepresentedBlockCount": 0,
+      "appendices": [
+        "A Evaluation Settings and Scoring Methods",
+        "B Diagnostic Metrics and Sample Sources"
+      ]
+    },
+    {
+      "pdfPath": "/tmp/B094/ResNet.pdf",
+      "totalChars": 59491,
+      "selectedChars": 20002,
+      "selectedParagraphs": 103,
+      "invalidMembers": 0,
+      "unrepresentedBlockCount": 0,
+      "appendices": []
+    },
+    {
+      "pdfPath": "/tmp/B094/LoRA.pdf",
+      "totalChars": 83225,
+      "selectedChars": 31256,
+      "selectedParagraphs": 222,
+      "invalidMembers": 0,
+      "unrepresentedBlockCount": 0,
+      "appendices": [
+        "A LARGE LANGUAGE MODELS STILL NEED PARAMETER UPDATES",
+        "B INFERENCE LATENCY INTRODUCED BY ADAPTER LAYERS",
+        "E COMBINING L O RA WITH PREFIX TUNING"
+      ]
+    }
+  ],
+  "newSources": {
+    "ResNet": "https://arxiv.org/abs/1512.03385",
+    "LoRA": "https://arxiv.org/abs/2106.09685"
+  },
+  "checks": {
+    "memberAnchors": "All eight PDFs: zero invalid members and zero unrepresented reliable blocks",
+    "unitTests": 8
+  },
+  "fixedFindings": [
+    "Small-cap heading text now joins only geometry-confirmed smaller uppercase suffixes; LoRA References recognized without merging appendix labels into titles.",
+    "Post-References supplementary sections remain appendix regardless of interior title role.",
+    "Letter-numbered appendix subheadings retain parent hierarchy.",
+    "Survey questions and zero-valued plot labels no longer become headings."
+  ],
+  "remainingLimitations": [
+    "Figure plot labels occasionally look like numbered headings (ResNet 2 ResNet-56; Chinchilla 2.65 AdamW).",
+    "LoRA mixed-case acronyms remain spaced in displayed source text; original quotes preserved.",
+    "Selection is heuristic: exact relevant scope still requires human/semantic quality review.",
+    "Eight input replay samples do not constitute eight successful live model responses."
+  ]
+}

@@ -1,0 +1,273 @@
+{
+  "finalMethods": [
+    {
+      "paper": "3DGS",
+      "displayName": "3DGS",
+      "path": "docs/implementation/evaluations/B094/final-method-v17/3DGS",
+      "status": "available",
+      "characters": 3846,
+      "requests": 2,
+      "elapsedMs": 59991,
+      "usage": {
+        "promptTokens": 49301,
+        "completionTokens": 13650,
+        "totalTokens": 62951,
+        "promptCacheHitTokens": 24448,
+        "promptCacheMissTokens": 24853
+      },
+      "anchorValidation": {
+        "refCount": 53,
+        "evidenceIdCount": 560,
+        "uniqueEvidenceIds": 560,
+        "invalidEvidenceIds": []
+      },
+      "semanticReviewCount": 1,
+      "semanticReviewSkipped": 0,
+      "sourceHashes": {
+        "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+        "detailedContext": "c882f26739e8ba5c0261fa17915c5656d5e54a7e31646045251b012785a22b8c",
+        "detailedOverview": "ba362d0a0da519e20001c4a5083887fff7bf7f51ab097778e2745b04d03faf31",
+        "detailedOverviewPipeline": "188a7b0c3b1236eaf5e43a628e7a854d4ff47ce8497deadaaf7b1f30628696a7",
+        "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+      }
+    },
+    {
+      "paper": "Chinchilla",
+      "displayName": "Chinchilla",
+      "path": "docs/implementation/evaluations/B094/final-method-v17/Chinchilla",
+      "status": "available",
+      "characters": 4275,
+      "requests": 2,
+      "elapsedMs": 113094,
+      "usage": {
+        "promptTokens": 74918,
+        "completionTokens": 27060,
+        "totalTokens": 101978,
+        "promptCacheHitTokens": 72576,
+        "promptCacheMissTokens": 2342
+      },
+      "anchorValidation": {
+        "refCount": 66,
+        "evidenceIdCount": 773,
+        "uniqueEvidenceIds": 773,
+        "invalidEvidenceIds": []
+      },
+      "semanticReviewCount": 1,
+      "semanticReviewSkipped": 0,
+      "sourceHashes": {
+        "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+        "detailedContext": "c882f26739e8ba5c0261fa17915c5656d5e54a7e31646045251b012785a22b8c",
+        "detailedOverview": "ba362d0a0da519e20001c4a5083887fff7bf7f51ab097778e2745b04d03faf31",
+        "detailedOverviewPipeline": "0854d4d53d737a4697153391b43cd0b66bdef6b85a5c5b155b3d16c5eaf0104e",
+        "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+      }
+    },
+    {
+      "paper": "LoRA",
+      "displayName": "LoRA",
+      "path": "docs/implementation/evaluations/B094/final-method-v17/LoRA",
+      "status": "available",
+      "characters": 2851,
+      "requests": 2,
+      "elapsedMs": 84006,
+      "usage": {
+        "promptTokens": 58434,
+        "completionTokens": 19657,
+        "totalTokens": 78091,
+        "promptCacheHitTokens": 28928,
+        "promptCacheMissTokens": 29506
+      },
+      "anchorValidation": {
+        "refCount": 39,
+        "evidenceIdCount": 618,
+        "uniqueEvidenceIds": 618,
+        "invalidEvidenceIds": []
+      },
+      "semanticReviewCount": 1,
+      "semanticReviewSkipped": 0,
+      "sourceHashes": {
+        "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+        "detailedContext": "c882f26739e8ba5c0261fa17915c5656d5e54a7e31646045251b012785a22b8c",
+        "detailedOverview": "ba362d0a0da519e20001c4a5083887fff7bf7f51ab097778e2745b04d03faf31",
+        "detailedOverviewPipeline": "188a7b0c3b1236eaf5e43a628e7a854d4ff47ce8497deadaaf7b1f30628696a7",
+        "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+      }
+    },
+    {
+      "paper": "ResNet",
+      "displayName": "ResNet",
+      "path": "docs/implementation/evaluations/B094/final-method-v17/ResNet",
+      "status": "available",
+      "characters": 3898,
+      "requests": 2,
+      "elapsedMs": 55527,
+      "usage": {
+        "promptTokens": 43903,
+        "completionTokens": 13254,
+        "totalTokens": 57157,
+        "promptCacheHitTokens": 21632,
+        "promptCacheMissTokens": 22271
+      },
+      "anchorValidation": {
+        "refCount": 42,
+        "evidenceIdCount": 544,
+        "uniqueEvidenceIds": 544,
+        "invalidEvidenceIds": []
+      },
+      "semanticReviewCount": 1,
+      "semanticReviewSkipped": 0,
+      "sourceHashes": {
+        "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+        "detailedContext": "c882f26739e8ba5c0261fa17915c5656d5e54a7e31646045251b012785a22b8c",
+        "detailedOverview": "ba362d0a0da519e20001c4a5083887fff7bf7f51ab097778e2745b04d03faf31",
+        "detailedOverviewPipeline": "188a7b0c3b1236eaf5e43a628e7a854d4ff47ce8497deadaaf7b1f30628696a7",
+        "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+      }
+    },
+    {
+      "paper": "SAM",
+      "displayName": "SAM",
+      "path": "docs/implementation/evaluations/B094/final-method-v17/SAM",
+      "status": "available",
+      "characters": 3262,
+      "requests": 2,
+      "elapsedMs": 81059,
+      "usage": {
+        "promptTokens": 67397,
+        "completionTokens": 19677,
+        "totalTokens": 87074,
+        "promptCacheHitTokens": 65152,
+        "promptCacheMissTokens": 2245
+      },
+      "anchorValidation": {
+        "refCount": 34,
+        "evidenceIdCount": 564,
+        "uniqueEvidenceIds": 564,
+        "invalidEvidenceIds": []
+      },
+      "semanticReviewCount": 1,
+      "semanticReviewSkipped": 0,
+      "sourceHashes": {
+        "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+        "detailedContext": "c882f26739e8ba5c0261fa17915c5656d5e54a7e31646045251b012785a22b8c",
+        "detailedOverview": "ba362d0a0da519e20001c4a5083887fff7bf7f51ab097778e2745b04d03faf31",
+        "detailedOverviewPipeline": "0854d4d53d737a4697153391b43cd0b66bdef6b85a5c5b155b3d16c5eaf0104e",
+        "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+      }
+    },
+    {
+      "paper": "Transformer",
+      "displayName": "Transformer",
+      "path": "docs/implementation/evaluations/B094/final-method-v17/Transformer",
+      "status": "available",
+      "characters": 4231,
+      "requests": 2,
+      "elapsedMs": 79121,
+      "usage": {
+        "promptTokens": 33812,
+        "completionTokens": 19614,
+        "totalTokens": 53426,
+        "promptCacheHitTokens": 16512,
+        "promptCacheMissTokens": 17300
+      },
+      "anchorValidation": {
+        "refCount": 50,
+        "evidenceIdCount": 471,
+        "uniqueEvidenceIds": 471,
+        "invalidEvidenceIds": []
+      },
+      "semanticReviewCount": 1,
+      "semanticReviewSkipped": 0,
+      "sourceHashes": {
+        "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+        "detailedContext": "c882f26739e8ba5c0261fa17915c5656d5e54a7e31646045251b012785a22b8c",
+        "detailedOverview": "ba362d0a0da519e20001c4a5083887fff7bf7f51ab097778e2745b04d03faf31",
+        "detailedOverviewPipeline": "188a7b0c3b1236eaf5e43a628e7a854d4ff47ce8497deadaaf7b1f30628696a7",
+        "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+      }
+    },
+    {
+      "paper": "Video-MME",
+      "displayName": "Video-MME",
+      "path": "docs/implementation/evaluations/B094/final-method-v17/Video-MME",
+      "status": "available",
+      "characters": 2355,
+      "requests": 2,
+      "elapsedMs": 52678,
+      "usage": {
+        "promptTokens": 29248,
+        "completionTokens": 11745,
+        "totalTokens": 40993,
+        "promptCacheHitTokens": 14848,
+        "promptCacheMissTokens": 14400
+      },
+      "anchorValidation": {
+        "refCount": 26,
+        "evidenceIdCount": 354,
+        "uniqueEvidenceIds": 354,
+        "invalidEvidenceIds": []
+      },
+      "semanticReviewCount": 1,
+      "semanticReviewSkipped": 0,
+      "sourceHashes": {
+        "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+        "detailedContext": "c882f26739e8ba5c0261fa17915c5656d5e54a7e31646045251b012785a22b8c",
+        "detailedOverview": "ba362d0a0da519e20001c4a5083887fff7bf7f51ab097778e2745b04d03faf31",
+        "detailedOverviewPipeline": "188a7b0c3b1236eaf5e43a628e7a854d4ff47ce8497deadaaf7b1f30628696a7",
+        "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+      }
+    },
+    {
+      "paper": "b084-2609.38426",
+      "displayName": "LoopVL",
+      "path": "docs/implementation/evaluations/B094/final-method-v17/b084-2609.38426",
+      "status": "available",
+      "characters": 6377,
+      "requests": 2,
+      "elapsedMs": 127969,
+      "usage": {
+        "promptTokens": 72860,
+        "completionTokens": 32243,
+        "totalTokens": 105103,
+        "promptCacheHitTokens": 35712,
+        "promptCacheMissTokens": 37148
+      },
+      "anchorValidation": {
+        "refCount": 44,
+        "evidenceIdCount": 306,
+        "uniqueEvidenceIds": 306,
+        "invalidEvidenceIds": []
+      },
+      "semanticReviewCount": 1,
+      "semanticReviewSkipped": 0,
+      "sourceHashes": {
+        "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+        "detailedContext": "c882f26739e8ba5c0261fa17915c5656d5e54a7e31646045251b012785a22b8c",
+        "detailedOverview": "ba362d0a0da519e20001c4a5083887fff7bf7f51ab097778e2745b04d03faf31",
+        "detailedOverviewPipeline": "188a7b0c3b1236eaf5e43a628e7a854d4ff47ce8497deadaaf7b1f30628696a7",
+        "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+      }
+    }
+  ],
+  "totalRequestsStarted": 63,
+  "totalResponsesCompleted": 62,
+  "allAttemptsUsage": {
+    "promptTokens": 1352472,
+    "completionTokens": 351182,
+    "totalTokens": 1703654,
+    "promptCacheHitTokens": 306304,
+    "promptCacheMissTokens": 1046168
+  },
+  "failedInitialMethods": [
+    "failed-attempts/SAM",
+    "failed-attempts/Chinchilla"
+  ],
+  "notes": [
+    "Root paper directories preserve the initial five-section evaluation (v15).",
+    "final-method preserves the interrupted v16 refinement run.",
+    "final-method-v17 contains the final method generation and source review; the two initial invalid-JSON attempts are preserved separately.",
+    "Successful-path prompt and context are unchanged between final runs; runner hashes differ only for invalid-draft recovery and successful-review counting.",
+    "Evidence anchor validity does not establish semantic correctness.",
+    "Provider cost was not returned; no monetary amount is inferred."
+  ]
+}

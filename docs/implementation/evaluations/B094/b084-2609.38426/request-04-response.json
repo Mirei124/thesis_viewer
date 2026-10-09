@@ -1,0 +1,12 @@
+{
+  "index": 4,
+  "elapsedMs": 25641,
+  "content": "{\"status\":\"available\",\"text\":\"评测设置：主模型为 H2L3，执行顺序 LLLHLLLH，每模块 16 层，单次前向共 128 次 layer 调用，解码关闭 KV cache（E373）。主结果覆盖 16 个 benchmark family，使用 greedy decoding 与多数 32-token 预算（E162）；LoopVL-1B 训练 token 为 0.14T，比较模型为 3T–36T（E168）。其 MMStar 63.47、MMMU-Pro 38.67（E174, E173）。训练时 H/L 消融将 H1L1、H1L3、H2L1、H2L3 各自从初始化独立训练，unrolled layers 为 32/64/64/128，H2L3 在 MMStar、RealWorldQA、VMCBench、AI2D、ChartQA 五项最高；同为 64 次调用的 H1L3 与 H2L1 中后者五项全胜（E202, E204）。推理时 sweep 固定同一 H2L3 checkpoint、不重训：训练匹配配置五项最佳，H1L1–H1L3 读出近乎不可解析、分数近零（E213）；MMStar 由 H2L1 的 29.40、H2L2 的 51.33 升至 H2L3 的 63.47，而 H3L3、H4L3 执行 192、256 次调用却降到 58.20、24.00（E214, E215）。模块更新消融方面，Figure 3 在 LogicVista、RealWorldQA、VMCBench-DEV、MMStar 上比较四种 visual-state 条件，其中两种为仅推理控制、一种为单独训练变体，Normal 四项最高（E073, E084）。注意力与状态分析基于抽样子集而非全量 benchmark：曲线用 32 个样例、12 个 head（E375），state/output probe 用 VMCBench 与 AI2D 各 16 个样例（E377）；速度指标在原文中无实测条件，无法给出。\",\"sources\":[\"E162\",\"E168\",\"E173\",\"E174\",\"E202\",\"E204\",\"E213\",\"E214\",\"E215\",\"E073\",\"E084\",\"E373\",\"E375\",\"E377\"]}",
+  "usage": {
+    "promptTokens": 34510,
+    "completionTokens": 5988,
+    "totalTokens": 40498,
+    "promptCacheHitTokens": 640,
+    "promptCacheMissTokens": 33870
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "path": "/home/k/Documents/agent_ws/thesis_viewer/Video-MME.pdf",
+  "documentVersion": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2",
+  "config": {
+    "baseUrl": "https://api.deepseek.com/v1",
+    "model": "deepseek-flash",
+    "structuredOutput": true,
+    "contextLimit": 128000,
+    "outputLimit": 32000
+  },
+  "pageCount": 13,
+  "paragraphCount": 187,
+  "selections": [
+    {
+      "id": "problem_motivation",
+      "paragraphCount": 90,
+      "chars": 22446,
+      "estimatedTextTokens": 7629,
+      "sections": [
+        "Abstract",
+        "1. Introduction",
+        "2. Related Work",
+        "3. Video-MME",
+        "3.1. Dataset Construction",
+        "3.2. Dataset Statistics",
+        "6. Conclusion",
+        "Acknowledgments"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "method",
+      "paragraphCount": 108,
+      "chars": 24556,
+      "estimatedTextTokens": 8355,
+      "sections": [
+        "Abstract",
+        "1. Introduction",
+        "3. Video-MME",
+        "3.1. Dataset Construction",
+        "3.2. Dataset Statistics",
+        "4.1. Settings",
+        "Acknowledgments",
+        "7. Detailed Experimental Settings"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "contributions_novelty",
+      "paragraphCount": 118,
+      "chars": 31504,
+      "estimatedTextTokens": 10671,
+      "sections": [
+        "Abstract",
+        "1. Introduction",
+        "2. Related Work",
+        "3. Video-MME",
+        "3.1. Dataset Construction",
+        "3.2. Dataset Statistics",
+        "4. Experiments",
+        "4.1. Settings",
+        "4.2. Quantitative Results",
+        "4.3. Analysis",
+        "6. Conclusion",
+        "Acknowledgments"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "experiments_ablations",
+      "paragraphCount": 127,
+      "chars": 33217,
+      "estimatedTextTokens": 11259,
+      "sections": [
+        "Abstract",
+        "1. Introduction",
+        "3. Video-MME",
+        "3.1. Dataset Construction",
+        "3.2. Dataset Statistics",
+        "4. Experiments",
+        "4.1. Settings",
+        "4.2. Quantitative Results",
+        "4.3. Analysis",
+        "5. Discussions",
+        "Acknowledgments",
+        "7. Detailed Experimental Settings"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "limitations",
+      "paragraphCount": 119,
+      "chars": 31004,
+      "estimatedTextTokens": 10505,
+      "sections": [
+        "Abstract",
+        "1. Introduction",
+        "3. Video-MME",
+        "3.1. Dataset Construction",
+        "3.2. Dataset Statistics",
+        "4. Experiments",
+        "4.1. Settings",
+        "4.2. Quantitative Results",
+        "4.3. Analysis",
+        "5. Discussions",
+        "6. Conclusion",
+        "Acknowledgments"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    }
+  ]
+}

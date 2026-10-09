@@ -1,0 +1,12 @@
+{
+  "index": 1,
+  "elapsedMs": 6225,
+  "content": "{\"status\":\"available\",\"text\":\"本文的问题是在固定 FLOPs 预算下如何权衡模型规模与训练 token 数（E016, E018）。既有工作依 Kaplan et al. (2020) 的幂律，多沿 GPT-3 路线训练约 300 billion tokens，主要靠增大模型规模（E005, E028）。作者指出其不足：固定训练 token 数与 learning rate schedule 无法刻画超参数对 loss 的影响，中间 loss 高估、低估了用少于 130B tokens 训练的效果，导致模型规模应比数据增长更快的结论（E032, E034, E036）。由于训练成本高且通常只能训练一次，准确估计最优超参数十分关键（E003）。作者据 400 多个模型估计最优配置，认为二者应按相同比例扩展（E004, E021）。\",\"sources\":[\"E003\",\"E004\",\"E005\",\"E016\",\"E018\",\"E021\",\"E028\",\"E032\",\"E034\",\"E036\"]}",
+  "usage": {
+    "promptTokens": 15013,
+    "completionTokens": 1359,
+    "totalTokens": 16372,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 14501
+  }
+}

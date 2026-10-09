@@ -1,0 +1,12 @@
+{
+  "index": 3,
+  "elapsedMs": 17088,
+  "content": "{\"status\":\"available\",\"text\":\"LoRA 的核心交付是一种低秩适配方法：冻结预训练权重，在 Transformer 各层注入可训练的秩分解矩阵 A、B，以 ∆W = BA 编码适配增量；以 GPT-3 175B 为例，相较用 Adam 的全量微调，可训练参数量减少 10,000 倍、显存需求减少 3 倍。\\n\\n与 adapter 层不同，LoRA 的线性结构允许部署时把 BA 合并进 W0，按构造不引入额外推理延迟，并可通过替换 A、B 快速切换任务。\\n\\n文中限定其研究范围是下游任务中适配 attention 权重并冻结 MLP 模块，MLP、LayerNorm 与 bias 留待未来工作；作者也指出若把 A、B 合并进 W，同一 batch 内跨任务批处理并不直接。\\n\\n实验覆盖 RoBERTa base/large 与 DeBERTa XXL 的 GLUE、GPT-2 medium/large 的 E2E NLG Challenge，以及 GPT-3 175B 的 WikiSQL、MultiNLI-matched 与 SAMSum，LoRA 在这些设定下与全量微调持平或更优而可训练参数远少。\\n\\n论文另用基于 Grassmann distance 的归一化子空间相似度比较不同 rank 与随机种子得到的适配矩阵，观察到 top singular vector 方向显著重叠，支持 ∆W 具有很小的 intrinsic rank。\\n\\n据此可解读为：低 rank 有效性的证据来自 attention 权重上的 GPT-3 等实验，作者也提示小 r 未必适用于所有任务或数据集。\",\"sources\":[\"E002\",\"E024\",\"E028\",\"E075\",\"E090\",\"E099\",\"E101\",\"E107\",\"E109\",\"E125\",\"E137\",\"E167\",\"E188\",\"E232\",\"E242\",\"E260\",\"E263\"],\"blocks\":[{\"text\":\"LoRA 的核心交付是一种低秩适配方法：冻结预训练权重，在 Transformer 各层注入可训练的秩分解矩阵 A、B，以 ∆W = BA 编码适配增量；以 GPT-3 175B 为例，相较用 Adam 的全量微调，可训练参数量减少 10,000 倍、显存需求减少 3 倍。\",\"sources\":[\"E002\",\"E024\",\"E075\"],\"claimKind\":\"author_claim\"},{\"text\":\"与 adapter 层不同，LoRA 的线性结构允许部署时把 BA 合并进 W0，按构造不引入额外推理延迟，并可通过替换 A、B 快速切换任务。\",\"sources\":[\"E028\",\"E090\",\"E099\"],\"claimKind\":\"author_claim\"},{\"text\":\"文中限定其研究范围是下游任务中适配 attention 权重并冻结 MLP 模块，MLP、LayerNorm 与 bias 留待未来工作；作者也指出若把 A、B 合并进 W，同一 batch 内跨任务批处理并不直接。\",\"sources\":[\"E101\",\"E107\"],\"claimKind\":\"source_fact\"},{\"text\":\"实验覆盖 RoBERTa base/large 与 DeBERTa XXL 的 GLUE、GPT-2 medium/large 的 E2E NLG Challenge，以及 GPT-3 175B 的 WikiSQL、MultiNLI-matched 与 SAMSum，LoRA 在这些设定下与全量微调持平或更优而可训练参数远少。\",\"sources\":[\"E109\",\"E125\",\"E137\",\"E167\",\"E188\"],\"claimKind\":\"observed_result\"},{\"text\":\"论文另用基于 Grassmann distance 的归一化子空间相似度比较不同 rank 与随机种子得到的适配矩阵，观察到 top singular vector 方向显著重叠，支持 ∆W 具有很小的 intrinsic rank。\",\"sources\":[\"E242\",\"E260\",\"E263\"],\"claimKind\":\"observed_result\"},{\"text\":\"据此可解读为：低 rank 有效性的证据来自 attention 权重上的 GPT-3 等实验，作者也提示小 r 未必适用于所有任务或数据集。\",\"sources\":[\"E101\",\"E232\"],\"claimKind\":\"inference\"}]}",
+  "usage": {
+    "promptTokens": 29512,
+    "completionTokens": 3789,
+    "totalTokens": 33301,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 29000
+  }
+}

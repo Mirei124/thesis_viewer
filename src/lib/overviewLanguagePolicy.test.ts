@@ -36,7 +36,7 @@ describe('overview source-language terminology requests', () => {
     expect(JSON.parse(messages[1].content)).toMatchObject({ section, promptVersion: DETAILED_OVERVIEW_PROMPT_VERSION });
   });
 
-  it('retains one stable terminology policy across all six progressive turns and preserves their history', () => {
+  it('retains one stable terminology policy across all five progressive turns and preserves their history', () => {
     const session = createProgressiveEvidenceSession(ledger);
     let history: ReturnType<typeof progressiveDetailedSectionMessages> = [];
     let system = '';

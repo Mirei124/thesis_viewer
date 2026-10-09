@@ -1,0 +1,36 @@
+{
+  "paper": "Video-MME",
+  "arm": "A",
+  "model": "deepseek-flash",
+  "requestSha256": "89926a6905ab2377b171e2a11b377403c1efbfb5a8771177f2f00e70ab2af69e",
+  "requestChars": 9556,
+  "elapsedSeconds": 5.63,
+  "usage": {
+    "prompt_tokens": 2328,
+    "completion_tokens": 1180,
+    "total_tokens": 3508,
+    "prompt_tokens_details": {
+      "cached_tokens": 1152
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 858
+    },
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 1176
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"Video-MME 的构建从原始视频采集开始：作者先建立 domain hierarchy，从 YouTube 获取原始视频，划分 6 个 key domains（原文列举 Knowledge、Film & Television、Sports Competition、Life Record 与 Multilingual），每个 domain 再细分为具体 tags，共得到 30 个 finely-grained video categories，并按类别采集不同 duration 的视频（含 short 等）(E005)。采集完成后进入标注：招募具备较强英语能力与 vision-language learning 研究经验的标注者，要求其完整观看视频，再为每个视频迭代创建 3 个问题，每题配 4 个候选选项，最终形成 2,700 组 QA pairs，对应 900 个视频 (E006, E008)。随后进行人工复核：由另一名标注者逐项检查语言表达是否清晰准确、问题是否可回答、候选选项是否逻辑一致以及指定正确答案是否恰当 (E007)。通过复核的 QA 还需经筛查，将 text-only 问题输入 Gemini 1.5 Pro，过滤仅凭文本问题即可作答的 QA pair，以保证视频内容成为关键线索 (E007)。输出即用于评测的 multiple-choice QA 集合，其样例要求模型整合 video frames 的视觉信息与 auditory/subtitle 内容 (E002)，以考察 long-term contextual understanding 与复杂 spatial、temporal reasoning (E004)。\",\"sources\":[\"E005\",\"E006\",\"E007\",\"E008\",\"E002\",\"E004\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "Video-MME 的构建从原始视频采集开始：作者先建立 domain hierarchy，从 YouTube 获取原始视频，划分 6 个 key domains（原文列举 Knowledge、Film & Television、Sports Competition、Life Record 与 Multilingual），每个 domain 再细分为具体 tags，共得到 30 个 finely-grained video categories，并按类别采集不同 duration 的视频（含 short 等）(E005)。采集完成后进入标注：招募具备较强英语能力与 vision-language learning 研究经验的标注者，要求其完整观看视频，再为每个视频迭代创建 3 个问题，每题配 4 个候选选项，最终形成 2,700 组 QA pairs，对应 900 个视频 (E006, E008)。随后进行人工复核：由另一名标注者逐项检查语言表达是否清晰准确、问题是否可回答、候选选项是否逻辑一致以及指定正确答案是否恰当 (E007)。通过复核的 QA 还需经筛查，将 text-only 问题输入 Gemini 1.5 Pro，过滤仅凭文本问题即可作答的 QA pair，以保证视频内容成为关键线索 (E007)。输出即用于评测的 multiple-choice QA 集合，其样例要求模型整合 video frames 的视觉信息与 auditory/subtitle 内容 (E002)，以考察 long-term contextual understanding 与复杂 spatial、temporal reasoning (E004)。",
+    "sources": [
+      "E005",
+      "E006",
+      "E007",
+      "E008",
+      "E002",
+      "E004"
+    ]
+  },
+  "unknownAliases": []
+}

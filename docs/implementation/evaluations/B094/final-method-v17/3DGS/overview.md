@@ -1,0 +1,19 @@
+## method
+
+任务、输入与输出。论文处理的是静态场景多视角照片的新视角合成：输入是一组图像以及由 SfM 标定的对应相机，SfM 过程附带产生的稀疏点云被直接用来初始化 3D Gaussians，最终输出是一组无结构、显式的 3D Gaussians（E062, E068），在若干已发表数据集上可做到 1080p 分辨率的实时渲染（E057）。其方法由三部分组成：作为辐射场表示的各向异性 3D Gaussians、与 adaptive density control 交替进行的 3D Gaussian 属性优化、以及为 GPU 设计的快速可微渲染方案（E063, E064, E065）。与多数需要 MVS 数据的点基方法不同，本方法只用 SfM 点即可取得高质量结果；在 NeRF-synthetic 数据集上甚至可以从随机初始化开始（E062）。
+
+场景表示。每个 3D Gaussian 由中心（mean）μ、定义在世界空间的全 3D covariance matrix Σ 与不透明度 α 刻画，其在空间中的权重写作 G(x) = e^{−1/2 (x−μ)^T Σ^{−1} (x−μ)}（式 4）：指数中的二次型随位置 x 偏离中心 μ 而衰减，Σ 决定这个各向异性椭球的形状，α 则在 blending 过程中与该 Gaussian 相乘（E073, E076, E077）。选择 Gaussian 的理由是它既可微、又是无结构且显式的基元，可以投影成 2D splats 做快速 α-blending，从而同时具备可微体积表示与显式表示的优点（E070）。方向性的外观（颜色）由 spherical harmonics (SH) 系数表示，使每个 Gaussian 的颜色能够随视角变化（E068）。
+
+渲染时的投影。给定 viewing transformation W，相机坐标下的 covariance matrix 为 Σ' = J W Σ W^T J^T（式 5），其中 J 是投影变换仿射近似的 Jacobian，式中的 W、J 与 Σ 之间均为矩阵乘法（E082, E083）。去掉 Σ' 的第三行与第三列后得到 2×2 variance matrix，其结构与性质同从带法线的平面点出发所得一致（E084）。
+
+可优化参数化。直接对 Σ 做梯度下降无法保证其半正定，更新步很容易产生非法 covariance matrix（E085）。因此改用 Σ = R S S^T R^T（式 6）：3D Gaussian 的 covariance matrix 相当于描述一个椭球的构型，scaling matrix S 决定椭球各轴的长度与比例，rotation matrix R 决定其朝向；两者分别以 3D 向量 s 与四元数 q 存储以便独立优化，其中 q 在使用前需归一化为单位四元数（E086, E088, E089）。这种各向异性参数化使 Gaussian 能贴合被捕获场景中不同形状的几何，得到相当紧凑的表示（E091）。
+
+梯度。为避免训练时自动微分带来的显著开销，所有参数的梯度都被显式推导（E090）。推导经由 M = RS 与 Σ = M M^T 的分解，由于 covariance matrix 及其梯度都是对称的，链式法则中共享的前一段可以一次算出，再分别对 s 与 q 求导；四元数归一化部分的梯度为常规推导（E258, E262, E286）。
+
+优化流程、初始化与损失。优化由反复的渲染并与训练视图比较来驱动；由于 3D 到 2D 投影存在歧义，几何可能被放错位置，因此优化既需要创建几何，也需要销毁或移动放错的几何（E110）。参与优化的参数是位置 p、α、covariance Σ 以及表示颜色的 SH 系数 c；初始 covariance 取 isotropic Gaussian，其轴长等于到最近三个点距离的均值（E093, E113）。α 经 sigmoid 激活被约束在 [0−1) 区间以获得平滑梯度，covariance 的 scale 使用 exponential activation，位置则采用类似 Plenoxels 的 exponential decay scheduling（E112, E113）。损失为 L = (1−λ)L1 + λ L_D-SSIM，所有测试取 λ = 0.2（E114, E115）。Algorithm 1 给出的循环是：采样训练视图 V 与图像，经光栅化得到 I，计算损失后用 Adam 反向传播并更新位置、covariance、颜色与不透明度（E291, E292, E293, E294）。
+
+自适应密度控制。优化 warm-up 之后每 100 iterations 做一次 densify，同时剔除 α 低于阈值 ε_α 的近似透明 Gaussians（E118）。增密针对两类区域：欠重建与过重建，二者都表现出较大的 view-space positional gradients，因此把 view-space 位置梯度平均幅度超过 τ_pos = 0.0002 的 Gaussians 作为候选（E119, E120）。欠重建区域内的小 Gaussian 采用 clone：复制一个同尺寸副本并沿位置梯度方向移动，因而同时增大系统总体积与 Gaussian 数量（E121, E123）。过重建区域（高方差）的大 Gaussian 采用 split：替换为两个新 Gaussian，scale 除以实验确定的 φ = 1.6，新位置以原 3D Gaussian 作为 PDF 采样，从而保持总体积而增加数量（E122, E123）。为抑制靠近输入相机的 floaters 造成的密度虚增，每 N = 3000 iterations 把 α 置为接近零，再由优化只在需要处提升 α、由剔除去掉 α 小于 ε_α 者；同时周期性移除 worldspace 中过大或 viewspace footprint 过大的 Gaussians（E123, E134）。
+
+快速可微 rasterizer。目标是整体渲染与排序都快、支持各向异性 splats 的近似 α-blending，并且不设前作那种可接收梯度的 splat 数量的硬上限（E136）。流程为：把屏幕切成 16×16 tiles 并先做视锥体裁剪，只保留 99% 置信区间与视锥相交的 Gaussians，对均值贴近近平面、远在视锥之外的极端个体用 guard band 直接拒绝，因为其投影 2D covariance 不稳定（E138）。随后按每个 Gaussian 覆盖的 tile 数实例化，为每个实例分配由 view space depth 与 tile ID 组合的 key，用单次 GPU Radix sort 全局排序；由于不做额外的逐像素排序，blending 直接建立在这一初始排序之上，在某些配置下是近似的，但当 splat 接近单像素大小时这些近似可忽略（E140, E297）。排序后由同一 tile 内首末 depth-sorted entry 得到 per-tile 列表；光栅化时每个 tile 启动一个 thread block，协作把成批 Gaussians 载入 shared memory，逐像素 front-to-back 遍历列表累积颜色与 α，某像素达到 α 饱和即停止该线程，整 tile 所有像素饱和则整个 tile 终止（E141）。反向传播不限制参与梯度的 primitive 数量，因此需要恢复 forward 中每像素的完整混合序列：复用已排序的 Gaussian 数组与 tile 范围，改为 back-to-front 遍历，每个点只存 forward 结束时的累计 α，再在反向遍历中除以该点自身的 α，得到梯度计算所需的中间不透明度（E142, E143）。为数值稳定，forward 与 backward 都跳过 α < 1/255 的 blending 更新并把 α 从上方 clamp 到 0.99（E314）；forward 中还会先计算若把某 Gaussian 计入后的累计不透明度，在它可能超过 0.9999 之前停止 front-to-back blending（E316）。
+
+训练调度与实现。方法用 Python 与 PyTorch 实现，光栅化写成扩展前作的自定义 CUDA kernels，快速 Radix sort 使用 NVIDIA CUB 的排序例程，并以开源 SIBR 构建交互式 viewer 用于测量帧率（E169）。为稳定性，优化先做低分辨率 warm-up：从 4 倍下采样分辨率开始，在 250 与 500 iterations 后各上采样一次（E170）。SH 系数优化在角度信息缺失时可能给零阶分量（base 或 diffuse color）产生完全错误的值，因此先只优化 zero-order component，之后每 1000 iterations 引入一个 band，直到 4 bands 的 SH 全部出现（E171, E175）。训练完成后 renderer 支持对多种场景的实时导航（E105）。

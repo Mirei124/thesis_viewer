@@ -1,0 +1,1521 @@
+[
+  {
+    "pdfPath": "/tmp/B090/SAM.pdf",
+    "totalChars": 166475,
+    "selectedChars": 60047,
+    "selectedParagraphs": 222,
+    "invalidMembers": 0,
+    "unrepresentedBlockCount": 0,
+    "selectedSections": [
+      {
+        "title": "Abstract",
+        "role": "unknown",
+        "startPage": 1,
+        "endPage": 1
+      },
+      {
+        "title": "1. Introduction",
+        "role": "intro",
+        "startPage": 1,
+        "endPage": 3
+      },
+      {
+        "title": "2. Segment Anything Task",
+        "role": "method",
+        "startPage": 4,
+        "endPage": 5
+      },
+      {
+        "title": "3. Segment Anything Model",
+        "role": "method",
+        "startPage": 5,
+        "endPage": 5
+      },
+      {
+        "title": "4. Segment Anything Data Engine",
+        "role": "method",
+        "startPage": 5,
+        "endPage": 6
+      },
+      {
+        "title": "5. Segment Anything Dataset",
+        "role": "unknown",
+        "startPage": 6,
+        "endPage": 7
+      },
+      {
+        "title": "6. Segment Anything RAI Analysis",
+        "role": "unknown",
+        "startPage": 7,
+        "endPage": 8
+      },
+      {
+        "title": "A. Segment Anything Model and Task Details",
+        "role": "appendix",
+        "startPage": 16,
+        "endPage": 18
+      },
+      {
+        "title": "D. Experiment Implementation Details",
+        "role": "appendix",
+        "startPage": 19,
+        "endPage": 23
+      },
+      {
+        "title": "D.1. Zero-Shot Single Point Valid Mask Evaluation",
+        "role": "appendix",
+        "startPage": 19,
+        "endPage": 21
+      },
+      {
+        "title": "D.2. Zero-Shot Edge Detection",
+        "role": "appendix",
+        "startPage": 21,
+        "endPage": 21
+      },
+      {
+        "title": "D.3. Zero-Shot Object Proposals",
+        "role": "appendix",
+        "startPage": 21,
+        "endPage": 22
+      },
+      {
+        "title": "D.4. Zero-Shot Instance Segmentation",
+        "role": "appendix",
+        "startPage": 22,
+        "endPage": 22
+      },
+      {
+        "title": "D.5. Zero-Shot Text-to-Mask",
+        "role": "appendix",
+        "startPage": 22,
+        "endPage": 22
+      },
+      {
+        "title": "D.6. Probing the Latent Space of SAM",
+        "role": "appendix",
+        "startPage": 22,
+        "endPage": 23
+      }
+    ],
+    "excludedSections": [
+      {
+        "title": "Front matter",
+        "role": "unknown",
+        "startPage": 1,
+        "endPage": 30
+      },
+      {
+        "title": "7. Zero-Shot Transfer Experiments",
+        "role": "experiments",
+        "startPage": 8,
+        "endPage": 12
+      },
+      {
+        "title": "7.1. Zero-Shot Single Point Valid Mask Evaluation",
+        "role": "experiments",
+        "startPage": 8,
+        "endPage": 10
+      },
+      {
+        "title": "7.2. Zero-Shot Edge Detection",
+        "role": "experiments",
+        "startPage": 10,
+        "endPage": 10
+      },
+      {
+        "title": "7.3. Zero-Shot Object Proposals",
+        "role": "experiments",
+        "startPage": 10,
+        "endPage": 10
+      },
+      {
+        "title": "7.4. Zero-Shot Instance Segmentation",
+        "role": "experiments",
+        "startPage": 10,
+        "endPage": 11
+      },
+      {
+        "title": "7.5. Zero-Shot Text-to-Mask",
+        "role": "experiments",
+        "startPage": 11,
+        "endPage": 11
+      },
+      {
+        "title": "7.6. Ablations",
+        "role": "experiments",
+        "startPage": 11,
+        "endPage": 12
+      },
+      {
+        "title": "8. Discussion",
+        "role": "limitations",
+        "startPage": 12,
+        "endPage": 12
+      },
+      {
+        "title": "References",
+        "role": "references",
+        "startPage": 13,
+        "endPage": 15
+      },
+      {
+        "title": "Appendix",
+        "role": "appendix",
+        "startPage": 16,
+        "endPage": 16
+      },
+      {
+        "title": "B. Automatic Mask Generation Details",
+        "role": "appendix",
+        "startPage": 18,
+        "endPage": 18
+      },
+      {
+        "title": "C. RAI Additional Details",
+        "role": "appendix",
+        "startPage": 18,
+        "endPage": 19
+      },
+      {
+        "title": "E. Human Study Experimental Design",
+        "role": "appendix",
+        "startPage": 23,
+        "endPage": 24
+      },
+      {
+        "title": "F. Dataset, Annotation, and Model Cards",
+        "role": "appendix",
+        "startPage": 25,
+        "endPage": 29
+      },
+      {
+        "title": "F.2. Data Annotation Card",
+        "role": "appendix",
+        "startPage": 27,
+        "endPage": 29
+      },
+      {
+        "title": "Task Judging Mask Quality (1 of 3)",
+        "role": "appendix",
+        "startPage": 29,
+        "endPage": 29
+      },
+      {
+        "title": "G. Annotation Guidelines",
+        "role": "appendix",
+        "startPage": 29,
+        "endPage": 30
+      }
+    ],
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+      "Unknown section titles were conservatively included; section roles require source review."
+    ]
+  },
+  {
+    "pdfPath": "/tmp/B090/3DGS.pdf",
+    "totalChars": 78696,
+    "selectedChars": 45736,
+    "selectedParagraphs": 261,
+    "invalidMembers": 0,
+    "unrepresentedBlockCount": 0,
+    "selectedSections": [
+      {
+        "title": "1 INTRODUCTION",
+        "role": "intro",
+        "startPage": 1,
+        "endPage": 2
+      },
+      {
+        "title": "3 OVERVIEW",
+        "role": "method",
+        "startPage": 4,
+        "endPage": 4
+      },
+      {
+        "title": "4 DIFFERENTIABLE 3D GAUSSIAN SPLATTING",
+        "role": "method",
+        "startPage": 4,
+        "endPage": 4
+      },
+      {
+        "title": "5 OPTIMIZATION WITH ADAPTIVE DENSITY",
+        "role": "method",
+        "startPage": 4,
+        "endPage": 6
+      },
+      {
+        "title": "5.1 Optimization",
+        "role": "method",
+        "startPage": 5,
+        "endPage": 5
+      },
+      {
+        "title": "5.2 Adaptive Control of Gaussians",
+        "role": "method",
+        "startPage": 5,
+        "endPage": 6
+      },
+      {
+        "title": "6 FAST DIFFERENTIABLE RASTERIZER FOR GAUSSIANS",
+        "role": "method",
+        "startPage": 6,
+        "endPage": 6
+      },
+      {
+        "title": "7 IMPLEMENTATION, RESULTS AND EVALUATION",
+        "role": "method",
+        "startPage": 6,
+        "endPage": 11
+      },
+      {
+        "title": "7.1 Implementation",
+        "role": "method",
+        "startPage": 8,
+        "endPage": 8
+      },
+      {
+        "title": "7.2 Results and Evaluation",
+        "role": "experiments",
+        "startPage": 8,
+        "endPage": 9
+      },
+      {
+        "title": "7.3 Ablations",
+        "role": "experiments",
+        "startPage": 9,
+        "endPage": 10
+      },
+      {
+        "title": "7.4 Limitations",
+        "role": "limitations",
+        "startPage": 10,
+        "endPage": 11
+      },
+      {
+        "title": "ACKNOWLEDGMENTS",
+        "role": "unknown",
+        "startPage": 11,
+        "endPage": 12
+      },
+      {
+        "title": "A DETAILS OF GRADIENT COMPUTATION",
+        "role": "appendix",
+        "startPage": 13,
+        "endPage": 13
+      },
+      {
+        "title": "B OPTIMIZATION AND DENSIFICATION ALGORITHM",
+        "role": "appendix",
+        "startPage": 13,
+        "endPage": 13
+      },
+      {
+        "title": "C DETAILS OF THE RASTERIZER",
+        "role": "appendix",
+        "startPage": 13,
+        "endPage": 14
+      },
+      {
+        "title": "Algorithm 2 GPU software rasterization of 3D Gaussians",
+        "role": "appendix",
+        "startPage": 14,
+        "endPage": 14
+      }
+    ],
+    "excludedSections": [
+      {
+        "title": "Front matter",
+        "role": "unknown",
+        "startPage": 1,
+        "endPage": 14
+      },
+      {
+        "title": "2 RELATED WORK",
+        "role": "related",
+        "startPage": 2,
+        "endPage": 4
+      },
+      {
+        "title": "2.1 Traditional Scene Reconstruction and Rendering",
+        "role": "related",
+        "startPage": 2,
+        "endPage": 2
+      },
+      {
+        "title": "2.2 Neural Rendering and Radiance Fields",
+        "role": "related",
+        "startPage": 2,
+        "endPage": 3
+      },
+      {
+        "title": "2.3 Point-Based Rendering and Radiance Fields",
+        "role": "related",
+        "startPage": 3,
+        "endPage": 4
+      },
+      {
+        "title": "8 DISCUSSION AND CONCLUSIONS",
+        "role": "limitations",
+        "startPage": 11,
+        "endPage": 11
+      },
+      {
+        "title": "REFERENCES",
+        "role": "references",
+        "startPage": 12,
+        "endPage": 13
+      },
+      {
+        "title": "D PER-SCENE ERROR METRICS",
+        "role": "appendix",
+        "startPage": 14,
+        "endPage": 14
+      }
+    ],
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Unknown section titles were conservatively included; section roles require source review."
+    ]
+  },
+  {
+    "pdfPath": "/tmp/B090/Transformer.pdf",
+    "totalChars": 38300,
+    "selectedChars": 24306,
+    "selectedParagraphs": 172,
+    "invalidMembers": 0,
+    "unrepresentedBlockCount": 0,
+    "selectedSections": [
+      {
+        "title": "Abstract",
+        "role": "unknown",
+        "startPage": 1,
+        "endPage": 1
+      },
+      {
+        "title": "1 Introduction",
+        "role": "intro",
+        "startPage": 2,
+        "endPage": 2
+      },
+      {
+        "title": "2 Background",
+        "role": "intro",
+        "startPage": 2,
+        "endPage": 2
+      },
+      {
+        "title": "3 Model Architecture",
+        "role": "method",
+        "startPage": 2,
+        "endPage": 6
+      },
+      {
+        "title": "3.1 Encoder and Decoder Stacks",
+        "role": "method",
+        "startPage": 3,
+        "endPage": 3
+      },
+      {
+        "title": "3.2 Attention",
+        "role": "method",
+        "startPage": 3,
+        "endPage": 5
+      },
+      {
+        "title": "3.2.1 Scaled Dot-Product Attention",
+        "role": "method",
+        "startPage": 4,
+        "endPage": 4
+      },
+      {
+        "title": "3.2.2 Multi-Head Attention",
+        "role": "method",
+        "startPage": 4,
+        "endPage": 5
+      },
+      {
+        "title": "3.2.3 Applications of Attention in our Model",
+        "role": "method",
+        "startPage": 5,
+        "endPage": 5
+      },
+      {
+        "title": "3.3 Position-wise Feed-Forward Networks",
+        "role": "method",
+        "startPage": 5,
+        "endPage": 5
+      },
+      {
+        "title": "3.4 Embeddings and Softmax",
+        "role": "method",
+        "startPage": 5,
+        "endPage": 6
+      },
+      {
+        "title": "3.5 Positional Encoding",
+        "role": "method",
+        "startPage": 6,
+        "endPage": 6
+      },
+      {
+        "title": "4 Why Self-Attention",
+        "role": "method",
+        "startPage": 6,
+        "endPage": 7
+      },
+      {
+        "title": "5 Training",
+        "role": "method",
+        "startPage": 7,
+        "endPage": 8
+      },
+      {
+        "title": "5.1 Training Data and Batching",
+        "role": "method",
+        "startPage": 7,
+        "endPage": 7
+      },
+      {
+        "title": "5.2 Hardware and Schedule",
+        "role": "method",
+        "startPage": 7,
+        "endPage": 7
+      },
+      {
+        "title": "5.3 Optimizer",
+        "role": "method",
+        "startPage": 7,
+        "endPage": 7
+      },
+      {
+        "title": "5.4 Regularization",
+        "role": "method",
+        "startPage": 7,
+        "endPage": 8
+      },
+      {
+        "title": "6.2 Model Variations",
+        "role": "method",
+        "startPage": 8,
+        "endPage": 9
+      }
+    ],
+    "excludedSections": [
+      {
+        "title": "Front matter",
+        "role": "unknown",
+        "startPage": 1,
+        "endPage": 15
+      },
+      {
+        "title": "6 Results",
+        "role": "experiments",
+        "startPage": 8,
+        "endPage": 10
+      },
+      {
+        "title": "6.1 Machine Translation",
+        "role": "experiments",
+        "startPage": 8,
+        "endPage": 8
+      },
+      {
+        "title": "6.3 English Constituency Parsing",
+        "role": "experiments",
+        "startPage": 9,
+        "endPage": 10
+      },
+      {
+        "title": "7 Conclusion",
+        "role": "conclusion",
+        "startPage": 10,
+        "endPage": 10
+      },
+      {
+        "title": "References",
+        "role": "references",
+        "startPage": 10,
+        "endPage": 12
+      },
+      {
+        "title": "Input-Input Layer5 Attention Visualizations",
+        "role": "appendix",
+        "startPage": 13,
+        "endPage": 15
+      }
+    ],
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+      "Unknown section titles were conservatively included; section roles require source review."
+    ]
+  },
+  {
+    "pdfPath": "/tmp/B090/Chinchilla.pdf",
+    "totalChars": 94270,
+    "selectedChars": 58670,
+    "selectedParagraphs": 448,
+    "invalidMembers": 0,
+    "unrepresentedBlockCount": 0,
+    "selectedSections": [
+      {
+        "title": "1. Introduction",
+        "role": "intro",
+        "startPage": 1,
+        "endPage": 3
+      },
+      {
+        "title": "3. Estimating the optimal parameter/training tokens allocation",
+        "role": "method",
+        "startPage": 4,
+        "endPage": 8
+      },
+      {
+        "title": "3.1. Approach 1: Fix model sizes and vary number of training tokens",
+        "role": "method",
+        "startPage": 5,
+        "endPage": 5
+      },
+      {
+        "title": "3.2. Approach 2: IsoFLOP profiles",
+        "role": "method",
+        "startPage": 5,
+        "endPage": 6
+      },
+      {
+        "title": "3.3. Approach 3: Fitting a parametric loss function",
+        "role": "method",
+        "startPage": 6,
+        "endPage": 7
+      },
+      {
+        "title": "3.4. Optimal model scaling",
+        "role": "method",
+        "startPage": 7,
+        "endPage": 8
+      },
+      {
+        "title": "4. Chinchilla",
+        "role": "unknown",
+        "startPage": 9,
+        "endPage": 15
+      },
+      {
+        "title": "4.1. Model and training details",
+        "role": "method",
+        "startPage": 9,
+        "endPage": 10
+      },
+      {
+        "title": "4.2. Results",
+        "role": "experiments",
+        "startPage": 10,
+        "endPage": 15
+      },
+      {
+        "title": "4.2.1. Language modelling",
+        "role": "experiments",
+        "startPage": 10,
+        "endPage": 11
+      },
+      {
+        "title": "4.2.2. MMLU",
+        "role": "experiments",
+        "startPage": 11,
+        "endPage": 11
+      },
+      {
+        "title": "4.2.3. Reading comprehension",
+        "role": "experiments",
+        "startPage": 11,
+        "endPage": 11
+      },
+      {
+        "title": "4.2.4. BIG-bench",
+        "role": "experiments",
+        "startPage": 11,
+        "endPage": 12
+      },
+      {
+        "title": "4.2.5. Common sense",
+        "role": "experiments",
+        "startPage": 12,
+        "endPage": 13
+      },
+      {
+        "title": "4.2.6. Closed-book question answering",
+        "role": "experiments",
+        "startPage": 13,
+        "endPage": 13
+      },
+      {
+        "title": "4.2.7. Gender bias and toxicity",
+        "role": "experiments",
+        "startPage": 13,
+        "endPage": 15
+      },
+      {
+        "title": "6. Acknowledgements",
+        "role": "unknown",
+        "startPage": 16,
+        "endPage": 16
+      },
+      {
+        "title": "A. Training dataset",
+        "role": "appendix",
+        "startPage": 22,
+        "endPage": 22
+      },
+      {
+        "title": "B. Optimal cosine cycle length",
+        "role": "appendix",
+        "startPage": 22,
+        "endPage": 22
+      },
+      {
+        "title": "C. Consistency of scaling results across datasets",
+        "role": "appendix",
+        "startPage": 22,
+        "endPage": 24
+      },
+      {
+        "title": "D. Details on the scaling analyses",
+        "role": "appendix",
+        "startPage": 24,
+        "endPage": 27
+      },
+      {
+        "title": "D.3. Predicted compute optimal frontier for all three methods",
+        "role": "appendix",
+        "startPage": 26,
+        "endPage": 27
+      },
+      {
+        "title": "E. Curvature of the FLOP-loss frontier",
+        "role": "appendix",
+        "startPage": 27,
+        "endPage": 27
+      },
+      {
+        "title": "F. FLOPs computation",
+        "role": "appendix",
+        "startPage": 27,
+        "endPage": 28
+      },
+      {
+        "title": "G. Other differences between Chinchilla and Gopher",
+        "role": "appendix",
+        "startPage": 29,
+        "endPage": 29
+      },
+      {
+        "title": "2.65 AdamW w/ High Precision",
+        "role": "appendix",
+        "startPage": 29,
+        "endPage": 29
+      },
+      {
+        "title": "2.85 AdamW No High Precision",
+        "role": "appendix",
+        "startPage": 29,
+        "endPage": 29
+      },
+      {
+        "title": "Model Details",
+        "role": "appendix",
+        "startPage": 31,
+        "endPage": 31
+      },
+      {
+        "title": "Organization Developing the Model DeepMind",
+        "role": "appendix",
+        "startPage": 31,
+        "endPage": 31
+      },
+      {
+        "title": "Model Date March 2022",
+        "role": "appendix",
+        "startPage": 31,
+        "endPage": 34
+      }
+    ],
+    "excludedSections": [
+      {
+        "title": "Front matter",
+        "role": "unknown",
+        "startPage": 1,
+        "endPage": 36
+      },
+      {
+        "title": "2. Related Work",
+        "role": "related",
+        "startPage": 3,
+        "endPage": 4
+      },
+      {
+        "title": "5. Discussion & Conclusion",
+        "role": "limitations",
+        "startPage": 15,
+        "endPage": 16
+      },
+      {
+        "title": "References",
+        "role": "references",
+        "startPage": 16,
+        "endPage": 21
+      },
+      {
+        "title": "Appendix",
+        "role": "appendix",
+        "startPage": 22,
+        "endPage": 22
+      },
+      {
+        "title": "H. Results",
+        "role": "appendix",
+        "startPage": 29,
+        "endPage": 30
+      },
+      {
+        "title": "H.1. The Pile",
+        "role": "appendix",
+        "startPage": 29,
+        "endPage": 30
+      },
+      {
+        "title": "H.2. MMLU",
+        "role": "appendix",
+        "startPage": 30,
+        "endPage": 30
+      },
+      {
+        "title": "H.3. Winogender Setup",
+        "role": "appendix",
+        "startPage": 30,
+        "endPage": 30
+      },
+      {
+        "title": "H.4. BIG-bench",
+        "role": "appendix",
+        "startPage": 30,
+        "endPage": 30
+      },
+      {
+        "title": "I. Model Card",
+        "role": "appendix",
+        "startPage": 30,
+        "endPage": 31
+      },
+      {
+        "title": "J. List of trained models",
+        "role": "appendix",
+        "startPage": 34,
+        "endPage": 36
+      }
+    ],
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Unknown section titles were conservatively included; section roles require source review."
+    ]
+  },
+  {
+    "pdfPath": "/home/k/Documents/agent_ws/thesis_viewer/Video-MME.pdf",
+    "totalChars": 54215,
+    "selectedChars": 24556,
+    "selectedParagraphs": 108,
+    "invalidMembers": 0,
+    "unrepresentedBlockCount": 0,
+    "selectedSections": [
+      {
+        "title": "Abstract",
+        "role": "unknown",
+        "startPage": 1,
+        "endPage": 1
+      },
+      {
+        "title": "1. Introduction",
+        "role": "intro",
+        "startPage": 1,
+        "endPage": 3
+      },
+      {
+        "title": "3. Video-MME",
+        "role": "unknown",
+        "startPage": 4,
+        "endPage": 6
+      },
+      {
+        "title": "3.1. Dataset Construction",
+        "role": "method",
+        "startPage": 4,
+        "endPage": 4
+      },
+      {
+        "title": "3.2. Dataset Statistics",
+        "role": "unknown",
+        "startPage": 4,
+        "endPage": 6
+      },
+      {
+        "title": "4.1. Settings",
+        "role": "method",
+        "startPage": 6,
+        "endPage": 7
+      },
+      {
+        "title": "Acknowledgments",
+        "role": "unknown",
+        "startPage": 8,
+        "endPage": 9
+      },
+      {
+        "title": "7. Detailed Experimental Settings",
+        "role": "appendix",
+        "startPage": 12,
+        "endPage": 12
+      }
+    ],
+    "excludedSections": [
+      {
+        "title": "Front matter",
+        "role": "unknown",
+        "startPage": 1,
+        "endPage": 13
+      },
+      {
+        "title": "2. Related Work",
+        "role": "related",
+        "startPage": 3,
+        "endPage": 3
+      },
+      {
+        "title": "4. Experiments",
+        "role": "experiments",
+        "startPage": 6,
+        "endPage": 8
+      },
+      {
+        "title": "4.2. Quantitative Results",
+        "role": "experiments",
+        "startPage": 7,
+        "endPage": 7
+      },
+      {
+        "title": "4.3. Analysis",
+        "role": "experiments",
+        "startPage": 7,
+        "endPage": 8
+      },
+      {
+        "title": "5. Discussions",
+        "role": "limitations",
+        "startPage": 8,
+        "endPage": 8
+      },
+      {
+        "title": "6. Conclusion",
+        "role": "conclusion",
+        "startPage": 8,
+        "endPage": 8
+      },
+      {
+        "title": "References",
+        "role": "references",
+        "startPage": 9,
+        "endPage": 11
+      },
+      {
+        "title": "Video-MME: The First-Ever Comprehensive Evaluation Benchmark",
+        "role": "appendix",
+        "startPage": 12,
+        "endPage": 12
+      },
+      {
+        "title": "8. Additional Analysis",
+        "role": "appendix",
+        "startPage": 12,
+        "endPage": 13
+      }
+    ],
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Unknown section titles were conservatively included; section roles require source review."
+    ]
+  },
+  {
+    "pdfPath": "/tmp/b084-2609.38426.pdf",
+    "totalChars": 110755,
+    "selectedChars": 47224,
+    "selectedParagraphs": 215,
+    "invalidMembers": 0,
+    "unrepresentedBlockCount": 0,
+    "selectedSections": [
+      {
+        "title": "Abstract",
+        "role": "unknown",
+        "startPage": 1,
+        "endPage": 2
+      },
+      {
+        "title": "1 Introduction",
+        "role": "intro",
+        "startPage": 3,
+        "endPage": 4
+      },
+      {
+        "title": "2 The LoopVL Model",
+        "role": "method",
+        "startPage": 4,
+        "endPage": 7
+      },
+      {
+        "title": "2.1 Architecture",
+        "role": "method",
+        "startPage": 4,
+        "endPage": 5
+      },
+      {
+        "title": "2.2 Motivation",
+        "role": "intro",
+        "startPage": 5,
+        "endPage": 7
+      },
+      {
+        "title": "3 Pre-Training",
+        "role": "method",
+        "startPage": 7,
+        "endPage": 7
+      },
+      {
+        "title": "Training Data Composition Across Stages",
+        "role": "method",
+        "startPage": 7,
+        "endPage": 9
+      },
+      {
+        "title": "3.1 Initialization",
+        "role": "method",
+        "startPage": 8,
+        "endPage": 8
+      },
+      {
+        "title": "3.2 Learning Schedule",
+        "role": "method",
+        "startPage": 8,
+        "endPage": 8
+      },
+      {
+        "title": "3.3 Stage 1: Visual Language Alignment",
+        "role": "method",
+        "startPage": 8,
+        "endPage": 8
+      },
+      {
+        "title": "3.4 Stage 2: Multimodal Mid-Training",
+        "role": "method",
+        "startPage": 8,
+        "endPage": 9
+      },
+      {
+        "title": "4 Post-Training",
+        "role": "method",
+        "startPage": 9,
+        "endPage": 10
+      },
+      {
+        "title": "4.1 Supervised Fine-Tuning",
+        "role": "method",
+        "startPage": 9,
+        "endPage": 10
+      },
+      {
+        "title": "4.2 Visual Reinforcement Learning",
+        "role": "method",
+        "startPage": 10,
+        "endPage": 10
+      },
+      {
+        "title": "5.6 Visual Attention Allocation",
+        "role": "method",
+        "startPage": 16,
+        "endPage": 17
+      },
+      {
+        "title": "6.5 Training Regimes and Compute Accounting",
+        "role": "method",
+        "startPage": 22,
+        "endPage": 23
+      },
+      {
+        "title": "7 Future Work",
+        "role": "unknown",
+        "startPage": 23,
+        "endPage": 24
+      },
+      {
+        "title": "9 Acknowledgments",
+        "role": "unknown",
+        "startPage": 24,
+        "endPage": 24
+      },
+      {
+        "title": "A Evaluation Settings and Scoring Methods",
+        "role": "appendix",
+        "startPage": 29,
+        "endPage": 29
+      },
+      {
+        "title": "B Diagnostic Metrics and Sample Sources",
+        "role": "appendix",
+        "startPage": 29,
+        "endPage": 29
+      }
+    ],
+    "excludedSections": [
+      {
+        "title": "Front matter",
+        "role": "unknown",
+        "startPage": 1,
+        "endPage": 32
+      },
+      {
+        "title": "5 Evaluation",
+        "role": "experiments",
+        "startPage": 10,
+        "endPage": 19
+      },
+      {
+        "title": "5.1 Results",
+        "role": "experiments",
+        "startPage": 10,
+        "endPage": 11
+      },
+      {
+        "title": "5.2 Ablations",
+        "role": "experiments",
+        "startPage": 12,
+        "endPage": 12
+      },
+      {
+        "title": "5.3 Loop Depth",
+        "role": "experiments",
+        "startPage": 12,
+        "endPage": 13
+      },
+      {
+        "title": "5.4 Visual Aha Moment",
+        "role": "experiments",
+        "startPage": 13,
+        "endPage": 14
+      },
+      {
+        "title": "5.5 Cross-Loop Token Relevance",
+        "role": "experiments",
+        "startPage": 15,
+        "endPage": 16
+      },
+      {
+        "title": "5.7 State Refinement and Prediction Formation",
+        "role": "experiments",
+        "startPage": 17,
+        "endPage": 19
+      },
+      {
+        "title": "6 Related Work",
+        "role": "related",
+        "startPage": 19,
+        "endPage": 23
+      },
+      {
+        "title": "6.1 Looped Transformers",
+        "role": "related",
+        "startPage": 19,
+        "endPage": 20
+      },
+      {
+        "title": "6.2 Hierarchical and Nested Recurrence",
+        "role": "related",
+        "startPage": 20,
+        "endPage": 20
+      },
+      {
+        "title": "6.3 Visual–Language Interfaces and Spatial Structure",
+        "role": "related",
+        "startPage": 20,
+        "endPage": 21
+      },
+      {
+        "title": "6.4 Interpreting Recurrent Computation",
+        "role": "related",
+        "startPage": 21,
+        "endPage": 22
+      },
+      {
+        "title": "6.6 Iterative Reasoning and Generalization",
+        "role": "related",
+        "startPage": 23,
+        "endPage": 23
+      },
+      {
+        "title": "8 Conclusion",
+        "role": "conclusion",
+        "startPage": 24,
+        "endPage": 24
+      },
+      {
+        "title": "References",
+        "role": "references",
+        "startPage": 24,
+        "endPage": 28
+      },
+      {
+        "title": "C Additional Visual Reallocation Examples",
+        "role": "appendix",
+        "startPage": 30,
+        "endPage": 32
+      }
+    ],
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Unknown section titles were conservatively included; section roles require source review."
+    ]
+  },
+  {
+    "pdfPath": "/tmp/B094/ResNet.pdf",
+    "totalChars": 59491,
+    "selectedChars": 20002,
+    "selectedParagraphs": 103,
+    "invalidMembers": 0,
+    "unrepresentedBlockCount": 0,
+    "selectedSections": [
+      {
+        "title": "Abstract",
+        "role": "unknown",
+        "startPage": 1,
+        "endPage": 1
+      },
+      {
+        "title": "1. Introduction",
+        "role": "intro",
+        "startPage": 1,
+        "endPage": 2
+      },
+      {
+        "title": "3. Deep Residual Learning",
+        "role": "method",
+        "startPage": 3,
+        "endPage": 4
+      },
+      {
+        "title": "3.1. Residual Learning",
+        "role": "method",
+        "startPage": 3,
+        "endPage": 3
+      },
+      {
+        "title": "3.2. Identity Mapping by Shortcuts",
+        "role": "method",
+        "startPage": 3,
+        "endPage": 3
+      },
+      {
+        "title": "3.3. Network Architectures",
+        "role": "method",
+        "startPage": 3,
+        "endPage": 4
+      },
+      {
+        "title": "3.4. Implementation",
+        "role": "method",
+        "startPage": 4,
+        "endPage": 4
+      },
+      {
+        "title": "2 ResNet-56",
+        "role": "unknown",
+        "startPage": 8,
+        "endPage": 8
+      },
+      {
+        "title": "2 ResNet-56",
+        "role": "unknown",
+        "startPage": 8,
+        "endPage": 8
+      },
+      {
+        "title": "4.3. Object Detection on PASCAL and MS COCO",
+        "role": "unknown",
+        "startPage": 8,
+        "endPage": 8
+      }
+    ],
+    "excludedSections": [
+      {
+        "title": "Front matter",
+        "role": "unknown",
+        "startPage": 1,
+        "endPage": 12
+      },
+      {
+        "title": "2. Related Work",
+        "role": "related",
+        "startPage": 2,
+        "endPage": 3
+      },
+      {
+        "title": "4. Experiments",
+        "role": "experiments",
+        "startPage": 4,
+        "endPage": 8
+      },
+      {
+        "title": "4.1. ImageNet Classification",
+        "role": "experiments",
+        "startPage": 4,
+        "endPage": 7
+      },
+      {
+        "title": "4.2. CIFAR-10 and Analysis",
+        "role": "experiments",
+        "startPage": 7,
+        "endPage": 8
+      },
+      {
+        "title": "References",
+        "role": "references",
+        "startPage": 9,
+        "endPage": 9
+      },
+      {
+        "title": "A. Object Detection Baselines",
+        "role": "appendix",
+        "startPage": 10,
+        "endPage": 10
+      },
+      {
+        "title": "B. Object Detection Improvements",
+        "role": "appendix",
+        "startPage": 10,
+        "endPage": 12
+      },
+      {
+        "title": "C. ImageNet Localization",
+        "role": "appendix",
+        "startPage": 12,
+        "endPage": 12
+      }
+    ],
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+      "Unknown section titles were conservatively included; section roles require source review."
+    ]
+  },
+  {
+    "pdfPath": "/tmp/B094/LoRA.pdf",
+    "totalChars": 83225,
+    "selectedChars": 31256,
+    "selectedParagraphs": 222,
+    "invalidMembers": 0,
+    "unrepresentedBlockCount": 0,
+    "selectedSections": [
+      {
+        "title": "ABSTRACT",
+        "role": "unknown",
+        "startPage": 1,
+        "endPage": 1
+      },
+      {
+        "title": "1 INTRODUCTION",
+        "role": "intro",
+        "startPage": 1,
+        "endPage": 2
+      },
+      {
+        "title": "2 PROBLEM STATEMENT",
+        "role": "method",
+        "startPage": 2,
+        "endPage": 4
+      },
+      {
+        "title": "4 OUR METHOD",
+        "role": "method",
+        "startPage": 4,
+        "endPage": 5
+      },
+      {
+        "title": "4.1 LOW-RANK-PARAMETRIZED UPDATE MATRICES",
+        "role": "method",
+        "startPage": 4,
+        "endPage": 5
+      },
+      {
+        "title": "4.2 APPLYING L O RA TO TRANSFORMER",
+        "role": "method",
+        "startPage": 5,
+        "endPage": 5
+      },
+      {
+        "title": "7 UNDERSTANDING THE LOW-RANK UPDATES",
+        "role": "unknown",
+        "startPage": 9,
+        "endPage": 12
+      },
+      {
+        "title": "A LARGE LANGUAGE MODELS STILL NEED PARAMETER UPDATES",
+        "role": "appendix",
+        "startPage": 16,
+        "endPage": 17
+      },
+      {
+        "title": "B INFERENCE LATENCY INTRODUCED BY ADAPTER LAYERS",
+        "role": "appendix",
+        "startPage": 17,
+        "endPage": 17
+      },
+      {
+        "title": "E COMBINING L O RA WITH PREFIX TUNING",
+        "role": "appendix",
+        "startPage": 20,
+        "endPage": 21
+      }
+    ],
+    "excludedSections": [
+      {
+        "title": "Front matter",
+        "role": "unknown",
+        "startPage": 1,
+        "endPage": 26
+      },
+      {
+        "title": "5 EMPIRICAL EXPERIMENTS",
+        "role": "experiments",
+        "startPage": 5,
+        "endPage": 8
+      },
+      {
+        "title": "5.1 BASELINES",
+        "role": "experiments",
+        "startPage": 5,
+        "endPage": 7
+      },
+      {
+        "title": "5.2 R O BERT A BASE / LARGE",
+        "role": "experiments",
+        "startPage": 7,
+        "endPage": 7
+      },
+      {
+        "title": "5.3 D E BERT A XXL",
+        "role": "experiments",
+        "startPage": 7,
+        "endPage": 7
+      },
+      {
+        "title": "5.4 GPT-2 MEDIUM / LARGE",
+        "role": "experiments",
+        "startPage": 7,
+        "endPage": 8
+      },
+      {
+        "title": "5.5 SCALING UP TO GPT-3 175B",
+        "role": "experiments",
+        "startPage": 8,
+        "endPage": 8
+      },
+      {
+        "title": "6 RELATED WORKS",
+        "role": "related",
+        "startPage": 8,
+        "endPage": 9
+      },
+      {
+        "title": "8 CONCLUSION AND FUTURE WORK",
+        "role": "conclusion",
+        "startPage": 12,
+        "endPage": 13
+      },
+      {
+        "title": "REFERENCES",
+        "role": "references",
+        "startPage": 13,
+        "endPage": 16
+      },
+      {
+        "title": "C DATASET DETAILS",
+        "role": "appendix",
+        "startPage": 17,
+        "endPage": 18
+      },
+      {
+        "title": "D HYPERPARAMETERS USED IN EXPERIMENTS",
+        "role": "appendix",
+        "startPage": 18,
+        "endPage": 20
+      },
+      {
+        "title": "D.1 R O BERT A",
+        "role": "appendix",
+        "startPage": 18,
+        "endPage": 18
+      },
+      {
+        "title": "D.2 D E BERT A",
+        "role": "appendix",
+        "startPage": 18,
+        "endPage": 20
+      },
+      {
+        "title": "F ADDITIONAL EMPIRICAL EXPERIMENTS",
+        "role": "appendix",
+        "startPage": 21,
+        "endPage": 22
+      },
+      {
+        "title": "F.3 LOW-DATA REGIME",
+        "role": "appendix",
+        "startPage": 22,
+        "endPage": 22
+      },
+      {
+        "title": "G MEASURING SIMILARITY BETWEEN SUBSPACES",
+        "role": "appendix",
+        "startPage": 22,
+        "endPage": 24
+      },
+      {
+        "title": "H ADDITIONAL EXPERIMENTS ON LOW-RANK MATRICES",
+        "role": "appendix",
+        "startPage": 24,
+        "endPage": 26
+      },
+      {
+        "title": "H.1 CORRELATION BETWEEN L O RA MODULES",
+        "role": "appendix",
+        "startPage": 24,
+        "endPage": 25
+      },
+      {
+        "title": "H.4 AMPLIFICATION FACTOR",
+        "role": "appendix",
+        "startPage": 25,
+        "endPage": 26
+      }
+    ],
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Unknown section titles were conservatively included; section roles require source review."
+    ]
+  }
+]

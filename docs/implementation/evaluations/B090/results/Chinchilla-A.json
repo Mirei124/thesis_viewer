@@ -1,0 +1,34 @@
+{
+  "paper": "Chinchilla",
+  "arm": "A",
+  "model": "deepseek-flash",
+  "requestSha256": "6b83012f69d6175abff7fd02b1f3cc23c605b2241251a1c34ba9f5802a6a9c71",
+  "requestChars": 8204,
+  "elapsedSeconds": 6.1,
+  "usage": {
+    "prompt_tokens": 2132,
+    "completion_tokens": 1089,
+    "total_tokens": 3221,
+    "prompt_tokens_details": {
+      "cached_tokens": 896
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 822
+    },
+    "prompt_cache_hit_tokens": 896,
+    "prompt_cache_miss_tokens": 1236
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"方法的输入是一个事先给定的固定计算预算：作者关注在固定 FLOPs 预算下，model size 与 training tokens 数量应如何权衡 (E002)，而在实践中可用的 accelerator 数量与使用时长通常事先已知 (E005)。作者为此提出三种不同途径来回答该问题 (E002)。Approach 1 固定一族模型规模，范围从 70M 到超过 10B 参数，对每个模型用 4 种不同的 training sequences 数量（即不同训练步数）进行训练，再从这些运行中直接提取给定 training FLOPs 下达到的 minimum loss (E003)，该步得到的 loss 估计是后续拟合的前提。Approach 2 与 Approach 3 使用不同的 fitting methodologies 和不同的 trained models (E004)。三条路径的输出汇合为对 parameter 与 tokens 最优 scaling 的预测：三者一致表明，随着 compute budget 增加，model size 与训练数据量应大致按相等比例增加；其中前两种途径对最优 model size 的预测非常接近，第三种在更大 compute budget 下预测出的最优模型更小 (E004)。\",\"sources\":[\"E002\",\"E003\",\"E004\",\"E005\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "方法的输入是一个事先给定的固定计算预算：作者关注在固定 FLOPs 预算下，model size 与 training tokens 数量应如何权衡 (E002)，而在实践中可用的 accelerator 数量与使用时长通常事先已知 (E005)。作者为此提出三种不同途径来回答该问题 (E002)。Approach 1 固定一族模型规模，范围从 70M 到超过 10B 参数，对每个模型用 4 种不同的 training sequences 数量（即不同训练步数）进行训练，再从这些运行中直接提取给定 training FLOPs 下达到的 minimum loss (E003)，该步得到的 loss 估计是后续拟合的前提。Approach 2 与 Approach 3 使用不同的 fitting methodologies 和不同的 trained models (E004)。三条路径的输出汇合为对 parameter 与 tokens 最优 scaling 的预测：三者一致表明，随着 compute budget 增加，model size 与训练数据量应大致按相等比例增加；其中前两种途径对最优 model size 的预测非常接近，第三种在更大 compute budget 下预测出的最优模型更小 (E004)。",
+    "sources": [
+      "E002",
+      "E003",
+      "E004",
+      "E005"
+    ]
+  },
+  "unknownAliases": []
+}

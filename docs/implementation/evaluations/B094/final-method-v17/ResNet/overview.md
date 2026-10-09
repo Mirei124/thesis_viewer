@@ -1,0 +1,19 @@
+## method
+
+本文属于模型/架构类工作：核心贡献不是数据集或评测协议，而是把“堆叠层应当拟合什么函数”重述为 residual learning，并据此构造 residual network（ResNet）及其训练与推理流程，因此方法范围落在该机制的公式、building block、网络架构与实现配置上 [E074][E102]。
+
+任务、输入与输出：任务是图像分类。输入是图像（ImageNet 上为经缩放与随机裁剪得到的 224×224 crop，CIFAR-10 上为 32×32 图像），最终输出经 global average pooling、全连接层与 softmax 得到类别分数 [E130][E141]。
+
+要解决的问题：继续堆叠层并不自动带来更优结果。实验观察到更深的网络训练误差反而更高，且这种 degradation 并非过拟合所致——加深会使训练误差本身升高 [E092]。作者的构造性论证是：若在浅模型之上新增的层取 identity mapping、其余层照搬已学好的浅模型，深模型理应不差于浅模型，但现有 solver 找不到可比甚至更好的解 [E093][E101]。在 ImageNet 的 plain net 上，作者论证该优化困难不像是梯度消失所致：这些网络用 BN 训练，前向信号方差非零，反向梯度范数也正常 [E091][E196]。
+
+Residual learning 的表述：设若干堆叠层（不一定是整个网络）要拟合的 underlying mapping 为 H(x)，x 是这些层中第一层的输入 [E110]。与其让这些层直接逼近 H(x)，本文显式地令它们逼近 residual function F(x) := H(x) − x，原映射改写为 F(x) + x [E102][E112]。两种形式在假设上都能渐近逼近目标函数，差别在于易学程度：若 identity mapping 最优，把多个非线性层的权重推向零即可逼近 identity，而用一堆非线性层直接拟合 identity 更难，这正是缓解 degradation 的出发点 [E113]。真实情形中 identity 未必最优，但该改写起 preconditioning 作用——若最优函数比零映射更接近 identity，solver 只需在 identity 附近寻找扰动；实验也显示学到的 residual function 响应普遍较小 [E114]。
+
+Building block 与公式：一个 building block 写为 y = F(x, {W_i}) + x（Eqn.(1)），x、y 是该组层的输入与输出向量，F 是待学的 residual mapping [E116][E117]。以两层为例 F = W2 σ(W1 x)，σ 表示 ReLU，为简化记号省略偏置；F + x 由 shortcut connection 用 element-wise addition 完成（逐元素相加，而非点积或拼接），并在相加之后再加一次非线性 σ(y) [E118][E121]。shortcut 本身执行 identity mapping，不引入额外参数、不增加计算复杂度，整网仍可用 SGD 与 backpropagation 端到端训练而不需修改 solver，因此 plain 与 residual 网络可在参数、深度、宽度与计算量上公平对比 [E103][E122]。当 x 与 F 维度不等（例如改变输入/输出通道）时用 linear projection W_s 对齐：y = F(x, {W_i}) + W_s x（Eqn.(2)）；实验表明 identity mapping 已足以应对 degradation 且更经济，故 W_s 只在需要匹配维度时使用 [E124][E125]。F 的形式灵活，本文涉及 2 层或 3 层；若只有单层，Eqn.(1) 近似线性层 y = W1 x + x，未观察到优势 [E126]。上述记号虽以 fully-connected 层为例，同样适用于卷积层，此时 F 可代表多个卷积层，element-wise addition 在两个 feature map 上逐通道进行 [E127]。
+
+网络架构：plain baseline 受 VGG nets 启发，卷积层多为 3×3 卷积并遵循两条设计规则——输出 feature map 尺寸相同则滤波器数量相同，尺寸减半则滤波器数量加倍以保持每层时间开销；下采样直接用 stride 为 2 的卷积，网络末端为 global average pooling 与 1000-way fully-connected 层加 softmax，示例为 34 个带权层、3.6 billion FLOPs [E130][E131]。residual network 在此基础上插入 shortcut：输入输出维度相同时直接用 identity shortcut；维度增加时有两种选择，(A) shortcut 仍做 identity mapping，对新增维度补零且不引入参数，(B) 用 Eqn.(2) 的 projection shortcut（由 1×1 卷积实现）匹配维度；两种方案下，跨越两个 feature map 尺寸的 shortcut 都以 stride 为 2 执行 [E137][E139]。
+
+为控制训练时间，更深网络把 block 换成 bottleneck：每个 residual function F 改用 1×1、3×3、1×1 三层卷积，两个 1×1 层负责先降维再升维，使中间的 3×3 层成为输入输出维度较小的 bottleneck，两种设计的 time complexity 相近 [E231]。bottleneck 中 identity shortcut 尤为关键：shortcut 连在两个高维端，若换成 projection，time complexity 与模型大小会翻倍 [E232]。ResNet-50 是把 34 层网络中每个 2 层 block 换成该 3 层 bottleneck block 得到，维度增加处用 option B，共 3.8 billion FLOPs；ResNet-101 与 ResNet-152 通过使用更多 3 层 block 构造 [E237][E238]。
+
+训练与推理配置：ImageNet 上，图像较短边在 [256, 480] 内随机采样做 scale augmentation，随机取 224×224 crop 或其水平翻转，减去 per-pixel mean 并使用标准 color augmentation；每个卷积之后、激活之前接 BN；权重按 [13] 初始化，plain/residual 网络全部 from scratch 训练；用 SGD，mini-batch 为 256，学习率从 0.1 起并在误差 plateau 时除以 10，weight decay 为 0.0001、momentum 为 0.9，不使用 dropout [E141][E143]。测试时比较研究用标准 10-crop testing；追求最好结果时用 fully-convolutional 形式并在多个 scale 上平均分数（较短边取 {224, 256, 384, 480, 640}）[E144][E145]。给定摘录未说明具体损失函数形式，也未保留训练迭代数处的上标记法 [E143]。
+
+CIFAR-10 上按 Fig. 3 中/右的形式搭建：输入 32×32 图像并减去 per-pixel mean，第一层为 3×3 卷积，随后在尺寸 {32, 16, 8} 的 feature map 上共堆叠 6n 个 3×3 卷积层（每种尺寸 2n 层），滤波器数依次为 {16, 32, 64}，下采样由 stride 为 2 的卷积完成，末端为 global average pooling、10-way fully-connected 层与 softmax，共 6n+2 个带权层 [E243][E244][E245][E246][E247]。shortcut 连接每一对 3×3 层（共 3n 个），该数据集上全部使用 identity shortcut（option A），因此 residual 模型与 plain 模型深度、宽度与参数量完全相同 [E249][E257]。训练用 weight decay 0.0001、momentum 0.9，采用 [13] 的初始化与 BN 且不用 dropout，mini-batch 为 128、在两块 GPU 上训练，学习率从 0.1 起、在 32k 与 48k iterations 处各除以 10，64k iterations 结束（训练长度由 45k/5k 的 train/val 划分确定）；增强为每边 pad 4 像素后随机取 32×32 crop 或其水平翻转，测试只评估原始 32×32 图像的单视图 [E258]。对 110 层模型，0.1 的初始学习率略大而无法开始收敛，故先用 0.01 warm up 至训练误差低于 80%（约 400 iterations），再回到 0.1 继续训练 [E265]。

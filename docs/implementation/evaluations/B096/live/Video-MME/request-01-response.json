@@ -1,0 +1,12 @@
+{
+  "index": 1,
+  "elapsedMs": 9054,
+  "content": "{\"status\":\"available\",\"text\":\"真实世界具时序动态，MLLMs 评测却多聚焦静态视觉，既有 video benchmarks 在视频类型多样性、时序动态与模态覆盖上不足 (E002)。故 Video-MME 施加高难度挑战 (E003)。\",\"sources\":[\"E002\",\"E003\"]}",
+  "usage": {
+    "promptTokens": 1373,
+    "completionTokens": 2129,
+    "totalTokens": 3502,
+    "promptCacheHitTokens": 640,
+    "promptCacheMissTokens": 733
+  }
+}

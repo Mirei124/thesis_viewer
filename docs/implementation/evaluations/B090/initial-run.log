@@ -1,0 +1,52 @@
+Chinchilla problem 4.33 918
+3DGS problem 7.32 1214
+Chinchilla A 6.1 2132
+LoopVL problem 12.22 1225
+3DGS A 5.0 2360
+3DGS B 11.58 2421
+LoopVL A 14.93 2551
+Chinchilla B 16.84 2189
+LoopVL B 14.62 2608
+3DGS C 27.64 6336
+SAM problem 4.9 656
+SAM A 7.65 1761
+SAM B 8.95 1817
+Chinchilla C ERROR JSONDecodeError Expecting value: line 1 column 1 (char 0)
+Transformer problem 6.13 952
+Transformer A 7.48 1981
+LoopVL C ERROR JSONDecodeError Expecting value: line 1 column 1 (char 0)
+Video-MME problem 5.34 1228
+Transformer B 8.92 2039
+SAM C 27.61 7813
+Video-MME A 5.63 2328
+Video-MME B 8.3 2375
+Transformer C 27.99 6157
+Video-MME C 22.97 9027
+Traceback (most recent call last):
+  File "/home/k/Documents/agent_ws/thesis_viewer/scripts/evaluate-overview-context.py", line 39, in <module>
+    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
+                     ^^^^^^^^^^
+  File "/usr/lib/python3.14/concurrent/futures/_base.py", line 454, in result
+    return self.__get_result()
+           ~~~~~~~~~~~~~~~~~^^
+  File "/usr/lib/python3.14/concurrent/futures/_base.py", line 396, in __get_result
+    raise self._exception
+  File "/usr/lib/python3.14/concurrent/futures/thread.py", line 86, in run
+    result = ctx.run(self.task)
+  File "/usr/lib/python3.14/concurrent/futures/thread.py", line 73, in run
+    return fn(*args, **kwargs)
+  File "/home/k/Documents/agent_ws/thesis_viewer/scripts/evaluate-overview-context.py", line 36, in run
+    call(name,'C',task['C'])
+    ~~~~^^^^^^^^^^^^^^^^^^^^
+  File "/home/k/Documents/agent_ws/thesis_viewer/scripts/evaluate-overview-context.py", line 18, in call
+    choice=result['choices'][0]; content=choice['message']['content']; parsed=json.loads(content)
+                                                                              ~~~~~~~~~~^^^^^^^^^
+  File "/usr/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/usr/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.14/json/decoder.py", line 363, in raw_decode
+    raise JSONDecodeError("Expecting value", s, err.value) from None
+json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)

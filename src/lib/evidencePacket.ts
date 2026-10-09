@@ -23,19 +23,19 @@ export type EvidencePacketPurpose =
   | 'three_line'
   | 'problem_motivation'
   | 'method'
+  | 'contributions_novelty'
   | 'contributions'
   | 'relative_novelty'
   | 'experiments_ablations'
   | 'limitations';
 
 /** Ordered, request-local stages for a detailed overview conversation. */
-export type ProgressiveEvidenceStage = Exclude<EvidencePacketPurpose, 'three_line'>;
+export type ProgressiveEvidenceStage = Exclude<EvidencePacketPurpose, 'three_line' | 'contributions' | 'relative_novelty'>;
 
 export const PROGRESSIVE_EVIDENCE_STAGES: readonly ProgressiveEvidenceStage[] = [
   'problem_motivation',
   'method',
-  'contributions',
-  'relative_novelty',
+  'contributions_novelty',
   'experiments_ablations',
   'limitations',
 ];
@@ -65,6 +65,7 @@ const PURPOSE_SLOTS: Record<EvidencePacketPurpose, readonly EvidenceSlot[]> = {
   three_line: ['contribution', 'method_overview', 'method_step', 'main_result', 'relative_novelty'],
   problem_motivation: ['problem', 'motivation', 'relative_novelty'],
   method: ['method_overview', 'method_step'],
+  contributions_novelty: ['contribution', 'relative_novelty', 'method_overview', 'main_result'],
   contributions: ['contribution', 'method_overview', 'main_result'],
   relative_novelty: ['relative_novelty', 'contribution', 'method_overview'],
   experiments_ablations: ['main_result', 'ablation', 'experimental_setup', 'evaluation_scope'],
@@ -123,8 +124,7 @@ export type ProgressiveEvidenceStageSelection = {
 export const DEFAULT_PROGRESSIVE_MAX_CANDIDATES: Record<ProgressiveEvidenceStage, number> = {
   problem_motivation: 4,
   method: 5,
-  contributions: 4,
-  relative_novelty: 4,
+  contributions_novelty: 8,
   experiments_ablations: 6,
   limitations: 4,
 };

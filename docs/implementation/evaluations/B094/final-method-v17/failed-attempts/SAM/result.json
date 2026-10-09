@@ -1,0 +1,69 @@
+{
+  "result": {
+    "kind": "detailed",
+    "sections": [
+      {
+        "id": "method",
+        "status": "unavailable",
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": "本部分回答未通过来源绑定校验，无法安全展示；请重新生成或查阅原文。",
+            "evidenceIds": [],
+            "claimKind": "missing_information"
+          }
+        ]
+      }
+    ],
+    "uncertainties": []
+  },
+  "diagnostics": [
+    {
+      "id": "method",
+      "newSourceCount": 319,
+      "availableAliasCount": 319,
+      "batchCount": 1,
+      "inputTokens": 45648,
+      "outputLimit": 32000,
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+        "Unknown section titles were conservatively included; section roles require source review.",
+        "Token counts are conservative estimates; provider tokenization and reasoning usage may differ.",
+        "A batch response failed format or source binding validation; its unsupported claims were discarded."
+      ],
+      "usage": {
+        "promptTokens": 32705,
+        "completionTokens": 6288,
+        "totalTokens": 38993,
+        "promptCacheHitTokens": 384,
+        "promptCacheMissTokens": 32321
+      }
+    }
+  ],
+  "methodOnly": true,
+  "sourceHashes": {
+    "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+    "detailedContext": "c882f26739e8ba5c0261fa17915c5656d5e54a7e31646045251b012785a22b8c",
+    "detailedOverview": "ba362d0a0da519e20001c4a5083887fff7bf7f51ab097778e2745b04d03faf31",
+    "detailedOverviewPipeline": "188a7b0c3b1236eaf5e43a628e7a854d4ff47ce8497deadaaf7b1f30628696a7",
+    "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+  },
+  "pricing": "Provider cost not returned; token usage retained without assuming a pricing schedule.",
+  "usageTotals": {
+    "promptTokens": 32705,
+    "completionTokens": 6288,
+    "totalTokens": 38993,
+    "promptCacheHitTokens": 384,
+    "promptCacheMissTokens": 32321
+  },
+  "anchorValidation": {
+    "refCount": 0,
+    "evidenceIdCount": 0,
+    "uniqueEvidenceIds": 0,
+    "invalidEvidenceIds": []
+  },
+  "elapsedMs": 29050,
+  "requestCount": 1
+}

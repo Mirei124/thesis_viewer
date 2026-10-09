@@ -1,0 +1,12 @@
+{
+  "index": 4,
+  "elapsedMs": 13245,
+  "content": "{\"status\":\"available\",\"text\":\"在Video-MME上评测4个商用模型、开源视频MLLM与Qwen-VL-Max等图像MLLM，精度由输出与ground-truth直接比对（E004、E007、E016）。仅帧输入时Gemini 1.5 Pro达75%，超GPT-4V 15.1%、GPT-4o 3.1%（E018）。模态对比中，其长视频多语言任务加字幕提升16.7%、加音频12.5%（E027）。原文未提供模块移除或替换的消融，该部分证据不足。\",\"sources\":[\"E004\",\"E007\",\"E016\",\"E018\",\"E027\"]}",
+  "usage": {
+    "promptTokens": 4470,
+    "completionTokens": 3455,
+    "totalTokens": 7925,
+    "promptCacheHitTokens": 640,
+    "promptCacheMissTokens": 3830
+  }
+}

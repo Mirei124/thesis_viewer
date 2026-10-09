@@ -1,0 +1,38 @@
+{
+  "paper": "LoopVL",
+  "arm": "B",
+  "model": "deepseek-flash",
+  "requestSha256": "8eae4d5555cf4d1c00bc51753db9d5f8cc025df87d3e283edd6021cb86e8027d",
+  "requestChars": 11200,
+  "elapsedSeconds": 14.62,
+  "usage": {
+    "prompt_tokens": 2608,
+    "completion_tokens": 3465,
+    "total_tokens": 6073,
+    "prompt_tokens_details": {
+      "cached_tokens": 1280
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 2666
+    },
+    "prompt_cache_hit_tokens": 1280,
+    "prompt_cache_miss_tokens": 1328
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"本文要解决的问题是把 Loop Transformers 的 recurrent computation 扩展到 vision–language models：输入是一张图与一段 instruction，图像提供带显式 spatial structure 的候选证据，instruction 决定当前 query 的相关区域；输出是对应该 query 的文本 response。作者强调，一轮 vision–language interaction 之后 visual tokens 的表示与相对重要性都会变化，因此 recurrent computation 不是单纯增加 computational depth，而必须作用于持续演化的 vision–language states (E001)(E004)。\\n\\n训练按阶段组织。language pre-training 之后是 visual–language alignment 阶段：使用 LLaVA-559K WebDataset，token allocation 为 0.33B，最大序列长度 2048，每张图使用 256–1024 visual tokens；该阶段 Penguin Vision Encoder 与 language backbone 均冻结，只优化 visual interface，监督信号是 image–caption 的 response tokens，目的是让 visual features 经可训练接口稳定进入冻结的 recurrent language backbone (E007)。\\n\\nvisual interface 的具体做法是：在 dynamic-resolution Stage 1 配置下 projector 随机初始化并在该阶段训练；先对 visual features 做 parameter-free RMS normalization，再校准到 language embedding vectors 的 median RMS；随后 visual representations 走标准 backbone 路径并沿用 inherited embedding scaling (E005)。其中 Penguin 与 language backbone 使用 BF16，projector 参数保持 FP32，且前一阶段的 optimizer、scheduler、trainer 状态不加载 (E005)。进入 multimodal training 前还做回归测试，检查 text-position compatibility、visual-slot counts、loss masks 与预期的 frozen/trainable 参数边界 (E005)。\\n\\nrecurrent 结构用 H/L 配置表示。H1L3 与 H2L1 均执行 64 次 Transformer-layer calls，H2L2 与 H3L1 均执行 96 次，H2L3 与 H4L1 均执行 128 次，但性能差异很大：在 128 次这一对中，MMStar 在 H2L3 下为 63.47，在 H4L1 下仅 24.67 (E006)。同一对内部，schedule 改变的是 L/H updates 的分配与顺序，而参数量与 executed depth 保持不变 (E006)。作者据此指出，模型在 training 与 inference 的 recurrence 配置匹配时表现最好，仅增加 depth 或重新分配 calls 无法恢复 matched 性能 (E006)。实验中 H1L1、H1L3、H2L1、H2L3 各自从初始化独立训练，自 language pre-training 起采用指定 H/L 结构，并在 visual–language alignment、multimodal training、post-training 全程保持同一 computation pattern (E008)。\\n\\n在机制分析上，raw attention 被当作 allocation diagnostic 而非单独的因果解释：LoopVL 分别考察 attention amount 与 conditional spatial concentration，以及 query/key compatibility 与 visual-value perturbations (E003)。cross-loop 分析显示 parameter reuse 可支撑不同的有效 reading roles；作者不从单张 heatmap 推断某一层具有固定语义功能，而是将其作为 recurrent state 演化过程中同一变换参与不同 visual attention allocation 的对齐示例 (E009)。\\n\\n现有材料未提供的核心定义包括：H 与 L 各自代表什么、recurrent state 如何跨 cycle 形成与更新，以及 multimodal training 与 post-training 的数据组成与训练细节；这些缺失处无法由已给摘录补足。\",\"sources\":[\"E001\",\"E003\",\"E004\",\"E005\",\"E006\",\"E007\",\"E008\",\"E009\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "本文要解决的问题是把 Loop Transformers 的 recurrent computation 扩展到 vision–language models：输入是一张图与一段 instruction，图像提供带显式 spatial structure 的候选证据，instruction 决定当前 query 的相关区域；输出是对应该 query 的文本 response。作者强调，一轮 vision–language interaction 之后 visual tokens 的表示与相对重要性都会变化，因此 recurrent computation 不是单纯增加 computational depth，而必须作用于持续演化的 vision–language states (E001)(E004)。\n\n训练按阶段组织。language pre-training 之后是 visual–language alignment 阶段：使用 LLaVA-559K WebDataset，token allocation 为 0.33B，最大序列长度 2048，每张图使用 256–1024 visual tokens；该阶段 Penguin Vision Encoder 与 language backbone 均冻结，只优化 visual interface，监督信号是 image–caption 的 response tokens，目的是让 visual features 经可训练接口稳定进入冻结的 recurrent language backbone (E007)。\n\nvisual interface 的具体做法是：在 dynamic-resolution Stage 1 配置下 projector 随机初始化并在该阶段训练；先对 visual features 做 parameter-free RMS normalization，再校准到 language embedding vectors 的 median RMS；随后 visual representations 走标准 backbone 路径并沿用 inherited embedding scaling (E005)。其中 Penguin 与 language backbone 使用 BF16，projector 参数保持 FP32，且前一阶段的 optimizer、scheduler、trainer 状态不加载 (E005)。进入 multimodal training 前还做回归测试，检查 text-position compatibility、visual-slot counts、loss masks 与预期的 frozen/trainable 参数边界 (E005)。\n\nrecurrent 结构用 H/L 配置表示。H1L3 与 H2L1 均执行 64 次 Transformer-layer calls，H2L2 与 H3L1 均执行 96 次，H2L3 与 H4L1 均执行 128 次，但性能差异很大：在 128 次这一对中，MMStar 在 H2L3 下为 63.47，在 H4L1 下仅 24.67 (E006)。同一对内部，schedule 改变的是 L/H updates 的分配与顺序，而参数量与 executed depth 保持不变 (E006)。作者据此指出，模型在 training 与 inference 的 recurrence 配置匹配时表现最好，仅增加 depth 或重新分配 calls 无法恢复 matched 性能 (E006)。实验中 H1L1、H1L3、H2L1、H2L3 各自从初始化独立训练，自 language pre-training 起采用指定 H/L 结构，并在 visual–language alignment、multimodal training、post-training 全程保持同一 computation pattern (E008)。\n\n在机制分析上，raw attention 被当作 allocation diagnostic 而非单独的因果解释：LoopVL 分别考察 attention amount 与 conditional spatial concentration，以及 query/key compatibility 与 visual-value perturbations (E003)。cross-loop 分析显示 parameter reuse 可支撑不同的有效 reading roles；作者不从单张 heatmap 推断某一层具有固定语义功能，而是将其作为 recurrent state 演化过程中同一变换参与不同 visual attention allocation 的对齐示例 (E009)。\n\n现有材料未提供的核心定义包括：H 与 L 各自代表什么、recurrent state 如何跨 cycle 形成与更新，以及 multimodal training 与 post-training 的数据组成与训练细节；这些缺失处无法由已给摘录补足。",
+    "sources": [
+      "E001",
+      "E003",
+      "E004",
+      "E005",
+      "E006",
+      "E007",
+      "E008",
+      "E009"
+    ]
+  },
+  "unknownAliases": []
+}

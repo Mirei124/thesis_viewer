@@ -2,6 +2,7 @@ export type ModelConfig = {
   baseUrl: string;
   model: string;
   structuredOutput: boolean;
+  semanticReview?: boolean;
   contextLimit: number;
   outputLimit: number;
 };
@@ -21,6 +22,7 @@ export const DEFAULT_MODEL_CONFIG: ModelConfig = {
   baseUrl: 'https://api.deepseek.com/v1',
   model: 'deepseek-flash',
   structuredOutput: true,
+  semanticReview: false,
   contextLimit: 32_000,
   outputLimit: 32_000,
 };
@@ -86,6 +88,7 @@ export function normalizeModelConfig(input: ModelConfigInput): ModelConfig {
     baseUrl: normalizeBaseUrl(input.baseUrl),
     model,
     structuredOutput: Boolean(input.structuredOutput),
+    semanticReview: input.semanticReview === true,
     contextLimit: positiveLimit(input.contextLimit, 'Context limit'),
     outputLimit: positiveLimit(input.outputLimit, 'Output limit'),
   };

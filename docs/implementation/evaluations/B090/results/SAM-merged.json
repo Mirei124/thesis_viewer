@@ -1,0 +1,47 @@
+{
+  "paper": "SAM",
+  "arm": "merged",
+  "model": "deepseek-flash",
+  "requestSha256": "ff47881da4d5a3c712fbd4b714f42f6d9b213c54bdd7b03b66bfbf813572739e",
+  "requestChars": 32034,
+  "elapsedSeconds": 11.52,
+  "usage": {
+    "prompt_tokens": 7693,
+    "completion_tokens": 2570,
+    "total_tokens": 10263,
+    "prompt_tokens_details": {
+      "cached_tokens": 384
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 2004
+    },
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 7309
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"核心贡献与相对创新\\n\\n一、promptable segmentation task：作者把 NLP 的 prompt 迁移到分割，定义“给定任意 prompt 返回 valid mask”，并将其同时用作预训练目标与下游 zero-shot 的手段（P014、P004）。相对文中 interactive segmentation 以足够用户输入后得到有效掩码为目标，该任务要求对任意 prompt 始终给出合理掩码，以支持含歧义的自动标注（P016）；作者并强调它不同于训练与测试任务相同的 multi-task segmentation system，模型可在推理时作为更大系统的组件完成新任务（P017）。此处的区分属作者的定位性主张，非实验比较。\\n\\n二、SAM 架构：由 heavyweight image encoder、prompt encoder 与轻量 mask decoder 组成，image embedding 只计算一次即可被不同 prompt 复用，实现 amortized real-time 交互（P033、P006）。作者报告在浏览器 CPU 上约 50ms（P034）。针对单一输出会平均多个有效掩码的问题，改为对单 prompt 预测多个 mask 并给出 confidence score，训练时只回传最小 loss（P039、P030）；“3 个输出足以覆盖多数情形”是作者的经验判断（P039）。\\n\\n三、data engine 与 SA-1B：因 mask 在网络上并不天然丰富，作者未沿用典型 foundation model 的在线取数，而是 model-in-the-loop 的三阶段标注（P003、P036）。最终 SA-1B 含 11M 图像与 1.1B masks，99.1% 由全自动阶段生成（P042、P044）；作者称其 mask 数比既有最大分割数据集 Open Images 多 400×（P074）。质量方面有验证：抽取约 500 图、50k mask 经专业标注者修正，94% 配对 IoU 大于 90%，作者据此与先前工作估计的 85–91% 标注者间一致性对比（P046）。\\n\\n四、zero-shot 泛化：在 23 个分割数据集及 edge detection、object proposal generation、instance segmentation 与初步 text-to-mask 上以 prompt engineering 做 zero-shot transfer，作者报告结果强（P007）。但文中亦承认 room for improvement remains（P007），因此不宜视为已全面解决。\",\"sources\":[\"P003\",\"P004\",\"P005\",\"P006\",\"P007\",\"P014\",\"P016\",\"P017\",\"P030\",\"P033\",\"P034\",\"P036\",\"P039\",\"P042\",\"P044\",\"P046\",\"P074\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "核心贡献与相对创新\n\n一、promptable segmentation task：作者把 NLP 的 prompt 迁移到分割，定义“给定任意 prompt 返回 valid mask”，并将其同时用作预训练目标与下游 zero-shot 的手段（P014、P004）。相对文中 interactive segmentation 以足够用户输入后得到有效掩码为目标，该任务要求对任意 prompt 始终给出合理掩码，以支持含歧义的自动标注（P016）；作者并强调它不同于训练与测试任务相同的 multi-task segmentation system，模型可在推理时作为更大系统的组件完成新任务（P017）。此处的区分属作者的定位性主张，非实验比较。\n\n二、SAM 架构：由 heavyweight image encoder、prompt encoder 与轻量 mask decoder 组成，image embedding 只计算一次即可被不同 prompt 复用，实现 amortized real-time 交互（P033、P006）。作者报告在浏览器 CPU 上约 50ms（P034）。针对单一输出会平均多个有效掩码的问题，改为对单 prompt 预测多个 mask 并给出 confidence score，训练时只回传最小 loss（P039、P030）；“3 个输出足以覆盖多数情形”是作者的经验判断（P039）。\n\n三、data engine 与 SA-1B：因 mask 在网络上并不天然丰富，作者未沿用典型 foundation model 的在线取数，而是 model-in-the-loop 的三阶段标注（P003、P036）。最终 SA-1B 含 11M 图像与 1.1B masks，99.1% 由全自动阶段生成（P042、P044）；作者称其 mask 数比既有最大分割数据集 Open Images 多 400×（P074）。质量方面有验证：抽取约 500 图、50k mask 经专业标注者修正，94% 配对 IoU 大于 90%，作者据此与先前工作估计的 85–91% 标注者间一致性对比（P046）。\n\n四、zero-shot 泛化：在 23 个分割数据集及 edge detection、object proposal generation、instance segmentation 与初步 text-to-mask 上以 prompt engineering 做 zero-shot transfer，作者报告结果强（P007）。但文中亦承认 room for improvement remains（P007），因此不宜视为已全面解决。",
+    "sources": [
+      "P003",
+      "P004",
+      "P005",
+      "P006",
+      "P007",
+      "P014",
+      "P016",
+      "P017",
+      "P030",
+      "P033",
+      "P034",
+      "P036",
+      "P039",
+      "P042",
+      "P044",
+      "P046",
+      "P074"
+    ]
+  },
+  "unknownAliases": []
+}

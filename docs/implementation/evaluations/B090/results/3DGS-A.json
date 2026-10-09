@@ -1,0 +1,35 @@
+{
+  "paper": "3DGS",
+  "arm": "A",
+  "model": "deepseek-flash",
+  "requestSha256": "1bd741dd924e182dc9e8896ae040d296739f7c3b5fb738ef946a04ec5c03be6f",
+  "requestChars": 9492,
+  "elapsedSeconds": 5.0,
+  "usage": {
+    "prompt_tokens": 2360,
+    "completion_tokens": 983,
+    "total_tokens": 3343,
+    "prompt_tokens_details": {
+      "cached_tokens": 1152
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 720
+    },
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 1208
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"输入是静态场景的一组图像及经 SfM 标定的对应相机，SfM 作为副产物给出稀疏点云；由这些点初始化一组 3D Gaussians，每个由位置（mean）、covariance matrix 与 opacity 定义 (E009)。随后进行交错的 optimization 与 density control，重点优化 anisotropic covariance 以获得精确的场景表示 (E008)。密度控制的具体规则为：optimization warm-up 之后每 100 iterations 执行一次 densify，并移除基本透明的 Gaussians (E006)；对欠重建区域中的小 Gaussians，克隆一个同尺寸副本并沿 positional gradient 方向移动，对高方差区域中的大 Gaussians 则替换为两个并缩小其 scale (E005)。优化后得到紧凑、非结构化且精确的表示，所有测试场景为 1–5 million Gaussians (E007)。最后是 real-time 渲染：基于快速 GPU sorting 与受 tile-based rasterization 启发的可见性感知算法，支持遵循 visibility ordering 的 anisotropic splatting，既加速训练也支撑实时显示 (E007, E008)。\",\"sources\":[\"E009\",\"E008\",\"E006\",\"E005\",\"E007\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "输入是静态场景的一组图像及经 SfM 标定的对应相机，SfM 作为副产物给出稀疏点云；由这些点初始化一组 3D Gaussians，每个由位置（mean）、covariance matrix 与 opacity 定义 (E009)。随后进行交错的 optimization 与 density control，重点优化 anisotropic covariance 以获得精确的场景表示 (E008)。密度控制的具体规则为：optimization warm-up 之后每 100 iterations 执行一次 densify，并移除基本透明的 Gaussians (E006)；对欠重建区域中的小 Gaussians，克隆一个同尺寸副本并沿 positional gradient 方向移动，对高方差区域中的大 Gaussians 则替换为两个并缩小其 scale (E005)。优化后得到紧凑、非结构化且精确的表示，所有测试场景为 1–5 million Gaussians (E007)。最后是 real-time 渲染：基于快速 GPU sorting 与受 tile-based rasterization 启发的可见性感知算法，支持遵循 visibility ordering 的 anisotropic splatting，既加速训练也支撑实时显示 (E007, E008)。",
+    "sources": [
+      "E009",
+      "E008",
+      "E006",
+      "E005",
+      "E007"
+    ]
+  },
+  "unknownAliases": []
+}

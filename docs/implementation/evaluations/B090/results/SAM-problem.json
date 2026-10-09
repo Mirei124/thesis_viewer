@@ -1,0 +1,31 @@
+{
+  "paper": "SAM",
+  "arm": "problem",
+  "model": "deepseek-flash",
+  "requestSha256": "799001eaf976e4c62e9aef2d624d7e9c9f253194ad03a75ddeda50cd81123d90",
+  "requestChars": 2809,
+  "elapsedSeconds": 4.9,
+  "usage": {
+    "prompt_tokens": 656,
+    "completion_tokens": 956,
+    "total_tokens": 1612,
+    "prompt_tokens_details": {
+      "cached_tokens": 384
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 824
+    },
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 272
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"E001 所属小节题为 Segment Anything Task，其片段（起始处已被截断）指出该任务与 ambiguity 相关，并称这使得 pre-trained model 在涉及 ambiguity 的使用场景中仍然有效，包括其 data engine §4 所要求的自动标注（E001）。作者同时强调，在该任务上取得良好表现具有挑战性，需要专门的 modeling 与 training loss 选择，并说明相关讨论见 §3（E001）。就已提供的片段而言，作者对既有做法不足的诊断以及本文研究问题的完整表述无法获知。\",\"sources\":[\"E001\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "E001 所属小节题为 Segment Anything Task，其片段（起始处已被截断）指出该任务与 ambiguity 相关，并称这使得 pre-trained model 在涉及 ambiguity 的使用场景中仍然有效，包括其 data engine §4 所要求的自动标注（E001）。作者同时强调，在该任务上取得良好表现具有挑战性，需要专门的 modeling 与 training loss 选择，并说明相关讨论见 §3（E001）。就已提供的片段而言，作者对既有做法不足的诊断以及本文研究问题的完整表述无法获知。",
+    "sources": [
+      "E001"
+    ]
+  },
+  "unknownAliases": []
+}

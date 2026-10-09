@@ -1,0 +1,53 @@
+{
+  "paper": "Chinchilla",
+  "arm": "D",
+  "model": "deepseek-flash",
+  "requestSha256": "8e1019c20edb74fab20352c7edd020c55a71823f65e9c45a8309d44023f4957a",
+  "outputLimit": 32000,
+  "requestChars": 32673,
+  "elapsedSeconds": 44.77,
+  "usage": {
+    "prompt_tokens": 9772,
+    "completion_tokens": 10902,
+    "total_tokens": 20674,
+    "prompt_tokens_details": {
+      "cached_tokens": 512
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 9103
+    },
+    "prompt_cache_hit_tokens": 512,
+    "prompt_cache_miss_tokens": 9260
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"任务定义与输出。给定固定 FLOPs 预算 C，问题是在 model size（参数量 N）与 training tokens 数 D 之间分配计算。作者把 final pre-training loss 写成 L(N,D)，因为计算预算 C 是 FLOPs(N,D) 的确定函数，所以求 N_opt(C),D_opt(C)=argmin L(N,D) s.t. FLOPs(N,D)=C（P013）。分析针对 smoothed training loss，它在 infinite data regime 下是 test loss 的无偏估计；所谓 infinite data regime 指 training tokens 数少于整个 corpus 的 token 数（P015）（P016）。经验拟合基于 400 多个模型，参数从不到 70M 到超过 16B，训练 token 从 5B 到超过 400B，每个配置有多个 training horizon（P014）。\\n\\n统一控制与网格。三条估计路径都先训练一组同时改变 model size 与 training tokens 的模型，再用 resulting training curves 拟合 empirical estimator；并假设 compute 与 model size 之间存在 power-law 关系（P027）。FLOPs 的具体计数按 Appendix F（P028）。Approach 1 使用 70M 到 10B 的模型家族，每个模型 4 个训练序列数/训练步数；Approach 2 把 model size 扩到 16B，并固定 9 个 training FLOPs 档位（6×10^18 到 3×10^21）（P065）。\\n\\nApproach 1：训练曲线包络。输入是固定参数量 N 的模型家族，变化训练步数或训练序列数；对每个 N 训练 4 个模型，并在 horizon（以 training tokens 度量）上把 learning rate 衰减 10×，horizon 跨度 16×（P065）。对每条 run 先平滑再插值 training loss curve，得到从 FLOP count 到 training loss 的连续映射；对每个 FLOP count 选 loss 最低的 run，于是对任意 C 得到满足 FLOPs(N,D)=C 的最有效 N,D。在 1500 个对数间隔 FLOP 值上比较所有模型，最后拟合 N_opt ∝ C^a 与 D_opt ∝ C^b，得到 a=0.50,b=0.50（P065）。被选中的点都落在训练最后 15% 内，这反过来提示 cosine cycle 长度应设在约 D 个 token 上衰减 10×（P065）。\\n\\nApproach 2：IsoFLOP profiles。与沿整条训练曲线取点的 Approach 1 不同，这里固定 9 个 training FLOPs 值，改变 model size，并只看每个点的 final training loss（P065）。对每个 FLOP budget，训练足够多不同 model size 以看到 loss 的明显最小值，然后对每条 IsoFLOP 曲线拟合 parabola 来直接估计 loss 最低处的 model size；cosine schedule 长度设为匹配目标 token 数（P099）。再用这些极小值拟合 power law，得到 N_opt ∝ C^a、D_opt ∝ C^b，其中 a=0.49,b=0.51（P099）。\\n\\nApproach 3：参数化 loss 拟合。把 Approach 1 和 2 的所有 final loss 合并，建模为 N 与 D 的参数函数 L_hat(N,D)=E+A/N^α+B/D^β（P100）（P102）。三项分别表示数据分布上理想生成过程的 loss（对应自然文本熵）、完美训练的 transformer 在 N 个 parameter 下仍低于理想过程、以及因为只在数据集分布的一个样本上做有限步优化、未训练到收敛造成的差距（P102）。拟合时最小化 predicted log loss 与 observed log loss 之间的 Huber loss（δ=10^-3），用 L-BFGS，并从一组初始化的 grid 中选最佳拟合以处理 local minima（P102）（P104）。然后在此参数化 loss 上做约束优化：在 FLOPs(N,D)≈6ND 下最小化 L_hat，得到 efficient frontier，并解析地写成 N_opt(C)=G(C/6)^a、D_opt(C)=G^{-1}(C/6)^b，其中 G=(αA/βB)^{1/(α+β)}, a=β/(α+β), b=α/(α+β)（P127）（P138）（P141）。由此得到 a=0.46,b=0.54；低 FLOPs（C≤10^21）的点残差较大，Huber loss 使拟合更重高 FLOPs 点，加上 frontier C→N_opt 的负曲率，使该路径在更大预算下预测更小的 N_opt（P143）。\\n\\n从预算求最优与三条路径的一致性。三条路径用不同拟合方法和不同训练模型，却给出可比的 N_opt(C),D_opt(C)：参数量与 token 数随 compute 近似等比例增长，Table 2 汇总这些指数（P143）（P144）。具体地，Approach 1 给出 0.50/0.50，Approach 2 给出 0.49/0.51，Approach 3 给出 0.46/0.54（P147）（P148）。因此给定一个 C，只需把 C 代入相应拟合的 power law 得到 N_opt 与 D_opt；Table 3 则反查给定 model size 落在 compute-optimal frontier 上所需的 FLOPs 与 tokens（P152）。该外推预测当前 large language models 相对其 compute budget 偏大：例如 175B parameter 模型对应约 4.41×10^24 FLOPs 和超过 4.2 trillion tokens，280B 的 Gopher-like 模型约需 10^25 FLOPs 和 6.8 trillion tokens；除非有 10^26 FLOPs（超过 Gopher 用量的 250×），1 trillion parameter 模型不太可能最优（P160）。\\n\\nChinchilla 大规模验证。基于上述 frontier，Gopher 的 compute budget 下最优 model size 估计在 40B 到 70B parameter 之间；作者取区间上端训练 70B 模型、1.4T tokens，称为 Chinchilla（P162）（P014）。验证设计是让 Chinchilla 与 Gopher 使用相同 FLOPs，但改变 N 与 D 的分配（P162）。Chinchilla 沿用 Gopher 的 model architecture 和 training setup，只改若干项：在 MassiveText 的稍不同子集分布上训练以容纳更多 tokens，用 AdamW 替代 Adam，使用不做 NFKC normalisation 的 SentencePiece tokenizer，并在 forward/backward 用 bfloat16 而 distributed optimiser state 保留 float32 权重副本；训练基础设施为 TPUv3/TPUv4、JAX 与 Haiku（P162）。Gopher 预算本身约为 5.76×10^23 FLOPs（P065）。\\n\\n外推边界。作者明确指出跨多个数量级外推有显著不确定性，但分析仍表明当前许多 LLM 的 compute budget 下应使用更小模型并训练更多 tokens（P160）。拟合假设 compute 与 model size 的 power-law，未来工作可考虑 large model size 下的 curvature（P027）。在方法内部，低 FLOPs 点被 Huber loss 当作 outlier、Approach 3 的负曲率导致其预测更小 N_opt，这些都是 frontier 外推时的不确定来源（P143）。另外，IsoFLOP 分析在 C4 与 GitHub code 两个额外数据集上复现，均得到 model size 与 training tokens 近似等比例缩放的结论（P160）。\",\"sources\":[\"P013\",\"P014\",\"P015\",\"P016\",\"P027\",\"P028\",\"P065\",\"P099\",\"P100\",\"P102\",\"P104\",\"P127\",\"P138\",\"P141\",\"P143\",\"P144\",\"P147\",\"P148\",\"P152\",\"P160\",\"P162\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "任务定义与输出。给定固定 FLOPs 预算 C，问题是在 model size（参数量 N）与 training tokens 数 D 之间分配计算。作者把 final pre-training loss 写成 L(N,D)，因为计算预算 C 是 FLOPs(N,D) 的确定函数，所以求 N_opt(C),D_opt(C)=argmin L(N,D) s.t. FLOPs(N,D)=C（P013）。分析针对 smoothed training loss，它在 infinite data regime 下是 test loss 的无偏估计；所谓 infinite data regime 指 training tokens 数少于整个 corpus 的 token 数（P015）（P016）。经验拟合基于 400 多个模型，参数从不到 70M 到超过 16B，训练 token 从 5B 到超过 400B，每个配置有多个 training horizon（P014）。\n\n统一控制与网格。三条估计路径都先训练一组同时改变 model size 与 training tokens 的模型，再用 resulting training curves 拟合 empirical estimator；并假设 compute 与 model size 之间存在 power-law 关系（P027）。FLOPs 的具体计数按 Appendix F（P028）。Approach 1 使用 70M 到 10B 的模型家族，每个模型 4 个训练序列数/训练步数；Approach 2 把 model size 扩到 16B，并固定 9 个 training FLOPs 档位（6×10^18 到 3×10^21）（P065）。\n\nApproach 1：训练曲线包络。输入是固定参数量 N 的模型家族，变化训练步数或训练序列数；对每个 N 训练 4 个模型，并在 horizon（以 training tokens 度量）上把 learning rate 衰减 10×，horizon 跨度 16×（P065）。对每条 run 先平滑再插值 training loss curve，得到从 FLOP count 到 training loss 的连续映射；对每个 FLOP count 选 loss 最低的 run，于是对任意 C 得到满足 FLOPs(N,D)=C 的最有效 N,D。在 1500 个对数间隔 FLOP 值上比较所有模型，最后拟合 N_opt ∝ C^a 与 D_opt ∝ C^b，得到 a=0.50,b=0.50（P065）。被选中的点都落在训练最后 15% 内，这反过来提示 cosine cycle 长度应设在约 D 个 token 上衰减 10×（P065）。\n\nApproach 2：IsoFLOP profiles。与沿整条训练曲线取点的 Approach 1 不同，这里固定 9 个 training FLOPs 值，改变 model size，并只看每个点的 final training loss（P065）。对每个 FLOP budget，训练足够多不同 model size 以看到 loss 的明显最小值，然后对每条 IsoFLOP 曲线拟合 parabola 来直接估计 loss 最低处的 model size；cosine schedule 长度设为匹配目标 token 数（P099）。再用这些极小值拟合 power law，得到 N_opt ∝ C^a、D_opt ∝ C^b，其中 a=0.49,b=0.51（P099）。\n\nApproach 3：参数化 loss 拟合。把 Approach 1 和 2 的所有 final loss 合并，建模为 N 与 D 的参数函数 L_hat(N,D)=E+A/N^α+B/D^β（P100）（P102）。三项分别表示数据分布上理想生成过程的 loss（对应自然文本熵）、完美训练的 transformer 在 N 个 parameter 下仍低于理想过程、以及因为只在数据集分布的一个样本上做有限步优化、未训练到收敛造成的差距（P102）。拟合时最小化 predicted log loss 与 observed log loss 之间的 Huber loss（δ=10^-3），用 L-BFGS，并从一组初始化的 grid 中选最佳拟合以处理 local minima（P102）（P104）。然后在此参数化 loss 上做约束优化：在 FLOPs(N,D)≈6ND 下最小化 L_hat，得到 efficient frontier，并解析地写成 N_opt(C)=G(C/6)^a、D_opt(C)=G^{-1}(C/6)^b，其中 G=(αA/βB)^{1/(α+β)}, a=β/(α+β), b=α/(α+β)（P127）（P138）（P141）。由此得到 a=0.46,b=0.54；低 FLOPs（C≤10^21）的点残差较大，Huber loss 使拟合更重高 FLOPs 点，加上 frontier C→N_opt 的负曲率，使该路径在更大预算下预测更小的 N_opt（P143）。\n\n从预算求最优与三条路径的一致性。三条路径用不同拟合方法和不同训练模型，却给出可比的 N_opt(C),D_opt(C)：参数量与 token 数随 compute 近似等比例增长，Table 2 汇总这些指数（P143）（P144）。具体地，Approach 1 给出 0.50/0.50，Approach 2 给出 0.49/0.51，Approach 3 给出 0.46/0.54（P147）（P148）。因此给定一个 C，只需把 C 代入相应拟合的 power law 得到 N_opt 与 D_opt；Table 3 则反查给定 model size 落在 compute-optimal frontier 上所需的 FLOPs 与 tokens（P152）。该外推预测当前 large language models 相对其 compute budget 偏大：例如 175B parameter 模型对应约 4.41×10^24 FLOPs 和超过 4.2 trillion tokens，280B 的 Gopher-like 模型约需 10^25 FLOPs 和 6.8 trillion tokens；除非有 10^26 FLOPs（超过 Gopher 用量的 250×），1 trillion parameter 模型不太可能最优（P160）。\n\nChinchilla 大规模验证。基于上述 frontier，Gopher 的 compute budget 下最优 model size 估计在 40B 到 70B parameter 之间；作者取区间上端训练 70B 模型、1.4T tokens，称为 Chinchilla（P162）（P014）。验证设计是让 Chinchilla 与 Gopher 使用相同 FLOPs，但改变 N 与 D 的分配（P162）。Chinchilla 沿用 Gopher 的 model architecture 和 training setup，只改若干项：在 MassiveText 的稍不同子集分布上训练以容纳更多 tokens，用 AdamW 替代 Adam，使用不做 NFKC normalisation 的 SentencePiece tokenizer，并在 forward/backward 用 bfloat16 而 distributed optimiser state 保留 float32 权重副本；训练基础设施为 TPUv3/TPUv4、JAX 与 Haiku（P162）。Gopher 预算本身约为 5.76×10^23 FLOPs（P065）。\n\n外推边界。作者明确指出跨多个数量级外推有显著不确定性，但分析仍表明当前许多 LLM 的 compute budget 下应使用更小模型并训练更多 tokens（P160）。拟合假设 compute 与 model size 的 power-law，未来工作可考虑 large model size 下的 curvature（P027）。在方法内部，低 FLOPs 点被 Huber loss 当作 outlier、Approach 3 的负曲率导致其预测更小 N_opt，这些都是 frontier 外推时的不确定来源（P143）。另外，IsoFLOP 分析在 C4 与 GitHub code 两个额外数据集上复现，均得到 model size 与 training tokens 近似等比例缩放的结论（P160）。",
+    "sources": [
+      "P013",
+      "P014",
+      "P015",
+      "P016",
+      "P027",
+      "P028",
+      "P065",
+      "P099",
+      "P100",
+      "P102",
+      "P104",
+      "P127",
+      "P138",
+      "P141",
+      "P143",
+      "P144",
+      "P147",
+      "P148",
+      "P152",
+      "P160",
+      "P162"
+    ]
+  },
+  "parseError": null,
+  "unknownAliases": []
+}

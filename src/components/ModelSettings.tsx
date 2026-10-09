@@ -134,10 +134,13 @@ export function ModelSettings() {
             <legend>{t('settings.capabilities')}</legend>
             <label className="check-row"><input name="structuredOutput" type="checkbox" checked={config.structuredOutput} onChange={updateCapability} /> {t('settings.structuredOutput')}</label>
             <p className="field-help">{t('settings.structuredOutputHelp')}</p>
+            <label className="check-row"><input id="semanticReview" name="semanticReview" type="checkbox" checked={config.semanticReview === true} onChange={updateCapability} aria-describedby="semanticReviewHelp" /> {t('settings.semanticReview')}</label>
+            <p id="semanticReviewHelp" className="field-help">{t('settings.semanticReviewHelp')}</p>
             <div className="limit-grid">
               <label htmlFor="contextLimit">{t('settings.contextLimit')} <input id="contextLimit" name="contextLimit" type="number" min="1" step="1" value={config.contextLimit} onChange={updateText} /></label>
               <label htmlFor="outputLimit">{t('settings.outputLimit')} <input id="outputLimit" name="outputLimit" type="number" min="1" step="1" value={config.outputLimit} onChange={updateText} /></label>
             </div>
+            <p className="field-help">{t('settings.contextBudgetHelp')}</p>
           </fieldset>
 
           <fieldset disabled={busy}>

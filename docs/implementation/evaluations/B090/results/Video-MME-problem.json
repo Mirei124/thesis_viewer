@@ -1,0 +1,34 @@
+{
+  "paper": "Video-MME",
+  "arm": "problem",
+  "model": "deepseek-flash",
+  "requestSha256": "96441a32bf66020c7193be772aaf4995b5c0902e21d670b8a7f2d7fe2f4d5030",
+  "requestChars": 5542,
+  "elapsedSeconds": 5.34,
+  "usage": {
+    "prompt_tokens": 1228,
+    "completion_tokens": 1123,
+    "total_tokens": 2351,
+    "prompt_tokens_details": {
+      "cached_tokens": 384
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 953
+    },
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 844
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"已有 MLLMs 及其评测主要聚焦静态视觉数据，难以刻画真实世界中物体随时间交互的动态性，作者主张转向视频等序列视觉数据 (E001)。作者观察到，早期视频理解探索虽有前景，但现有 video-based benchmarks 在视频类型多样性、temporal dynamics 覆盖与 modality 广度上仍显不足，妨碍对 MLLMs 的全面评估 (E001)；相关工作也指出，专用 benchmark 被用于考察 temporal comprehension，凸显 video MLLMs 的理解局限 (E003)。因此 Video-MME 被设计为兼具多样性与挑战性，要求模型进行 long-term contextual understanding 与复杂 spatial 和 temporal reasoning (E002, E004)。\",\"sources\":[\"E001\",\"E002\",\"E003\",\"E004\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "已有 MLLMs 及其评测主要聚焦静态视觉数据，难以刻画真实世界中物体随时间交互的动态性，作者主张转向视频等序列视觉数据 (E001)。作者观察到，早期视频理解探索虽有前景，但现有 video-based benchmarks 在视频类型多样性、temporal dynamics 覆盖与 modality 广度上仍显不足，妨碍对 MLLMs 的全面评估 (E001)；相关工作也指出，专用 benchmark 被用于考察 temporal comprehension，凸显 video MLLMs 的理解局限 (E003)。因此 Video-MME 被设计为兼具多样性与挑战性，要求模型进行 long-term contextual understanding 与复杂 spatial 和 temporal reasoning (E002, E004)。",
+    "sources": [
+      "E001",
+      "E002",
+      "E003",
+      "E004"
+    ]
+  },
+  "unknownAliases": []
+}

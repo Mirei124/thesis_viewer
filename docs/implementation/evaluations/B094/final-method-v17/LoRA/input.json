@@ -1,0 +1,161 @@
+{
+  "path": "/tmp/B094/LoRA.pdf",
+  "documentVersion": "sha256:e9a0d3128767db616085dc0f4e6e455e672e89af823e8ed1282793682787395a",
+  "config": {
+    "baseUrl": "https://api.deepseek.com/v1",
+    "model": "deepseek-flash",
+    "structuredOutput": true,
+    "contextLimit": 128000,
+    "outputLimit": 32000
+  },
+  "methodOnly": true,
+  "sourceHashes": {
+    "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+    "detailedContext": "c882f26739e8ba5c0261fa17915c5656d5e54a7e31646045251b012785a22b8c",
+    "detailedOverview": "ba362d0a0da519e20001c4a5083887fff7bf7f51ab097778e2745b04d03faf31",
+    "detailedOverviewPipeline": "188a7b0c3b1236eaf5e43a628e7a854d4ff47ce8497deadaaf7b1f30628696a7",
+    "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+  },
+  "pageCount": 26,
+  "paragraphCount": 667,
+  "selections": [
+    {
+      "id": "problem_motivation",
+      "paragraphCount": 145,
+      "chars": 23925,
+      "estimatedTextTokens": 8178,
+      "sections": [
+        "ABSTRACT",
+        "1 INTRODUCTION",
+        "6 RELATED WORKS",
+        "7 UNDERSTANDING THE LOW-RANK UPDATES",
+        "8 CONCLUSION AND FUTURE WORK",
+        "A LARGE LANGUAGE MODELS STILL NEED PARAMETER UPDATES",
+        "E COMBINING L O RA WITH PREFIX TUNING"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "method",
+      "paragraphCount": 332,
+      "chars": 46426,
+      "estimatedTextTokens": 16158,
+      "sections": [
+        "ABSTRACT",
+        "1 INTRODUCTION",
+        "2 PROBLEM STATEMENT",
+        "4 OUR METHOD",
+        "4.1 LOW-RANK-PARAMETRIZED UPDATE MATRICES",
+        "4.2 APPLYING L O RA TO TRANSFORMER",
+        "5 EMPIRICAL EXPERIMENTS",
+        "5.1 BASELINES",
+        "5.2 R O BERT A BASE / LARGE",
+        "5.3 D E BERT A XXL",
+        "5.4 GPT-2 MEDIUM / LARGE",
+        "5.5 SCALING UP TO GPT-3 175B",
+        "7 UNDERSTANDING THE LOW-RANK UPDATES",
+        "A LARGE LANGUAGE MODELS STILL NEED PARAMETER UPDATES",
+        "B INFERENCE LATENCY INTRODUCED BY ADAPTER LAYERS",
+        "C DATASET DETAILS",
+        "E COMBINING L O RA WITH PREFIX TUNING"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "contributions_novelty",
+      "paragraphCount": 344,
+      "chars": 52398,
+      "estimatedTextTokens": 18161,
+      "sections": [
+        "ABSTRACT",
+        "1 INTRODUCTION",
+        "2 PROBLEM STATEMENT",
+        "4 OUR METHOD",
+        "4.1 LOW-RANK-PARAMETRIZED UPDATE MATRICES",
+        "4.2 APPLYING L O RA TO TRANSFORMER",
+        "5 EMPIRICAL EXPERIMENTS",
+        "5.1 BASELINES",
+        "5.2 R O BERT A BASE / LARGE",
+        "5.3 D E BERT A XXL",
+        "5.4 GPT-2 MEDIUM / LARGE",
+        "5.5 SCALING UP TO GPT-3 175B",
+        "6 RELATED WORKS",
+        "7 UNDERSTANDING THE LOW-RANK UPDATES",
+        "8 CONCLUSION AND FUTURE WORK",
+        "A LARGE LANGUAGE MODELS STILL NEED PARAMETER UPDATES",
+        "B INFERENCE LATENCY INTRODUCED BY ADAPTER LAYERS",
+        "C DATASET DETAILS",
+        "E COMBINING L O RA WITH PREFIX TUNING"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "experiments_ablations",
+      "paragraphCount": 332,
+      "chars": 46426,
+      "estimatedTextTokens": 16158,
+      "sections": [
+        "ABSTRACT",
+        "1 INTRODUCTION",
+        "2 PROBLEM STATEMENT",
+        "4 OUR METHOD",
+        "4.1 LOW-RANK-PARAMETRIZED UPDATE MATRICES",
+        "4.2 APPLYING L O RA TO TRANSFORMER",
+        "5 EMPIRICAL EXPERIMENTS",
+        "5.1 BASELINES",
+        "5.2 R O BERT A BASE / LARGE",
+        "5.3 D E BERT A XXL",
+        "5.4 GPT-2 MEDIUM / LARGE",
+        "5.5 SCALING UP TO GPT-3 175B",
+        "7 UNDERSTANDING THE LOW-RANK UPDATES",
+        "A LARGE LANGUAGE MODELS STILL NEED PARAMETER UPDATES",
+        "B INFERENCE LATENCY INTRODUCED BY ADAPTER LAYERS",
+        "C DATASET DETAILS",
+        "E COMBINING L O RA WITH PREFIX TUNING"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "limitations",
+      "paragraphCount": 248,
+      "chars": 34433,
+      "estimatedTextTokens": 11992,
+      "sections": [
+        "ABSTRACT",
+        "1 INTRODUCTION",
+        "5 EMPIRICAL EXPERIMENTS",
+        "5.1 BASELINES",
+        "5.2 R O BERT A BASE / LARGE",
+        "5.3 D E BERT A XXL",
+        "5.4 GPT-2 MEDIUM / LARGE",
+        "5.5 SCALING UP TO GPT-3 175B",
+        "7 UNDERSTANDING THE LOW-RANK UPDATES",
+        "8 CONCLUSION AND FUTURE WORK",
+        "A LARGE LANGUAGE MODELS STILL NEED PARAMETER UPDATES",
+        "C DATASET DETAILS",
+        "E COMBINING L O RA WITH PREFIX TUNING"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    }
+  ]
+}

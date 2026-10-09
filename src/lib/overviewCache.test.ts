@@ -46,7 +46,7 @@ describe('verified overview cache', () => {
   it('invalidates both prior language-policy generations without changing other cache dimensions', () => {
     for (const [kind, currentVersion, previousVersion] of [
       ['three-line', THREE_LINE_OVERVIEW_PROMPT_VERSION, 'research-overview-zh-v7'],
-      ['detailed', PROGRESSIVE_DETAILED_OVERVIEW_PROMPT_VERSION, 'research-detailed-overview-zh-v13'],
+      ['detailed', PROGRESSIVE_DETAILED_OVERVIEW_PROMPT_VERSION, 'research-detailed-overview-zh-v14'],
     ] as const) {
       const key = overviewCacheKey({ documentContentKey, kind, config });
       const previousParts: unknown[] = JSON.parse(key);
@@ -55,6 +55,18 @@ describe('verified overview cache', () => {
       expect(JSON.stringify(previousParts)).not.toBe(key);
       expect(key).not.toContain(previousVersion);
     }
+  });
+
+  it('isolates detailed review and selection policy while leaving three-line keys unchanged', () => {
+    const input = { documentContentKey, config, kind: 'detailed' as const };
+    const disabled = overviewCacheKey(input);
+    expect(overviewCacheKey({ ...input, config: { ...config, semanticReview: false } })).toBe(disabled);
+    expect(overviewCacheKey({ ...input, config: { ...config, semanticReview: true } })).not.toBe(disabled);
+    expect(disabled).toContain('detailed-context-selection-v2');
+    expect(overviewCacheKey({ ...input, kind: 'three-line', config: { ...config, semanticReview: true } }))
+      .toBe(overviewCacheKey({ ...input, kind: 'three-line' }));
+    expect(JSON.parse(overviewCacheKey({ ...input, kind: 'three-line' }))).toHaveLength(11);
+    expect(JSON.parse(disabled)).toHaveLength(13);
   });
 
   it('requires matching document, ledger and page extraction before reading or writing', () => {
@@ -84,14 +96,17 @@ describe('verified overview cache', () => {
     const result: DetailedOverview = { kind: 'detailed', sections: DETAILED_SECTION_IDS.map((id) => ({ id, status: 'available' as const, blocks: [block] })) as DetailedOverview['sections'], uncertainties: [] };
     const restored = verifiedCachedOverview({ ...result, diagnostics: { raw: 'private' }, requestHistory: ['private'] }, 'detailed', ledger, pages);
     expect(restored).toEqual(result);
+    const oldSix = ['problem_motivation', 'method', 'contributions', 'relative_novelty', 'experiments_ablations', 'limitations'].map((id) => ({ id, status: 'available', blocks: [block] }));
+    expect(verifiedCachedOverview({ ...result, sections: oldSix }, 'detailed', ledger, pages)).toBeUndefined();
     expect(JSON.stringify(restored)).not.toContain('private');
     expect(verifiedCachedOverview({ ...result, sections: [{ ...result.sections[0], status: 'unavailable' }, ...result.sections.slice(1)] }, 'detailed', ledger, pages)).toBeUndefined();
     expect(verifiedCachedOverview({ ...result, sections: [{ ...result.sections[0], blocks: [{ ...block, evidenceIds: ['stale'] }] }, ...result.sections.slice(1)] }, 'detailed', ledger, pages)).toBeUndefined();
+    expect(verifiedCachedOverview({ ...result, sections: result.sections.map((section) => ({ ...section, blocks: [{ ...block, text: 'Unbound E999' }] })) }, 'detailed', ledger, pages)).toBeUndefined();
     const legacySections = result.sections.map((section) => section.id === 'limitations'
       ? { ...section, blocks: [{ ...block, limitationKind: 'author_stated' }] }
       : section);
     const restoredLegacy = verifiedCachedOverview({ ...result, sections: legacySections }, 'detailed', ledger, pages);
     expect(restoredLegacy).toEqual(result);
-    expect(restoredLegacy?.sections[5].blocks[0]).not.toHaveProperty('limitationKind');
+    expect(restoredLegacy?.sections[4].blocks[0]).not.toHaveProperty('limitationKind');
   });
 });

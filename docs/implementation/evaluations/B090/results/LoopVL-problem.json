@@ -1,0 +1,34 @@
+{
+  "paper": "LoopVL",
+  "arm": "problem",
+  "model": "deepseek-flash",
+  "requestSha256": "e4531dd23a57333c65510b5963ae9f7d0d661287826993681dce102a147149f1",
+  "requestChars": 5923,
+  "elapsedSeconds": 12.22,
+  "usage": {
+    "prompt_tokens": 1225,
+    "completion_tokens": 2523,
+    "total_tokens": 3748,
+    "prompt_tokens_details": {
+      "cached_tokens": 384
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 2303
+    },
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 841
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"已有研究多聚焦 language models，将 recurrent computation 扩展至 vision–language models 面临新挑战：图像提供具显式 spatial structure 的候选证据，instruction 决定相关区域；一轮 vision–language interaction 后，visual tokens 的表示与相对重要性均可能变化 (E001)。后续 recurrent steps 可能继续关注同一区域或重新分配 attention，因此 recurrent computation 不只增加 computational depth，而要作用于持续演化的 vision–language states；核心问题是 Loop Transformers 能否有效扩展至该场景 (E004)。recurrent-model 文献将 reusable computation 视为 architectural prior，但作者强调这并不意味特定 visual attention head 执行 gradient descent (E002)。因此文中 LoopVL 将 raw attention 作为 allocation diagnostic，分别考察 attention amount 与 conditional spatial concentration，而非 query/key compatibility 与 visual-value perturbations；visual aha moment 仅描述该坐标系中的 evidence reallocation (E003)。\",\"sources\":[\"E001\",\"E002\",\"E003\",\"E004\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "已有研究多聚焦 language models，将 recurrent computation 扩展至 vision–language models 面临新挑战：图像提供具显式 spatial structure 的候选证据，instruction 决定相关区域；一轮 vision–language interaction 后，visual tokens 的表示与相对重要性均可能变化 (E001)。后续 recurrent steps 可能继续关注同一区域或重新分配 attention，因此 recurrent computation 不只增加 computational depth，而要作用于持续演化的 vision–language states；核心问题是 Loop Transformers 能否有效扩展至该场景 (E004)。recurrent-model 文献将 reusable computation 视为 architectural prior，但作者强调这并不意味特定 visual attention head 执行 gradient descent (E002)。因此文中 LoopVL 将 raw attention 作为 allocation diagnostic，分别考察 attention amount 与 conditional spatial concentration，而非 query/key compatibility 与 visual-value perturbations；visual aha moment 仅描述该坐标系中的 evidence reallocation (E003)。",
+    "sources": [
+      "E001",
+      "E002",
+      "E003",
+      "E004"
+    ]
+  },
+  "unknownAliases": []
+}

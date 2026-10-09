@@ -1,0 +1,12 @@
+{
+  "index": 3,
+  "elapsedMs": 20316,
+  "content": "{\"status\":\"available\",\"text\":\"作者自述 Video-MME 是视频分析中首个 full-spectrum 的 MLLMs Multimodal Evaluation 基准，四项特征为视频类型覆盖 6 个 primary visual domains 与 30 个 subfields、时长跨度 11 秒至 1 小时、在 video frames 外整合 subtitles 与 audios、以及 expert annotators 严格人工标注。文中指既有 video-based benchmarks 缺乏视频类型多样性、temporal dynamics 覆盖不足且偏重单一模态；对应交付 900 个视频、2,700 个 multiple-choice QA、744 份 subtitles 与 900 份 audios。certificate length 分析显示 short/medium/long 中位数分别为 26s、164.7s、890.7s，中长视频所需内容明显长于 EgoSchema。评测显示 Gemini 1.5 Pro 以 75% 平均准确率居商业模型首位（高于 GPT-4V 15.1%、GPT-4o 3.1%）；开源 VILA-1.5 为 59%，7B 中 VITA-1.5 达 56.1%；image MLLMs 约 50%，接近 LLaVA-NeXT-Video。subtitles 与 audios 分别给 Gemini 1.5 Pro 带来 6.2% 与 4.3% 提升，长视频受益更大（subtitles：short +2.8%、long +10.1%），且所有模型性能随视频时长增加而下降。\",\"sources\":[\"E002\",\"E012\",\"E007\",\"E041\",\"E042\",\"E064\",\"E065\",\"E103\",\"E106\",\"E105\",\"E014\",\"E108\",\"E112\",\"E005\",\"E113\"],\"blocks\":[{\"text\":\"作者自述 Video-MME 是视频分析中首个 full-spectrum 的 MLLMs Multimodal Evaluation 基准，四项特征为视频类型覆盖 6 个 primary visual domains 与 30 个 subfields、时长跨度 11 秒至 1 小时、在 video frames 外整合 subtitles 与 audios、以及 expert annotators 严格人工标注。\",\"sources\":[\"E002\",\"E012\"],\"claimKind\":\"author_claim\"},{\"text\":\"文中指既有 video-based benchmarks 缺乏视频类型多样性、temporal dynamics 覆盖不足且偏重单一模态；对应交付 900 个视频、2,700 个 multiple-choice QA、744 份 subtitles 与 900 份 audios。\",\"sources\":[\"E007\",\"E041\",\"E042\"],\"claimKind\":\"source_fact\"},{\"text\":\"certificate length 分析显示 short/medium/long 中位数分别为 26s、164.7s、890.7s，中长视频所需内容明显长于 EgoSchema。\",\"sources\":[\"E064\",\"E065\"],\"claimKind\":\"source_fact\"},{\"text\":\"评测显示 Gemini 1.5 Pro 以 75% 平均准确率居商业模型首位（高于 GPT-4V 15.1%、GPT-4o 3.1%）；开源 VILA-1.5 为 59%，7B 中 VITA-1.5 达 56.1%；image MLLMs 约 50%，接近 LLaVA-NeXT-Video。\",\"sources\":[\"E103\",\"E106\",\"E105\",\"E014\",\"E108\"],\"claimKind\":\"observed_result\"},{\"text\":\"subtitles 与 audios 分别给 Gemini 1.5 Pro 带来 6.2% 与 4.3% 提升，长视频受益更大（subtitles：short +2.8%、long +10.1%），且所有模型性能随视频时长增加而下降。\",\"sources\":[\"E014\",\"E112\",\"E005\",\"E113\"],\"claimKind\":\"observed_result\"}]}",
+  "usage": {
+    "promptTokens": 13459,
+    "completionTokens": 4931,
+    "totalTokens": 18390,
+    "promptCacheHitTokens": 640,
+    "promptCacheMissTokens": 12819
+  }
+}

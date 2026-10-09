@@ -1,0 +1,101 @@
+{
+  "path": "Video-MME.pdf",
+  "documentVersion": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2",
+  "config": {
+    "baseUrl": "https://api.deepseek.com/v1",
+    "model": "deepseek-flash",
+    "structuredOutput": true,
+    "contextLimit": 128000,
+    "outputLimit": 32000,
+    "semanticReview": false
+  },
+  "methodOnly": true,
+  "sourceHashes": {
+    "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+    "detailedContext": "41d32b9d33ca2583cb686546300943df6afc69408e9a136d7aa09d28c384672d",
+    "detailedOverview": "3a505666a711d2dd33543b82d5dcc7d29ab9f363f620f87612e1b0cf71d9daa6",
+    "detailedOverviewPipeline": "9d4620963328291b00141220f6c5b18d02a15c1d064b730f6bf1bfca009388b1",
+    "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+  },
+  "pageCount": 13,
+  "paragraphCount": 187,
+  "selections": [
+    {
+      "id": "problem_motivation",
+      "paragraphCount": 4,
+      "chars": 1917,
+      "estimatedTextTokens": 640,
+      "sections": [
+        "1. Introduction"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+      ]
+    },
+    {
+      "id": "method",
+      "paragraphCount": 27,
+      "chars": 7831,
+      "estimatedTextTokens": 2628,
+      "sections": [
+        "1. Introduction",
+        "3.1. Dataset Construction",
+        "4.1. Settings"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+      ]
+    },
+    {
+      "id": "contributions_novelty",
+      "paragraphCount": 13,
+      "chars": 6141,
+      "estimatedTextTokens": 2052,
+      "sections": [
+        "1. Introduction",
+        "2. Related Work"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+      ]
+    },
+    {
+      "id": "experiments_ablations",
+      "paragraphCount": 28,
+      "chars": 9058,
+      "estimatedTextTokens": 3042,
+      "sections": [
+        "4. Experiments",
+        "4.1. Settings",
+        "4.2. Quantitative Results",
+        "4.3. Analysis"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+      ]
+    },
+    {
+      "id": "limitations",
+      "paragraphCount": 7,
+      "chars": 2615,
+      "estimatedTextTokens": 874,
+      "sections": [
+        "5. Discussions",
+        "6. Conclusion"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+      ]
+    }
+  ]
+}

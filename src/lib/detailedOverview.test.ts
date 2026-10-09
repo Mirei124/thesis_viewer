@@ -3,6 +3,7 @@ import { pdfEvidenceLedgerFromPages } from './evidenceLedger';
 import { normalizePdfTextItem, type PageExtraction, type PdfPageTextBlock } from './pdfPageBlocks';
 import {
   DETAILED_SECTION_IDS,
+  detailedSectionLengthGuidance,
   assembleDetailedOverview,
   detailedEvidencePacket,
   detailedSectionMessages,
@@ -60,12 +61,50 @@ describe('detailed overview compact section contract', () => {
 
   it('restores application-owned block fields and original IDs only after packet-local binding', () => {
     const { page, ledger } = sample();
-    const packet = detailedEvidencePacket(ledger, 'contributions');
+    const packet = detailedEvidencePacket(ledger, 'contributions_novelty');
     const response = parseDetailedSectionResponse('{"status":"available","text":"本文给出经过本地证据支持的核心贡献。","sources":["S01"],"providerMetadata":"ignored"}');
-    const section = validateDetailedSectionResponse('contributions', response, packet, ledger, [page]);
-    expect(section).toMatchObject({ id: 'contributions', status: 'available', blocks: [{ claimKind: 'author_claim' }] });
+    const section = validateDetailedSectionResponse('contributions_novelty', response, packet, ledger, [page]);
+    expect(section).toMatchObject({ id: 'contributions_novelty', status: 'available', blocks: [{ claimKind: 'author_claim' }] });
     expect(section.blocks[0].evidenceIds[0]).toBe(ledger.candidates[0].evidenceId);
     expect(section.blocks[0].evidenceRefs).toEqual([{ alias: 'S01', evidenceIds: [ledger.candidates[0].evidenceId] }]);
+  });
+
+  it('binds mixed contribution claims separately and rejects undeclared, duplicate and future references', () => {
+    const { page, ledger } = sample();
+    const session = createProgressiveEvidenceSession(ledger, { maxCandidatesByStage: { problem_motivation: 2 } });
+    appendProgressiveEvidenceStage(session, 'problem_motivation');
+    const response = parseDetailedSectionResponse(JSON.stringify({ status: 'available', text: '贡献 E001。解读 E002。', sources: ['E001', 'E002'], blocks: [
+      { text: '贡献 E001。', sources: ['E001'], claimKind: 'author_claim' },
+      { text: '解读 E002。', sources: ['E002'], claimKind: 'inference' },
+    ] }));
+    const section = validateProgressiveDetailedSectionResponse('contributions_novelty', response, session, ledger, [page]);
+    expect(section.blocks.map((block) => block.claimKind)).toEqual(['author_claim', 'inference']);
+    expect(section.blocks.map((block) => block.evidenceRefs?.map((ref) => ref.alias))).toEqual([['E001'], ['E002']]);
+    for (const value of [
+      { text: '未声明 E999。', sources: ['E001'] },
+      { text: '重复', sources: ['E001', 'E001'] },
+      { text: '贡献', sources: ['E001'], blocks: [{ text: '越界 E002', sources: ['E002'], claimKind: 'author_claim' }] },
+    ]) expect(() => parseDetailedSectionResponse(JSON.stringify({ status: 'available', ...value }))).toThrow();
+    const future = parseDetailedSectionResponse(JSON.stringify({ status: 'available', text: '未来 E999', sources: ['E999'] }));
+    expect(() => validateProgressiveDetailedSectionResponse('contributions_novelty', future, session, ledger, [page])).toThrow(/has not been sent/);
+  });
+
+  it('requires module mechanisms and scoped modality checks instead of a short name list', () => {
+    const { ledger } = sample();
+    const prompt = detailedSectionMessages('method', detailedEvidencePacket(ledger, 'method'))[0].content;
+    for (const instruction of ['1000–1400', '中英文字符总数', '用1–2句', '每阶段仅一句', '不列阶段样本量、标注耗时、重训次数或型号升级', '一个短句', '尽量不超过1600', '主动删去旁枝统计', '内部怎样变换', '推理流程', '字幕、音频', '文本提示编码', '先判断论文的核心贡献类型', '数据引擎若是核心贡献', '下游评测任务清单', '数据集质检统计', 'benchmark指标与结果应放到实验栏', '不代表必须逐段复述']) expect(prompt).toContain(instruction);
+  });
+
+  it('shares a visible-character target across batches instead of repeating the full length per batch', () => {
+    const full = detailedSectionLengthGuidance('method');
+    expect(full).toContain('不含引用标记、空白');
+    expect(full).not.toContain('900–1600');
+    for (let index = 0; index < 4; index++) {
+      const guidance = detailedSectionLengthGuidance('method', index, 4);
+      expect(guidance).toContain('约250–350字符');
+      expect(guidance).toContain('不得每批各写一份整栏篇幅');
+    }
+    expect(detailedSectionLengthGuidance('contributions_novelty')).toContain('110–210');
   });
 
   it('keeps limitation text and verified sources without classifying a section-title slot as an author statement', () => {
@@ -94,7 +133,7 @@ describe('detailed overview compact section contract', () => {
     expect(unavailableDetailedSection('method').blocks[0]).toMatchObject({ claimKind: 'missing_information', evidenceIds: [] });
   });
 
-  it('keeps unavailable output evidence-free and assembles exactly the fixed six-section order', () => {
+  it('keeps unavailable output evidence-free and assembles exactly the fixed five-section order', () => {
     expect(() => parseDetailedSectionResponse('{"status":"unavailable","text":"资料不足","sources":["S01"]}')).toThrow(/evidence rules/);
     const sections = DETAILED_SECTION_IDS.map((id) => unavailableDetailedSection(id));
     const overview = assembleDetailedOverview(sections);
@@ -140,7 +179,7 @@ describe('detailed overview compact section contract', () => {
     expect(limitations.blocks[0]).toMatchObject({ text: valid.text, claimKind: 'inference', evidenceRefs: validated.blocks[0].evidenceRefs });
     expect(limitations.blocks[0]).not.toHaveProperty('limitationKind');
     const invalid = parseDetailedSectionResponse('{"status":"available","text":"不应通过。","sources":["E999"]}');
-    expect(() => validateProgressiveDetailedSectionResponse('contributions', invalid, session, ledger, [page])).toThrow(/has not been sent/);
-    expect(unavailableDetailedSection('contributions').blocks[0].evidenceIds).toEqual([]);
+    expect(() => validateProgressiveDetailedSectionResponse('contributions_novelty', invalid, session, ledger, [page])).toThrow(/has not been sent/);
+    expect(unavailableDetailedSection('contributions_novelty').blocks[0].evidenceIds).toEqual([]);
   });
 });

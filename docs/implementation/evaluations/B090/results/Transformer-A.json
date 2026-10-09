@@ -1,0 +1,36 @@
+{
+  "paper": "Transformer",
+  "arm": "A",
+  "model": "deepseek-flash",
+  "requestSha256": "b6c2664d60114765493f33859eb5e6b59b564a2a260458d1f7f4a159677d6bc6",
+  "requestChars": 7757,
+  "elapsedSeconds": 7.48,
+  "usage": {
+    "prompt_tokens": 1981,
+    "completion_tokens": 1748,
+    "total_tokens": 3729,
+    "prompt_tokens_details": {
+      "cached_tokens": 896
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1443
+    },
+    "prompt_cache_hit_tokens": 896,
+    "prompt_cache_miss_tokens": 1085
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"本文方法为 Transformer，是首个完全基于 attention 的 sequence transduction 模型，将 encoder-decoder 架构中常用的 recurrent layers 替换为 multi-headed self-attention（E003）。输入沿用 encoder-decoder 结构，encoder 把输入 symbol representations 的序列映射为表示（E006）；由于模型既无 recurrence 也无 convolution，需在 encoder 与 decoder 堆栈底部的 input embeddings 上加入 positional encodings，以注入 token 的相对或绝对位置信息（E007）。\\n\\n关键处理步骤：1）embeddings 与 positional encodings 相加；2）encoder 各层以 multi-headed self-attention 取代 recurrent layers（E003）；3）encoder 与 decoder 的每层除 attention sub-layers 外，还含 fully connected feed-forward network，该网络对每个位置独立且以相同方式施加，由两次 linear transformation 与中间的 ReLU 组成（E004）；4）dropout 施于每个 sub-layer 的输出，且发生在该输出与 sub-layer 输入相加并归一化之前，同时也施于 encoder 和 decoder 堆栈中 embeddings 与 positional encodings 之和（E005）。Multi-Head Attention 的作用在于抵消 attention-weighted positions 平均所带来的有效分辨率下降（E002）。\",\"sources\":[\"E002\",\"E003\",\"E004\",\"E005\",\"E006\",\"E007\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "本文方法为 Transformer，是首个完全基于 attention 的 sequence transduction 模型，将 encoder-decoder 架构中常用的 recurrent layers 替换为 multi-headed self-attention（E003）。输入沿用 encoder-decoder 结构，encoder 把输入 symbol representations 的序列映射为表示（E006）；由于模型既无 recurrence 也无 convolution，需在 encoder 与 decoder 堆栈底部的 input embeddings 上加入 positional encodings，以注入 token 的相对或绝对位置信息（E007）。\n\n关键处理步骤：1）embeddings 与 positional encodings 相加；2）encoder 各层以 multi-headed self-attention 取代 recurrent layers（E003）；3）encoder 与 decoder 的每层除 attention sub-layers 外，还含 fully connected feed-forward network，该网络对每个位置独立且以相同方式施加，由两次 linear transformation 与中间的 ReLU 组成（E004）；4）dropout 施于每个 sub-layer 的输出，且发生在该输出与 sub-layer 输入相加并归一化之前，同时也施于 encoder 和 decoder 堆栈中 embeddings 与 positional encodings 之和（E005）。Multi-Head Attention 的作用在于抵消 attention-weighted positions 平均所带来的有效分辨率下降（E002）。",
+    "sources": [
+      "E002",
+      "E003",
+      "E004",
+      "E005",
+      "E006",
+      "E007"
+    ]
+  },
+  "unknownAliases": []
+}

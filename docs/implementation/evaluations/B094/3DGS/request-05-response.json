@@ -1,0 +1,12 @@
+{
+  "index": 5,
+  "elapsedMs": 6301,
+  "content": "{\"status\":\"available\",\"text\":\"论文承认在观测不足区域会出现伪影，且可能生成拉长或“splotchy”的 Gaussians（E058）。优化产生的大 Gaussians 在视角相关区域会引发 popping artifacts，作者将原因归于 rasterizer 的 guard band 剔除与简单 visibility 算法，并指出尚未施加 regularization（E059）。训练大场景时峰值 GPU 显存可超过 20 GB，渲染还需数百 MB 存储模型及 30–500 MB 的 rasterizer（E066）。此外，仅 early experiments 表明超大场景（如 urban datasets）可能需要降低 position learning rate，该外推尚未在完整评测中验证（E060）。\",\"sources\":[\"E058\",\"E059\",\"E060\",\"E066\"]}",
+  "usage": {
+    "promptTokens": 8586,
+    "completionTokens": 1155,
+    "totalTokens": 9741,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 8074
+  }
+}

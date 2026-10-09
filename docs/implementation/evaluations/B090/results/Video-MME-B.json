@@ -1,0 +1,36 @@
+{
+  "paper": "Video-MME",
+  "arm": "B",
+  "model": "deepseek-flash",
+  "requestSha256": "1e44d17a921ee0643889a73b53b00b1a1f8712cf71f5b9c0788e4813df0c97a5",
+  "requestChars": 9613,
+  "elapsedSeconds": 8.3,
+  "usage": {
+    "prompt_tokens": 2375,
+    "completion_tokens": 1629,
+    "total_tokens": 4004,
+    "prompt_tokens_details": {
+      "cached_tokens": 1152
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1094
+    },
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 1223
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"本文提出的是评测基准 Video-MME 的构建方法，而不是训练一个新的 MLLMs，因此不存在模型参数意义上的训练阶段；MLLMs 在这里是被评测对象，方法核心是构造视频与配套问答，并用其考察模型能力 (E008, E006)。\\n\\n任务、输入与输出：每个样本给出一段视频，模型需基于视频内容回答四选一的 multiple-choice QA，评测目标是考察 MLLMs 的 compositional video understanding，尤其是 long-term contextual understanding 与复杂的 spatial、temporal reasoning (E004, E006)。问题被刻意设置为不能仅凭文本推断，视频内容必须作为作答的关键线索 (E007)。\\n\\n数据构造流程如下。先从 YouTube 采集原始视频，为此建立 domain hierarchy，划分 6 个 key domains，包括 Knowledge、Film & Television、Sports Competition、Life Record 与 Multilingual；每个 domain 再细分为具体 tags，例如 Sports Competition 下的 football 与 basketball，共得到 30 个 fine-grained video categories，并在每个类别下采集不同 duration 的视频 (E005)。需要说明的是，该摘录在声明 6 个 domain 后只列出五个名称，第六个 domain 的名称在材料中缺失 (E005)。\\n\\n随后是 QA 标注：采用 multiple-choice QA 形式，标注者需完整观看视频，再迭代创建 3 个相关问题，每题附四个候选选项，最终形成 2,700 个 QA pairs，对应 900 段视频 (E006, E008)。质检分两步：先由另一位标注者审查语言表达是否清晰精确、选项逻辑是否一致、指定正确答案是否合理；再用纯文本问题询问 Gemini 1.5 Pro，过滤掉仅凭问题文本即可回答的样本，从而保证问题确实依赖视频内容 (E007)。数据集在示例中要求模型整合视频画面与 auditory/subtitle 等不同来源的信息 (E002)，整体设计也以难度和多样性为目标 (E004)。\\n\\n评测协议方面，材料只说明采用四选一形式以便直接而灵活地评估，未给出具体 prompt 模板、打分或指标定义，也未说明 MLLMs 推理时的帧采样与输入配置，这些属于材料中缺失的关键定义 (E006)。Gemini 1.5 Pro 在材料中仅用于问题过滤，并未说明它是被评测模型 (E007)。\",\"sources\":[\"E002\",\"E004\",\"E005\",\"E006\",\"E007\",\"E008\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "本文提出的是评测基准 Video-MME 的构建方法，而不是训练一个新的 MLLMs，因此不存在模型参数意义上的训练阶段；MLLMs 在这里是被评测对象，方法核心是构造视频与配套问答，并用其考察模型能力 (E008, E006)。\n\n任务、输入与输出：每个样本给出一段视频，模型需基于视频内容回答四选一的 multiple-choice QA，评测目标是考察 MLLMs 的 compositional video understanding，尤其是 long-term contextual understanding 与复杂的 spatial、temporal reasoning (E004, E006)。问题被刻意设置为不能仅凭文本推断，视频内容必须作为作答的关键线索 (E007)。\n\n数据构造流程如下。先从 YouTube 采集原始视频，为此建立 domain hierarchy，划分 6 个 key domains，包括 Knowledge、Film & Television、Sports Competition、Life Record 与 Multilingual；每个 domain 再细分为具体 tags，例如 Sports Competition 下的 football 与 basketball，共得到 30 个 fine-grained video categories，并在每个类别下采集不同 duration 的视频 (E005)。需要说明的是，该摘录在声明 6 个 domain 后只列出五个名称，第六个 domain 的名称在材料中缺失 (E005)。\n\n随后是 QA 标注：采用 multiple-choice QA 形式，标注者需完整观看视频，再迭代创建 3 个相关问题，每题附四个候选选项，最终形成 2,700 个 QA pairs，对应 900 段视频 (E006, E008)。质检分两步：先由另一位标注者审查语言表达是否清晰精确、选项逻辑是否一致、指定正确答案是否合理；再用纯文本问题询问 Gemini 1.5 Pro，过滤掉仅凭问题文本即可回答的样本，从而保证问题确实依赖视频内容 (E007)。数据集在示例中要求模型整合视频画面与 auditory/subtitle 等不同来源的信息 (E002)，整体设计也以难度和多样性为目标 (E004)。\n\n评测协议方面，材料只说明采用四选一形式以便直接而灵活地评估，未给出具体 prompt 模板、打分或指标定义，也未说明 MLLMs 推理时的帧采样与输入配置，这些属于材料中缺失的关键定义 (E006)。Gemini 1.5 Pro 在材料中仅用于问题过滤，并未说明它是被评测模型 (E007)。",
+    "sources": [
+      "E002",
+      "E004",
+      "E005",
+      "E006",
+      "E007",
+      "E008"
+    ]
+  },
+  "unknownAliases": []
+}

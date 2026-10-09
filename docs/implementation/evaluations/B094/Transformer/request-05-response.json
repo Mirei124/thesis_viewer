@@ -1,0 +1,12 @@
+{
+  "index": 5,
+  "elapsedMs": 5588,
+  "content": "{\"status\":\"available\",\"text\":\"材料明确承认的局限较有限。在 English constituency parsing 上，Transformer 仍逊于 Recurrent Neural Network Grammar (E061)。机制层面，averaging attention-weighted positions 会降低 effective resolution，需由 Multi-Head Attention 补偿 (E016)；缩小 attention key size d_k 会损害质量，暗示 dot product 未必是理想的 compatibility function (E051)。此外，面向 images、audio、video 等非文本模态与 large inputs and outputs 的 local, restricted attention 仅属未来计划，尚未验证 (E066)。\",\"sources\":[\"E016\",\"E051\",\"E061\",\"E066\"]}",
+  "usage": {
+    "promptTokens": 6289,
+    "completionTokens": 1136,
+    "totalTokens": 7425,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 5777
+  }
+}

@@ -1,0 +1,193 @@
+{
+  "path": "/tmp/b084-2609.38426.pdf",
+  "documentVersion": "sha256:e0f47aed641b87b74dee372c07ab2940b9733182d4d361cd31fce5c2a10bb88e",
+  "config": {
+    "baseUrl": "https://api.deepseek.com/v1",
+    "model": "deepseek-flash",
+    "structuredOutput": true,
+    "contextLimit": 128000,
+    "outputLimit": 32000
+  },
+  "pageCount": 32,
+  "paragraphCount": 618,
+  "selections": [
+    {
+      "id": "problem_motivation",
+      "paragraphCount": 131,
+      "chars": 40610,
+      "estimatedTextTokens": 13744,
+      "sections": [
+        "Abstract",
+        "1 Introduction",
+        "2.2 Motivation",
+        "6 Related Work",
+        "6.1 Looped Transformers",
+        "6.2 Hierarchical and Nested Recurrence",
+        "6.3 Visual–Language Interfaces and Spatial Structure",
+        "6.4 Interpreting Recurrent Computation",
+        "6.5 Training Regimes and Compute Accounting",
+        "6.6 Iterative Reasoning and Generalization",
+        "7 Future Work",
+        "8 Conclusion",
+        "9 Acknowledgments"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "method",
+      "paragraphCount": 215,
+      "chars": 47224,
+      "estimatedTextTokens": 16406,
+      "sections": [
+        "Abstract",
+        "1 Introduction",
+        "2 The LoopVL Model",
+        "2.1 Architecture",
+        "2.2 Motivation",
+        "3 Pre-Training",
+        "Training Data Composition Across Stages",
+        "3.1 Initialization",
+        "3.2 Learning Schedule",
+        "3.3 Stage 1: Visual Language Alignment",
+        "3.4 Stage 2: Multimodal Mid-Training",
+        "4 Post-Training",
+        "4.1 Supervised Fine-Tuning",
+        "4.2 Visual Reinforcement Learning",
+        "5.6 Visual Attention Allocation",
+        "6.5 Training Regimes and Compute Accounting",
+        "7 Future Work",
+        "9 Acknowledgments",
+        "A Evaluation Settings and Scoring Methods",
+        "B Diagnostic Metrics and Sample Sources"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "contributions_novelty",
+      "paragraphCount": 462,
+      "chars": 91988,
+      "estimatedTextTokens": 31491,
+      "sections": [
+        "Abstract",
+        "1 Introduction",
+        "2 The LoopVL Model",
+        "2.1 Architecture",
+        "2.2 Motivation",
+        "3 Pre-Training",
+        "Training Data Composition Across Stages",
+        "3.1 Initialization",
+        "3.2 Learning Schedule",
+        "3.3 Stage 1: Visual Language Alignment",
+        "3.4 Stage 2: Multimodal Mid-Training",
+        "4 Post-Training",
+        "4.1 Supervised Fine-Tuning",
+        "4.2 Visual Reinforcement Learning",
+        "5 Evaluation",
+        "5.1 Results",
+        "5.2 Ablations",
+        "5.3 Loop Depth",
+        "5.4 Visual Aha Moment",
+        "5.5 Cross-Loop Token Relevance",
+        "5.6 Visual Attention Allocation",
+        "5.7 State Refinement and Prediction Formation",
+        "6 Related Work",
+        "6.1 Looped Transformers",
+        "6.2 Hierarchical and Nested Recurrence",
+        "6.3 Visual–Language Interfaces and Spatial Structure",
+        "6.4 Interpreting Recurrent Computation",
+        "6.5 Training Regimes and Compute Accounting",
+        "6.6 Iterative Reasoning and Generalization",
+        "7 Future Work",
+        "8 Conclusion",
+        "9 Acknowledgments",
+        "A Evaluation Settings and Scoring Methods",
+        "B Diagnostic Metrics and Sample Sources",
+        "C Additional Visual Reallocation Examples"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "experiments_ablations",
+      "paragraphCount": 421,
+      "chars": 74172,
+      "estimatedTextTokens": 25506,
+      "sections": [
+        "Abstract",
+        "1 Introduction",
+        "2 The LoopVL Model",
+        "2.1 Architecture",
+        "2.2 Motivation",
+        "3 Pre-Training",
+        "Training Data Composition Across Stages",
+        "3.1 Initialization",
+        "3.2 Learning Schedule",
+        "3.3 Stage 1: Visual Language Alignment",
+        "3.4 Stage 2: Multimodal Mid-Training",
+        "4 Post-Training",
+        "4.1 Supervised Fine-Tuning",
+        "4.2 Visual Reinforcement Learning",
+        "5 Evaluation",
+        "5.1 Results",
+        "5.2 Ablations",
+        "5.3 Loop Depth",
+        "5.4 Visual Aha Moment",
+        "5.5 Cross-Loop Token Relevance",
+        "5.6 Visual Attention Allocation",
+        "5.7 State Refinement and Prediction Formation",
+        "6.5 Training Regimes and Compute Accounting",
+        "7 Future Work",
+        "9 Acknowledgments",
+        "A Evaluation Settings and Scoring Methods",
+        "B Diagnostic Metrics and Sample Sources",
+        "C Additional Visual Reallocation Examples"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "limitations",
+      "paragraphCount": 329,
+      "chars": 56376,
+      "estimatedTextTokens": 19092,
+      "sections": [
+        "Abstract",
+        "1 Introduction",
+        "2.2 Motivation",
+        "5 Evaluation",
+        "5.1 Results",
+        "5.2 Ablations",
+        "5.3 Loop Depth",
+        "5.4 Visual Aha Moment",
+        "5.5 Cross-Loop Token Relevance",
+        "5.6 Visual Attention Allocation",
+        "5.7 State Refinement and Prediction Formation",
+        "7 Future Work",
+        "8 Conclusion",
+        "9 Acknowledgments",
+        "A Evaluation Settings and Scoring Methods",
+        "B Diagnostic Metrics and Sample Sources",
+        "C Additional Visual Reallocation Examples"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    }
+  ]
+}

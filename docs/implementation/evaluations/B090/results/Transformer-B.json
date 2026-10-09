@@ -1,0 +1,37 @@
+{
+  "paper": "Transformer",
+  "arm": "B",
+  "model": "deepseek-flash",
+  "requestSha256": "bf273af4372a237a3c5448d9c01d7e5349c5d91ad41ae8cec6eaf67f1ad47a5f",
+  "requestChars": 7825,
+  "elapsedSeconds": 8.92,
+  "usage": {
+    "prompt_tokens": 2039,
+    "completion_tokens": 1881,
+    "total_tokens": 3920,
+    "prompt_tokens_details": {
+      "cached_tokens": 896
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1251
+    },
+    "prompt_cache_hit_tokens": 896,
+    "prompt_cache_miss_tokens": 1143
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"本文处理的任务是 sequence transduction，实验中具体化为机器翻译：模型接收输入序列的 symbol representations，由 encoder 将其映射为表示，再由 decoder 生成输出序列（E006）。作者提出的 Transformer 是第一个完全基于 attention 的 sequence transduction model，它把 encoder-decoder 架构中最常用的 recurrent layers 替换为 multi-headed self-attention（E003）。\\n\\n整体上模型仍沿用 encoder-decoder 结构（E006）。由于 Transformer 既不含 recurrence 也不含 convolution，计算过程本身不携带顺序信息，因此作者在 encoder 与 decoder 两个 stack 的底部把 positional encodings 加到 input embeddings 上，以注入 token 的相对或绝对位置信息；positional encodings 与 embeddings 维度相同，因而可以直接相加（E007）。\\n\\nencoder 与 decoder 的每一层由 attention sub-layers 与一个 fully connected feed-forward network 组成。该 feed-forward network 对每个位置单独且相同地作用，内部是两次 linear transformations，中间夹一个 ReLU activation（E004）。也就是说位置之间不通过它交换信息，跨位置的信息传递完全由 attention sub-layer 承担。\\n\\n在残差与归一化上，每个 sub-layer 的输出先施加 dropout，然后加回该 sub-layer 的输入再做 normalization；此外 encoder 与 decoder 两个 stack 中 embeddings 与 positional encodings 之和也施加 dropout（E005）。材料中 base model 的 dropout rate 数值被截断，具体取值无法确认（E005）。\\n\\n采用 attention 路线的动机在于降低 sequential computation：以 convolutional neural networks 为基本构建块的 ConvS2S 与 ByteNet 虽可对全部位置并行计算 hidden representations，但关联任意两个位置所需操作数随距离增长，分别为线性与对数，远距离依赖因此更难学习；Transformer 把这一代价降为常数级操作，代价是 attention-weighted positions 平均导致 effective resolution 下降，作者以 Multi-Head Attention 抵消（E002）。\\n\\n训练阶段，作者报告在 translation tasks 上 Transformer 的训练速度明显快于基于 recurrent 或 convolutional layers 的架构（E003）。推理阶段的具体做法，以及 multi-head attention 的计算公式、head 数量、层数与隐藏维度等关键配置，所给材料均未提供，此处无法复述，这是本方法说明中缺失的核心定义部分。\\n\\n效果方面，模型在 WMT 2014 English-to-German 上取得 28.4 BLEU，比包括 ensembles 在内的既有最佳结果高出 2 BLEU 以上；在 WMT 2014 English-to-French 上以八块 GPU 训练 3.5 天，取得 41.8 的单模型 state-of-the-art BLEU（E001）。\",\"sources\":[\"E001\",\"E002\",\"E003\",\"E004\",\"E005\",\"E006\",\"E007\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "本文处理的任务是 sequence transduction，实验中具体化为机器翻译：模型接收输入序列的 symbol representations，由 encoder 将其映射为表示，再由 decoder 生成输出序列（E006）。作者提出的 Transformer 是第一个完全基于 attention 的 sequence transduction model，它把 encoder-decoder 架构中最常用的 recurrent layers 替换为 multi-headed self-attention（E003）。\n\n整体上模型仍沿用 encoder-decoder 结构（E006）。由于 Transformer 既不含 recurrence 也不含 convolution，计算过程本身不携带顺序信息，因此作者在 encoder 与 decoder 两个 stack 的底部把 positional encodings 加到 input embeddings 上，以注入 token 的相对或绝对位置信息；positional encodings 与 embeddings 维度相同，因而可以直接相加（E007）。\n\nencoder 与 decoder 的每一层由 attention sub-layers 与一个 fully connected feed-forward network 组成。该 feed-forward network 对每个位置单独且相同地作用，内部是两次 linear transformations，中间夹一个 ReLU activation（E004）。也就是说位置之间不通过它交换信息，跨位置的信息传递完全由 attention sub-layer 承担。\n\n在残差与归一化上，每个 sub-layer 的输出先施加 dropout，然后加回该 sub-layer 的输入再做 normalization；此外 encoder 与 decoder 两个 stack 中 embeddings 与 positional encodings 之和也施加 dropout（E005）。材料中 base model 的 dropout rate 数值被截断，具体取值无法确认（E005）。\n\n采用 attention 路线的动机在于降低 sequential computation：以 convolutional neural networks 为基本构建块的 ConvS2S 与 ByteNet 虽可对全部位置并行计算 hidden representations，但关联任意两个位置所需操作数随距离增长，分别为线性与对数，远距离依赖因此更难学习；Transformer 把这一代价降为常数级操作，代价是 attention-weighted positions 平均导致 effective resolution 下降，作者以 Multi-Head Attention 抵消（E002）。\n\n训练阶段，作者报告在 translation tasks 上 Transformer 的训练速度明显快于基于 recurrent 或 convolutional layers 的架构（E003）。推理阶段的具体做法，以及 multi-head attention 的计算公式、head 数量、层数与隐藏维度等关键配置，所给材料均未提供，此处无法复述，这是本方法说明中缺失的核心定义部分。\n\n效果方面，模型在 WMT 2014 English-to-German 上取得 28.4 BLEU，比包括 ensembles 在内的既有最佳结果高出 2 BLEU 以上；在 WMT 2014 English-to-French 上以八块 GPU 训练 3.5 天，取得 41.8 的单模型 state-of-the-art BLEU（E001）。",
+    "sources": [
+      "E001",
+      "E002",
+      "E003",
+      "E004",
+      "E005",
+      "E006",
+      "E007"
+    ]
+  },
+  "unknownAliases": []
+}

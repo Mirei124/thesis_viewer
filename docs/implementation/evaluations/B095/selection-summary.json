@@ -1,0 +1,1550 @@
+[
+  {
+    "name": "SAM",
+    "selections": [
+      {
+        "id": "problem_motivation",
+        "chars": 5845,
+        "estimatedTextTokens": 1977,
+        "paragraphCount": 9,
+        "invalidMembers": 0,
+        "baselineChars": 47464,
+        "reduction": 0.8768540367436373,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1. Introduction",
+            "role": "intro"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "method",
+        "chars": 17911,
+        "estimatedTextTokens": 6059,
+        "paragraphCount": 40,
+        "invalidMembers": 0,
+        "baselineChars": 77799,
+        "reduction": 0.7697785318577359,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1. Introduction",
+            "role": "intro"
+          },
+          {
+            "id": "section:3",
+            "title": "2. Segment Anything Task",
+            "role": "method"
+          },
+          {
+            "id": "section:4",
+            "title": "3. Segment Anything Model",
+            "role": "method"
+          },
+          {
+            "id": "section:5",
+            "title": "4. Segment Anything Data Engine",
+            "role": "method"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "contributions_novelty",
+        "chars": 7942,
+        "estimatedTextTokens": 2685,
+        "paragraphCount": 14,
+        "invalidMembers": 0,
+        "baselineChars": 77799,
+        "reduction": 0.8979164256609982,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1. Introduction",
+            "role": "intro"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "experiments_ablations",
+        "chars": 20621,
+        "estimatedTextTokens": 7032,
+        "paragraphCount": 104,
+        "invalidMembers": 0,
+        "baselineChars": 82034,
+        "reduction": 0.7486286174025404,
+        "sections": [
+          {
+            "id": "section:3",
+            "title": "2. Segment Anything Task",
+            "role": "method"
+          },
+          {
+            "id": "section:4",
+            "title": "3. Segment Anything Model",
+            "role": "method"
+          },
+          {
+            "id": "section:8",
+            "title": "7. Zero-Shot Transfer Experiments",
+            "role": "experiments"
+          },
+          {
+            "id": "section:9",
+            "title": "7.1. Zero-Shot Single Point Valid Mask Evaluation",
+            "role": "experiments"
+          },
+          {
+            "id": "section:10",
+            "title": "7.2. Zero-Shot Edge Detection",
+            "role": "experiments"
+          },
+          {
+            "id": "section:11",
+            "title": "7.3. Zero-Shot Object Proposals",
+            "role": "experiments"
+          },
+          {
+            "id": "section:12",
+            "title": "7.4. Zero-Shot Instance Segmentation",
+            "role": "experiments"
+          },
+          {
+            "id": "section:13",
+            "title": "7.5. Zero-Shot Text-to-Mask",
+            "role": "experiments"
+          },
+          {
+            "id": "section:14",
+            "title": "7.6. Ablations",
+            "role": "experiments"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "1 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "limitations",
+        "chars": 4235,
+        "estimatedTextTokens": 1429,
+        "paragraphCount": 6,
+        "invalidMembers": 0,
+        "baselineChars": 69451,
+        "reduction": 0.9390217563462009,
+        "sections": [
+          {
+            "id": "section:15",
+            "title": "8. Discussion",
+            "role": "limitations"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Video-MME",
+    "selections": [
+      {
+        "id": "problem_motivation",
+        "chars": 1917,
+        "estimatedTextTokens": 640,
+        "paragraphCount": 4,
+        "invalidMembers": 0,
+        "baselineChars": 22446,
+        "reduction": 0.9145950280673617,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1. Introduction",
+            "role": "intro"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "method",
+        "chars": 7831,
+        "estimatedTextTokens": 2628,
+        "paragraphCount": 27,
+        "invalidMembers": 0,
+        "baselineChars": 31089,
+        "reduction": 0.7481102640805429,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1. Introduction",
+            "role": "intro"
+          },
+          {
+            "id": "section:5",
+            "title": "3.1. Dataset Construction",
+            "role": "method"
+          },
+          {
+            "id": "section:8",
+            "title": "4.1. Settings",
+            "role": "method"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "contributions_novelty",
+        "chars": 6141,
+        "estimatedTextTokens": 2052,
+        "paragraphCount": 13,
+        "invalidMembers": 0,
+        "baselineChars": 31504,
+        "reduction": 0.8050723717623158,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1. Introduction",
+            "role": "intro"
+          },
+          {
+            "id": "section:3",
+            "title": "2. Related Work",
+            "role": "related"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "experiments_ablations",
+        "chars": 9058,
+        "estimatedTextTokens": 3042,
+        "paragraphCount": 28,
+        "invalidMembers": 0,
+        "baselineChars": 33217,
+        "reduction": 0.7273083059878978,
+        "sections": [
+          {
+            "id": "section:7",
+            "title": "4. Experiments",
+            "role": "experiments"
+          },
+          {
+            "id": "section:8",
+            "title": "4.1. Settings",
+            "role": "method"
+          },
+          {
+            "id": "section:9",
+            "title": "4.2. Quantitative Results",
+            "role": "experiments"
+          },
+          {
+            "id": "section:10",
+            "title": "4.3. Analysis",
+            "role": "experiments"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "limitations",
+        "chars": 2615,
+        "estimatedTextTokens": 874,
+        "paragraphCount": 7,
+        "invalidMembers": 0,
+        "baselineChars": 31004,
+        "reduction": 0.9156560443813702,
+        "sections": [
+          {
+            "id": "section:11",
+            "title": "5. Discussions",
+            "role": "limitations"
+          },
+          {
+            "id": "section:12",
+            "title": "6. Conclusion",
+            "role": "conclusion"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Chinchilla",
+    "selections": [
+      {
+        "id": "problem_motivation",
+        "chars": 5760,
+        "estimatedTextTokens": 1947,
+        "paragraphCount": 28,
+        "invalidMembers": 0,
+        "baselineChars": 30372,
+        "reduction": 0.8103516396681154,
+        "sections": [
+          {
+            "id": "section:1",
+            "title": "1. Introduction",
+            "role": "intro"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "1 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "method",
+        "chars": 17074,
+        "estimatedTextTokens": 5927,
+        "paragraphCount": 117,
+        "invalidMembers": 0,
+        "baselineChars": 58670,
+        "reduction": 0.708982444179308,
+        "sections": [
+          {
+            "id": "section:1",
+            "title": "1. Introduction",
+            "role": "intro"
+          },
+          {
+            "id": "section:3",
+            "title": "3. Estimating the optimal parameter/training tokens allocation",
+            "role": "method"
+          },
+          {
+            "id": "section:4",
+            "title": "3.1. Approach 1: Fix model sizes and vary number of training tokens",
+            "role": "method"
+          },
+          {
+            "id": "section:5",
+            "title": "3.2. Approach 2: IsoFLOP profiles",
+            "role": "method"
+          },
+          {
+            "id": "section:6",
+            "title": "3.3. Approach 3: Fitting a parametric loss function",
+            "role": "method"
+          },
+          {
+            "id": "section:7",
+            "title": "3.4. Optimal model scaling",
+            "role": "method"
+          },
+          {
+            "id": "section:9",
+            "title": "4.1. Model and training details",
+            "role": "method"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "6 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "contributions_novelty",
+        "chars": 9658,
+        "estimatedTextTokens": 3241,
+        "paragraphCount": 19,
+        "invalidMembers": 0,
+        "baselineChars": 57737,
+        "reduction": 0.8327242496146319,
+        "sections": [
+          {
+            "id": "section:1",
+            "title": "1. Introduction",
+            "role": "intro"
+          },
+          {
+            "id": "section:2",
+            "title": "2. Related Work",
+            "role": "related"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "experiments_ablations",
+        "chars": 12446,
+        "estimatedTextTokens": 4192,
+        "paragraphCount": 71,
+        "invalidMembers": 0,
+        "baselineChars": 62435,
+        "reduction": 0.8006566829502683,
+        "sections": [
+          {
+            "id": "section:10",
+            "title": "4.2. Results",
+            "role": "experiments"
+          },
+          {
+            "id": "section:11",
+            "title": "4.2.1. Language modelling",
+            "role": "experiments"
+          },
+          {
+            "id": "section:12",
+            "title": "4.2.2. MMLU",
+            "role": "experiments"
+          },
+          {
+            "id": "section:13",
+            "title": "4.2.3. Reading comprehension",
+            "role": "experiments"
+          },
+          {
+            "id": "section:14",
+            "title": "4.2.4. BIG-bench",
+            "role": "experiments"
+          },
+          {
+            "id": "section:15",
+            "title": "4.2.5. Common sense",
+            "role": "experiments"
+          },
+          {
+            "id": "section:16",
+            "title": "4.2.6. Closed-book question answering",
+            "role": "experiments"
+          },
+          {
+            "id": "section:17",
+            "title": "4.2.7. Gender bias and toxicity",
+            "role": "experiments"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "2 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "limitations",
+        "chars": 3765,
+        "estimatedTextTokens": 1261,
+        "paragraphCount": 8,
+        "invalidMembers": 0,
+        "baselineChars": 28585,
+        "reduction": 0.8682875634073814,
+        "sections": [
+          {
+            "id": "section:18",
+            "title": "5. Discussion & Conclusion",
+            "role": "limitations"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      }
+    ]
+  },
+  {
+    "name": "Transformer",
+    "selections": [
+      {
+        "id": "problem_motivation",
+        "chars": 2728,
+        "estimatedTextTokens": 912,
+        "paragraphCount": 7,
+        "invalidMembers": 0,
+        "baselineChars": 7194,
+        "reduction": 0.6207951070336392,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1 Introduction",
+            "role": "intro"
+          },
+          {
+            "id": "section:3",
+            "title": "2 Background",
+            "role": "intro"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "method",
+        "chars": 19286,
+        "estimatedTextTokens": 6574,
+        "paragraphCount": 134,
+        "invalidMembers": 0,
+        "baselineChars": 28444,
+        "reduction": 0.3219659682182534,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1 Introduction",
+            "role": "intro"
+          },
+          {
+            "id": "section:3",
+            "title": "2 Background",
+            "role": "intro"
+          },
+          {
+            "id": "section:4",
+            "title": "3 Model Architecture",
+            "role": "method"
+          },
+          {
+            "id": "section:5",
+            "title": "3.1 Encoder and Decoder Stacks",
+            "role": "method"
+          },
+          {
+            "id": "section:6",
+            "title": "3.2 Attention",
+            "role": "method"
+          },
+          {
+            "id": "section:7",
+            "title": "3.2.1 Scaled Dot-Product Attention",
+            "role": "method"
+          },
+          {
+            "id": "section:8",
+            "title": "3.2.2 Multi-Head Attention",
+            "role": "method"
+          },
+          {
+            "id": "section:9",
+            "title": "3.2.3 Applications of Attention in our Model",
+            "role": "method"
+          },
+          {
+            "id": "section:10",
+            "title": "3.3 Position-wise Feed-Forward Networks",
+            "role": "method"
+          },
+          {
+            "id": "section:11",
+            "title": "3.4 Embeddings and Softmax",
+            "role": "method"
+          },
+          {
+            "id": "section:12",
+            "title": "3.5 Positional Encoding",
+            "role": "method"
+          },
+          {
+            "id": "section:13",
+            "title": "4 Why Self-Attention",
+            "role": "method"
+          },
+          {
+            "id": "section:14",
+            "title": "5 Training",
+            "role": "method"
+          },
+          {
+            "id": "section:15",
+            "title": "5.1 Training Data and Batching",
+            "role": "method"
+          },
+          {
+            "id": "section:16",
+            "title": "5.2 Hardware and Schedule",
+            "role": "method"
+          },
+          {
+            "id": "section:17",
+            "title": "5.3 Optimizer",
+            "role": "method"
+          },
+          {
+            "id": "section:18",
+            "title": "5.4 Regularization",
+            "role": "method"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "10 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "contributions_novelty",
+        "chars": 2370,
+        "estimatedTextTokens": 793,
+        "paragraphCount": 6,
+        "invalidMembers": 0,
+        "baselineChars": 29670,
+        "reduction": 0.9201213346814965,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1 Introduction",
+            "role": "intro"
+          },
+          {
+            "id": "section:3",
+            "title": "2 Background",
+            "role": "intro"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "experiments_ablations",
+        "chars": 12582,
+        "estimatedTextTokens": 4228,
+        "paragraphCount": 67,
+        "invalidMembers": 0,
+        "baselineChars": 28444,
+        "reduction": 0.5576571508929826,
+        "sections": [
+          {
+            "id": "section:4",
+            "title": "3 Model Architecture",
+            "role": "method"
+          },
+          {
+            "id": "section:5",
+            "title": "3.1 Encoder and Decoder Stacks",
+            "role": "method"
+          },
+          {
+            "id": "section:6",
+            "title": "3.2 Attention",
+            "role": "method"
+          },
+          {
+            "id": "section:7",
+            "title": "3.2.1 Scaled Dot-Product Attention",
+            "role": "method"
+          },
+          {
+            "id": "section:8",
+            "title": "3.2.2 Multi-Head Attention",
+            "role": "method"
+          },
+          {
+            "id": "section:9",
+            "title": "3.2.3 Applications of Attention in our Model",
+            "role": "method"
+          },
+          {
+            "id": "section:10",
+            "title": "3.3 Position-wise Feed-Forward Networks",
+            "role": "method"
+          },
+          {
+            "id": "section:11",
+            "title": "3.4 Embeddings and Softmax",
+            "role": "method"
+          },
+          {
+            "id": "section:13",
+            "title": "4 Why Self-Attention",
+            "role": "method"
+          },
+          {
+            "id": "section:18",
+            "title": "5.4 Regularization",
+            "role": "method"
+          },
+          {
+            "id": "section:19",
+            "title": "6 Results",
+            "role": "experiments"
+          },
+          {
+            "id": "section:20",
+            "title": "6.1 Machine Translation",
+            "role": "experiments"
+          },
+          {
+            "id": "section:21",
+            "title": "6.2 Model Variations",
+            "role": "method"
+          },
+          {
+            "id": "section:22",
+            "title": "6.3 English Constituency Parsing",
+            "role": "experiments"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "1 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "limitations",
+        "chars": 1226,
+        "estimatedTextTokens": 410,
+        "paragraphCount": 5,
+        "invalidMembers": 0,
+        "baselineChars": 13466,
+        "reduction": 0.9089558889053914,
+        "sections": [
+          {
+            "id": "section:23",
+            "title": "7 Conclusion",
+            "role": "conclusion"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      }
+    ]
+  },
+  {
+    "name": "3DGS",
+    "selections": [
+      {
+        "id": "problem_motivation",
+        "chars": 2253,
+        "estimatedTextTokens": 766,
+        "paragraphCount": 3,
+        "invalidMembers": 0,
+        "baselineChars": 16572,
+        "reduction": 0.8640477914554671,
+        "sections": [
+          {
+            "id": "section:1",
+            "title": "1 INTRODUCTION",
+            "role": "intro"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "method",
+        "chars": 21683,
+        "estimatedTextTokens": 7405,
+        "paragraphCount": 85,
+        "invalidMembers": 0,
+        "baselineChars": 45736,
+        "reduction": 0.5259095679552213,
+        "sections": [
+          {
+            "id": "section:1",
+            "title": "1 INTRODUCTION",
+            "role": "intro"
+          },
+          {
+            "id": "section:6",
+            "title": "3 OVERVIEW",
+            "role": "method"
+          },
+          {
+            "id": "section:7",
+            "title": "4 DIFFERENTIABLE 3D GAUSSIAN SPLATTING",
+            "role": "method"
+          },
+          {
+            "id": "section:8",
+            "title": "5 OPTIMIZATION WITH ADAPTIVE DENSITY",
+            "role": "method"
+          },
+          {
+            "id": "section:9",
+            "title": "5.1 Optimization",
+            "role": "method"
+          },
+          {
+            "id": "section:10",
+            "title": "5.2 Adaptive Control of Gaussians",
+            "role": "method"
+          },
+          {
+            "id": "section:11",
+            "title": "6 FAST DIFFERENTIABLE RASTERIZER FOR GAUSSIANS",
+            "role": "method"
+          },
+          {
+            "id": "section:13",
+            "title": "7.1 Implementation",
+            "role": "method"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "4 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "contributions_novelty",
+        "chars": 11014,
+        "estimatedTextTokens": 3704,
+        "paragraphCount": 20,
+        "invalidMembers": 0,
+        "baselineChars": 54537,
+        "reduction": 0.7980453636980398,
+        "sections": [
+          {
+            "id": "section:1",
+            "title": "1 INTRODUCTION",
+            "role": "intro"
+          },
+          {
+            "id": "section:2",
+            "title": "2 RELATED WORK",
+            "role": "related"
+          },
+          {
+            "id": "section:4",
+            "title": "2.2 Neural Rendering and Radiance Fields",
+            "role": "related"
+          },
+          {
+            "id": "section:5",
+            "title": "2.3 Point-Based Rendering and Radiance Fields",
+            "role": "related"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "experiments_ablations",
+        "chars": 17574,
+        "estimatedTextTokens": 5966,
+        "paragraphCount": 87,
+        "invalidMembers": 0,
+        "baselineChars": 47671,
+        "reduction": 0.6313481991147658,
+        "sections": [
+          {
+            "id": "section:12",
+            "title": "7 IMPLEMENTATION, RESULTS AND EVALUATION",
+            "role": "method"
+          },
+          {
+            "id": "section:13",
+            "title": "7.1 Implementation",
+            "role": "method"
+          },
+          {
+            "id": "section:14",
+            "title": "7.2 Results and Evaluation",
+            "role": "experiments"
+          },
+          {
+            "id": "section:15",
+            "title": "7.3 Ablations",
+            "role": "experiments"
+          },
+          {
+            "id": "section:16",
+            "title": "7.4 Limitations",
+            "role": "limitations"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "4 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "limitations",
+        "chars": 5011,
+        "estimatedTextTokens": 1693,
+        "paragraphCount": 21,
+        "invalidMembers": 0,
+        "baselineChars": 20842,
+        "reduction": 0.7595720180404951,
+        "sections": [
+          {
+            "id": "section:16",
+            "title": "7.4 Limitations",
+            "role": "limitations"
+          },
+          {
+            "id": "section:17",
+            "title": "8 DISCUSSION AND CONCLUSIONS",
+            "role": "limitations"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      }
+    ]
+  },
+  {
+    "name": "b084-2609.38426",
+    "selections": [
+      {
+        "id": "problem_motivation",
+        "chars": 2922,
+        "estimatedTextTokens": 991,
+        "paragraphCount": 7,
+        "invalidMembers": 0,
+        "baselineChars": 40610,
+        "reduction": 0.9280472789953214,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1 Introduction",
+            "role": "intro"
+          },
+          {
+            "id": "section:5",
+            "title": "2.2 Motivation",
+            "role": "intro"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "method",
+        "chars": 22421,
+        "estimatedTextTokens": 7981,
+        "paragraphCount": 103,
+        "invalidMembers": 0,
+        "baselineChars": 74172,
+        "reduction": 0.6977161192902983,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1 Introduction",
+            "role": "intro"
+          },
+          {
+            "id": "section:3",
+            "title": "2 The LoopVL Model",
+            "role": "method"
+          },
+          {
+            "id": "section:4",
+            "title": "2.1 Architecture",
+            "role": "method"
+          },
+          {
+            "id": "section:5",
+            "title": "2.2 Motivation",
+            "role": "intro"
+          },
+          {
+            "id": "section:6",
+            "title": "3 Pre-Training",
+            "role": "method"
+          },
+          {
+            "id": "section:7",
+            "title": "Training Data Composition Across Stages",
+            "role": "method"
+          },
+          {
+            "id": "section:8",
+            "title": "3.1 Initialization",
+            "role": "method"
+          },
+          {
+            "id": "section:9",
+            "title": "3.2 Learning Schedule",
+            "role": "method"
+          },
+          {
+            "id": "section:10",
+            "title": "3.3 Stage 1: Visual Language Alignment",
+            "role": "method"
+          },
+          {
+            "id": "section:11",
+            "title": "3.4 Stage 2: Multimodal Mid-Training",
+            "role": "method"
+          },
+          {
+            "id": "section:12",
+            "title": "4 Post-Training",
+            "role": "method"
+          },
+          {
+            "id": "section:13",
+            "title": "4.1 Supervised Fine-Tuning",
+            "role": "method"
+          },
+          {
+            "id": "section:14",
+            "title": "4.2 Visual Reinforcement Learning",
+            "role": "method"
+          },
+          {
+            "id": "section:28",
+            "title": "6.5 Training Regimes and Compute Accounting",
+            "role": "method"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "contributions_novelty",
+        "chars": 23656,
+        "estimatedTextTokens": 7960,
+        "paragraphCount": 51,
+        "invalidMembers": 0,
+        "baselineChars": 91988,
+        "reduction": 0.7428360220898378,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1 Introduction",
+            "role": "intro"
+          },
+          {
+            "id": "section:5",
+            "title": "2.2 Motivation",
+            "role": "intro"
+          },
+          {
+            "id": "section:23",
+            "title": "6 Related Work",
+            "role": "related"
+          },
+          {
+            "id": "section:24",
+            "title": "6.1 Looped Transformers",
+            "role": "related"
+          },
+          {
+            "id": "section:25",
+            "title": "6.2 Hierarchical and Nested Recurrence",
+            "role": "related"
+          },
+          {
+            "id": "section:26",
+            "title": "6.3 Visual–Language Interfaces and Spatial Structure",
+            "role": "related"
+          },
+          {
+            "id": "section:27",
+            "title": "6.4 Interpreting Recurrent Computation",
+            "role": "related"
+          },
+          {
+            "id": "section:28",
+            "title": "6.5 Training Regimes and Compute Accounting",
+            "role": "method"
+          },
+          {
+            "id": "section:29",
+            "title": "6.6 Iterative Reasoning and Generalization",
+            "role": "related"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "experiments_ablations",
+        "chars": 27462,
+        "estimatedTextTokens": 9273,
+        "paragraphCount": 178,
+        "invalidMembers": 0,
+        "baselineChars": 74172,
+        "reduction": 0.629752467238311,
+        "sections": [
+          {
+            "id": "section:3",
+            "title": "2 The LoopVL Model",
+            "role": "method"
+          },
+          {
+            "id": "section:4",
+            "title": "2.1 Architecture",
+            "role": "method"
+          },
+          {
+            "id": "section:15",
+            "title": "5 Evaluation",
+            "role": "experiments"
+          },
+          {
+            "id": "section:16",
+            "title": "5.1 Results",
+            "role": "experiments"
+          },
+          {
+            "id": "section:17",
+            "title": "5.2 Ablations",
+            "role": "experiments"
+          },
+          {
+            "id": "section:18",
+            "title": "5.3 Loop Depth",
+            "role": "experiments"
+          },
+          {
+            "id": "section:19",
+            "title": "5.4 Visual Aha Moment",
+            "role": "experiments"
+          },
+          {
+            "id": "section:20",
+            "title": "5.5 Cross-Loop Token Relevance",
+            "role": "experiments"
+          },
+          {
+            "id": "section:21",
+            "title": "5.6 Visual Attention Allocation",
+            "role": "method"
+          },
+          {
+            "id": "section:22",
+            "title": "5.7 State Refinement and Prediction Formation",
+            "role": "experiments"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "19 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "limitations",
+        "chars": 765,
+        "estimatedTextTokens": 259,
+        "paragraphCount": 2,
+        "invalidMembers": 0,
+        "baselineChars": 56376,
+        "reduction": 0.9864303959131545,
+        "sections": [
+          {
+            "id": "section:31",
+            "title": "8 Conclusion",
+            "role": "conclusion"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      }
+    ]
+  },
+  {
+    "name": "ResNet",
+    "selections": [
+      {
+        "id": "problem_motivation",
+        "chars": 3230,
+        "estimatedTextTokens": 1091,
+        "paragraphCount": 8,
+        "invalidMembers": 0,
+        "baselineChars": 13454,
+        "reduction": 0.7599226995689015,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1. Introduction",
+            "role": "intro"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "method",
+        "chars": 10524,
+        "estimatedTextTokens": 3545,
+        "paragraphCount": 41,
+        "invalidMembers": 0,
+        "baselineChars": 35004,
+        "reduction": 0.6993486458690436,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1. Introduction",
+            "role": "intro"
+          },
+          {
+            "id": "section:4",
+            "title": "3. Deep Residual Learning",
+            "role": "method"
+          },
+          {
+            "id": "section:5",
+            "title": "3.1. Residual Learning",
+            "role": "method"
+          },
+          {
+            "id": "section:6",
+            "title": "3.2. Identity Mapping by Shortcuts",
+            "role": "method"
+          },
+          {
+            "id": "section:7",
+            "title": "3.3. Network Architectures",
+            "role": "method"
+          },
+          {
+            "id": "section:8",
+            "title": "3.4. Implementation",
+            "role": "method"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "1 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "contributions_novelty",
+        "chars": 5239,
+        "estimatedTextTokens": 1764,
+        "paragraphCount": 12,
+        "invalidMembers": 0,
+        "baselineChars": 37493,
+        "reduction": 0.8602672498866455,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1. Introduction",
+            "role": "intro"
+          },
+          {
+            "id": "section:3",
+            "title": "2. Related Work",
+            "role": "related"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "experiments_ablations",
+        "chars": 18428,
+        "estimatedTextTokens": 6457,
+        "paragraphCount": 136,
+        "invalidMembers": 0,
+        "baselineChars": 35004,
+        "reduction": 0.47354588047080337,
+        "sections": [
+          {
+            "id": "section:5",
+            "title": "3.1. Residual Learning",
+            "role": "method"
+          },
+          {
+            "id": "section:6",
+            "title": "3.2. Identity Mapping by Shortcuts",
+            "role": "method"
+          },
+          {
+            "id": "section:7",
+            "title": "3.3. Network Architectures",
+            "role": "method"
+          },
+          {
+            "id": "section:9",
+            "title": "4. Experiments",
+            "role": "experiments"
+          },
+          {
+            "id": "section:10",
+            "title": "4.1. ImageNet Classification",
+            "role": "experiments"
+          },
+          {
+            "id": "section:11",
+            "title": "4.2. CIFAR-10 and Analysis",
+            "role": "experiments"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "13 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "limitations",
+        "chars": 0,
+        "estimatedTextTokens": 0,
+        "paragraphCount": 0,
+        "invalidMembers": 0,
+        "baselineChars": 25967,
+        "reduction": 1,
+        "sections": [],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body.",
+          "No usable body paragraphs were found for this section; unavailable details must not be invented."
+        ]
+      }
+    ]
+  },
+  {
+    "name": "LoRA",
+    "selections": [
+      {
+        "id": "problem_motivation",
+        "chars": 1056,
+        "estimatedTextTokens": 357,
+        "paragraphCount": 5,
+        "invalidMembers": 0,
+        "baselineChars": 23925,
+        "reduction": 0.9558620689655173,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1 INTRODUCTION",
+            "role": "intro"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "method",
+        "chars": 13614,
+        "estimatedTextTokens": 4710,
+        "paragraphCount": 74,
+        "invalidMembers": 0,
+        "baselineChars": 46426,
+        "reduction": 0.7067591435833369,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1 INTRODUCTION",
+            "role": "intro"
+          },
+          {
+            "id": "section:3",
+            "title": "2 PROBLEM STATEMENT",
+            "role": "method"
+          },
+          {
+            "id": "section:4",
+            "title": "4 OUR METHOD",
+            "role": "method"
+          },
+          {
+            "id": "section:5",
+            "title": "4.1 LOW-RANK-PARAMETRIZED UPDATE MATRICES",
+            "role": "method"
+          },
+          {
+            "id": "section:6",
+            "title": "4.2 APPLYING L O RA TO TRANSFORMER",
+            "role": "method"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "8 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "contributions_novelty",
+        "chars": 7042,
+        "estimatedTextTokens": 2372,
+        "paragraphCount": 16,
+        "invalidMembers": 0,
+        "baselineChars": 52398,
+        "reduction": 0.8656055574640253,
+        "sections": [
+          {
+            "id": "section:2",
+            "title": "1 INTRODUCTION",
+            "role": "intro"
+          },
+          {
+            "id": "section:13",
+            "title": "6 RELATED WORKS",
+            "role": "related"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "experiments_ablations",
+        "chars": 13476,
+        "estimatedTextTokens": 4774,
+        "paragraphCount": 82,
+        "invalidMembers": 0,
+        "baselineChars": 46426,
+        "reduction": 0.7097316159048809,
+        "sections": [
+          {
+            "id": "section:5",
+            "title": "4.1 LOW-RANK-PARAMETRIZED UPDATE MATRICES",
+            "role": "method"
+          },
+          {
+            "id": "section:6",
+            "title": "4.2 APPLYING L O RA TO TRANSFORMER",
+            "role": "method"
+          },
+          {
+            "id": "section:7",
+            "title": "5 EMPIRICAL EXPERIMENTS",
+            "role": "experiments"
+          },
+          {
+            "id": "section:8",
+            "title": "5.1 BASELINES",
+            "role": "experiments"
+          },
+          {
+            "id": "section:9",
+            "title": "5.2 R O BERT A BASE / LARGE",
+            "role": "experiments"
+          },
+          {
+            "id": "section:10",
+            "title": "5.3 D E BERT A XXL",
+            "role": "experiments"
+          },
+          {
+            "id": "section:11",
+            "title": "5.4 GPT-2 MEDIUM / LARGE",
+            "role": "experiments"
+          },
+          {
+            "id": "section:12",
+            "title": "5.5 SCALING UP TO GPT-3 175B",
+            "role": "experiments"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "15 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      },
+      {
+        "id": "limitations",
+        "chars": 1310,
+        "estimatedTextTokens": 442,
+        "paragraphCount": 5,
+        "invalidMembers": 0,
+        "baselineChars": 34433,
+        "reduction": 0.9619551012110475,
+        "sections": [
+          {
+            "id": "section:15",
+            "title": "8 CONCLUSION AND FUTURE WORK",
+            "role": "conclusion"
+          }
+        ],
+        "warnings": [
+          "Automatic geometry and section roles are context heuristics, not semantic verification.",
+          "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+          "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+        ]
+      }
+    ]
+  }
+]

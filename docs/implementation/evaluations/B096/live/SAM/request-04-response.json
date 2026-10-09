@@ -1,0 +1,12 @@
+{
+  "index": 4,
+  "elapsedMs": 18754,
+  "content": "{\"status\":\"available\",\"text\":\"23数据集单中心点mIoU：SAM在16个胜过RITM，最高约+47 IoU；oracle取3掩码中最相关者则全数据集胜出（E035）。消融：数据引擎各阶段提升mIoU，仅automatic低约0.5 mIoU（E092）；1M图像近11M（E093）；ViT-H较ViT-L增益边际（E104）；single out.在LVIS AR全项更差（E061）。\",\"sources\":[\"E035\",\"E092\",\"E093\",\"E104\",\"E061\"]}",
+  "usage": {
+    "promptTokens": 10642,
+    "completionTokens": 4902,
+    "totalTokens": 15544,
+    "promptCacheHitTokens": 384,
+    "promptCacheMissTokens": 10258
+  }
+}

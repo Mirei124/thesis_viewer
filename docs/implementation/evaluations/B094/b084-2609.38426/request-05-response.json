@@ -1,0 +1,12 @@
+{
+  "index": 5,
+  "elapsedMs": 9047,
+  "content": "{\"status\":\"available\",\"text\":\"论文承认的限制如下。推理导向的 post-training 主要集中于 mathematical reasoning，在有限数据设定下长推理偶尔重复 token 或重复推理片段，导致推理中断 (E267)。受算力限制，未训练更一般 Model-Loop 架构的 matched control，故 Visual Aha Moments 是否内在于 Model-Loop 计算尚未完全确立 (E268)。LoopVL 基于 HRM-Text 层级循环框架，结果只刻画一种特定循环框架 (E270)，且仅覆盖冻结视觉编码器的图像任务，multi-image、video 与 agentic 环境未探索 (E271)。分析层面，更强的因果与泛化主张留待受控评估 (E273)，case study 也不估计该现象的出现频率 (E288)。\",\"sources\":[\"E267\",\"E268\",\"E270\",\"E271\",\"E273\",\"E288\"]}",
+  "usage": {
+    "promptTokens": 26540,
+    "completionTokens": 1723,
+    "totalTokens": 28263,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 26028
+  }
+}

@@ -1,0 +1,1192 @@
+{
+  "result": {
+    "kind": "detailed",
+    "sections": [
+      {
+        "id": "problem_motivation",
+        "status": "available",
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": "真实世界具时序动态，MLLMs 评测却多聚焦静态视觉，既有 video benchmarks 在视频类型多样性、时序动态与模态覆盖上不足 (E002)。故 Video-MME 施加高难度挑战 (E003)。",
+            "evidenceIds": [
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i179",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i180",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i181",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i182",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i183",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i184",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i185",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i186",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i187",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i188",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i189",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i190",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i191",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i192",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i193",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i194",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i195",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i196",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i197",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i198",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i5",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i6",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i7"
+            ],
+            "evidenceRefs": [
+              {
+                "alias": "E002",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i179",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i180",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i181",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i182",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i183",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i184",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i185",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i186",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i187",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i188",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i189",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i190",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i191",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i192",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i193",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i194",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i195",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i196",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i197",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i198"
+                ]
+              },
+              {
+                "alias": "E003",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i5",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i6",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i7"
+                ]
+              }
+            ],
+            "claimKind": "source_fact"
+          }
+        ]
+      },
+      {
+        "id": "method",
+        "status": "available",
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": "Video-MME 的核心贡献类型是数据集与评测基准，而非新模型或算法，因此方法主线应落在它的构建流程与评测协议上。其输入是从 YouTube 采集的原始视频及配套字幕、音频等元信息，最终输出是一套可直接用于评测 MLLMs 视频理解能力的 multiple-choice QA 数据集与统一评测协议 (E006, E007)。整个构建由三个衔接步骤组成：video collection、question-answer annotation 与 quality review (E011)。\n\nVideo collection 首先建立 domain hierarchy，据此在 YouTube 上按领域检索原始视频：覆盖 Knowledge、Film & Television、Sports Competition、Life Record、Multilingual 等 6 个关键领域，每个领域再细分出 football、basketball 等具体标签，共得到 30 个细粒度视频类别 (E012)。每个类别都采集不同时长的视频，划分为 short（< 2 分钟）、medium（4–15 分钟）、long（30–60 分钟），并同步获取字幕与音频等元信息；最终数据集含 900 个视频，其中 744 个带字幕、900 个带音频，时长分布相对均衡 (E012)。由于字幕与音频作为独立元信息被保留，同一批视频可切换不同输入模态，把“模型能看到什么”变成受控变量，而不是把评测锁死在单一输入条件上 (E012, E028, E030)。三个步骤的职责依次收紧：collection 决定领域、时长覆盖与可支持的模态，annotation 决定任务类型与题面，quality review 决定最终哪些样本可用 (E012, E013, E016)。\n\nQuestion-answer annotation 阶段，标注者需完整观看视频，再迭代式地为每个视频编写 3 个问题并各配 4 个候选选项，共得到 2,700 个 QA 对 (E013)。题目统一采用 multiple-choice QA 格式，涵盖 12 种任务类型，横跨 perception、reasoning 与 information synthesis (E014, E015)。每个 QA 对都被要求与视频内容紧密绑定，使模型无法在不引用视频的情况下答对 (E015)。该基准不涉及模型训练，标注与人工审核流程本身就是数据质量的把关环节，模型侧只有推理与评分 (E013, E016)。\n\nQuality review 是最后一道筛子：每个 QA 对由另一位标注者复核，检查语言表达是否清晰准确、问题是否可答、候选选项逻辑是否一致、指定正确答案是否恰当 (E016)。为确认问题确实需要视频内容作为关键线索，论文将纯文本问题交给 Gemini 1.5 Pro 做 text-only 测试，剔除仅凭问题文本即可回答的 QA 对，不合格者退回原标注者修改；该设置下 Gemini 1.5 Pro 的准确率低于 15%，说明过滤后的问题确实依赖视频内容 (E017)。\n\n评测协议方面，评测包含三种输入模态设置：frames only、frames with subtitles、frames with audio (E028, E030)；被评测模型按各自官方配置运行，准确率由模型输出直接与 ground-truth answer 比对得到，不借助 ChatGPT 等外部模型评分 (E022, E031)。",
+            "evidenceIds": [
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i199",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i201",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i202",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i203",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i205",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i206",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i207",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i208",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i210",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i211",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i0",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i4",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i5",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i6",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i8",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i10",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i12",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i14",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i16",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i18",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i19",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i20",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i21",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i22",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i23",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i24",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i25",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i26",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i27",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i28",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i29",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i30",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i32",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i33",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i35",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i36",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i37",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i39",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i40",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i41",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i42",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i43",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i45",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i47",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i48",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i49",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i50",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i51",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i52",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i53",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i54",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i55",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i56",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i57",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i58",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i60",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i61",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i62",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i63",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i64",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i65",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i67",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i69",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i70",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i71",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i72",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i73",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i74",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i75",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i76",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i77",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i78",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i79",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i80",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i81",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i82",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i83",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i84",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i86",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i87",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i88",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i89",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i90",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i91",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i92",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i429",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i430",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i432",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i433",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i435",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i436",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i337",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i338",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i339",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i341",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i343",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i344"
+            ],
+            "evidenceRefs": [
+              {
+                "alias": "E006",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i199",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i201",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i202",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i203",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i205",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i206",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i207",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i208",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i210",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i211"
+                ]
+              },
+              {
+                "alias": "E007",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i0"
+                ]
+              },
+              {
+                "alias": "E011",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i4",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i5",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i6"
+                ]
+              },
+              {
+                "alias": "E012",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i8",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i10",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i12",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i14",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i16",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i18",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i19",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i20",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i21",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i22",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i23",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i24",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i25",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i26",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i27",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i28",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i29",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i30",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i32",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i33",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i35",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i36",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i37",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i39",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i40",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i41",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i42",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i43"
+                ]
+              },
+              {
+                "alias": "E013",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i45",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i47",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i48",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i49",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i50",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i51",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i52",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i53",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i54",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i55",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i56",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i57",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i58",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i60"
+                ]
+              },
+              {
+                "alias": "E014",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i61"
+                ]
+              },
+              {
+                "alias": "E015",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i62",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i63",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i64",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i65"
+                ]
+              },
+              {
+                "alias": "E016",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i67",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i69",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i70",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i71",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i72",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i73",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i74",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i75",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i76"
+                ]
+              },
+              {
+                "alias": "E017",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i77",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i78",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i79",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i80",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i81",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i82",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i83",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i84",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i86",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i87",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i88",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i89",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i90",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i91",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p3:i92"
+                ]
+              },
+              {
+                "alias": "E022",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i429",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i430",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i432",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i433",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i435",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i436"
+                ]
+              },
+              {
+                "alias": "E028",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i337"
+                ]
+              },
+              {
+                "alias": "E030",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i338",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i339"
+                ]
+              },
+              {
+                "alias": "E031",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i341",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i343",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i344"
+                ]
+              }
+            ],
+            "claimKind": "source_fact"
+          }
+        ]
+      },
+      {
+        "id": "contributions_novelty",
+        "status": "available",
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": "作者提出 Video-MME，定位首个 MLLMs 视频分析综合多模态评测基准（E033）。",
+            "evidenceIds": [
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i199",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i201",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i202",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i203",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i205",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i206",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i207",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i208",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i210",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i211"
+            ],
+            "evidenceRefs": [
+              {
+                "alias": "E033",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i199",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i201",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i202",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i203",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i205",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i206",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i207",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i208",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i210",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i211"
+                ]
+              }
+            ],
+            "claimKind": "author_claim"
+          },
+          {
+            "type": "paragraph",
+            "text": "含 900 视频、2,700 选择题，跨 6 域 30 细类，时长 11 秒–1 小时，带字幕与音轨（E035）。",
+            "evidenceIds": [
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i9",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i11",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i13",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i14",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i15",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i16",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i17",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i19",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i20",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i21",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i22",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i23",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i24",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i25",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i26",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i27",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i29",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i30",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i31",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i32"
+            ],
+            "evidenceRefs": [
+              {
+                "alias": "E035",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i9",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i11",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i13",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i14",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i15",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i16",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i17",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i19",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i20",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i21",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i22",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i23",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i24",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i25",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i26",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i27",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i29",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i30",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i31",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i32"
+                ]
+              }
+            ],
+            "claimKind": "source_fact"
+          },
+          {
+            "type": "paragraph",
+            "text": "评测 GPT-4V、GPT-4o、Gemini 1.5 Pro 及开源模型（E036）。",
+            "evidenceIds": [
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i33",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i34",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i35",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i36"
+            ],
+            "evidenceRefs": [
+              {
+                "alias": "E036",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i33",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i34",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i35",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i36"
+                ]
+              }
+            ],
+            "claimKind": "source_fact"
+          },
+          {
+            "type": "paragraph",
+            "text": "Gemini 1.5 Pro 均准 75%，VILA-1.5 59%，字幕/音频提升 6.2%/4.3%，长视频增益更大，性能随视频变长下降（E037, E039）。",
+            "evidenceIds": [
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i37",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i38",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i39",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i40",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i41",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i43",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i44",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i45",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i46",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i47",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i48",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i49",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i50",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i51",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i52",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i53",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i54",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i55",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i56",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i57",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i58",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i401",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i402",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i403",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i404",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i405",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i406"
+            ],
+            "evidenceRefs": [
+              {
+                "alias": "E037",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i37",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i38",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i39",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i40",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i41",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i43",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i44",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i45",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i46",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i47",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i48",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i49",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i50",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i51",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i52",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i53",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i54",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i55",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i56",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i57",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i58"
+                ]
+              },
+              {
+                "alias": "E039",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i401",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i402",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i403",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i404",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i405",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i406"
+                ]
+              }
+            ],
+            "claimKind": "observed_result"
+          },
+          {
+            "type": "paragraph",
+            "text": "比较仅限多项选择子集（E038）。",
+            "evidenceIds": [
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i396",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i399"
+            ],
+            "evidenceRefs": [
+              {
+                "alias": "E038",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i396",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i399"
+                ]
+              }
+            ],
+            "claimKind": "source_fact"
+          },
+          {
+            "type": "paragraph",
+            "text": "相对既有 image MLLM 与视频时序基准（E044），其加入字幕/音轨与跨时长评测；属解读（E033, E035）。",
+            "evidenceIds": [
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i465",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i467",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i468",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i469",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i470",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i471",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i472",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i473",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i475",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i476",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i477",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i478",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i479",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i480",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i481",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i482",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i483",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i484",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i485",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i486",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i487",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i199",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i201",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i202",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i203",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i205",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i206",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i207",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i208",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i210",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i211",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i9",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i11",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i13",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i14",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i15",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i16",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i17",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i19",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i20",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i21",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i22",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i23",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i24",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i25",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i26",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i27",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i29",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i30",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i31",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i32"
+            ],
+            "evidenceRefs": [
+              {
+                "alias": "E044",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i465",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i467",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i468",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i469",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i470",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i471",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i472",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i473",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i475",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i476",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i477",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i478",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i479",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i480",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i481",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i482",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i483",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i484",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i485",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i486",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i487"
+                ]
+              },
+              {
+                "alias": "E033",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i199",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i201",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i202",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i203",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i205",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i206",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i207",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i208",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i210",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p0:i211"
+                ]
+              },
+              {
+                "alias": "E035",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i9",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i11",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i13",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i14",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i15",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i16",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i17",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i19",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i20",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i21",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i22",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i23",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i24",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i25",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i26",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i27",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i29",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i30",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i31",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p1:i32"
+                ]
+              }
+            ],
+            "claimKind": "inference"
+          },
+          {
+            "type": "paragraph",
+            "text": "并指出长上下文架构与复杂时序推理数据方向（E040）。",
+            "evidenceIds": [
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i407",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i408",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i410",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i411",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i412",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i413",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i414",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i415",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i416"
+            ],
+            "evidenceRefs": [
+              {
+                "alias": "E040",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i407",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i408",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i410",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i411",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i412",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i413",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i414",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i415",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p2:i416"
+                ]
+              }
+            ],
+            "claimKind": "author_claim"
+          }
+        ]
+      },
+      {
+        "id": "experiments_ablations",
+        "status": "available",
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": "在Video-MME上评测4个商用模型、开源视频MLLM与Qwen-VL-Max等图像MLLM，精度由输出与ground-truth直接比对（E048、E051、E060）。仅帧输入时Gemini 1.5 Pro达75%，超GPT-4V 15.1%、GPT-4o 3.1%（E062）。模态对比中，其长视频多语言任务加字幕提升16.7%、加音频12.5%（E071）。原文未提供模块移除或替换的消融，该部分证据不足。",
+            "evidenceIds": [
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i375",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i377",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i379",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i381",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i383",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i385",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i387",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i389",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i390",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i391",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i393",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i394",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i395",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i397",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i399",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i401",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i403",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i404",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i406",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i408",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i410",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i412",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i413",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i414",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i416",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i417",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i429",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i430",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i432",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i433",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i435",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i436",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i341",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i343",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i344",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i348",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i350",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i351",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i352",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i353",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i354",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i355",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i356",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i358",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i359",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i360",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i362",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i363",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i364",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i365",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i366",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i368",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i369",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i370",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i371",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i372",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i373",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i374",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i375",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i376",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i377",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i378",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i379",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i380",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i381",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i382",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i383",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i0",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i1",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i2",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i3",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i4",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i6",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i7",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i8",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i10",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i11",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i12",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i13",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i14",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i15",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i16",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i18",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i19",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i21",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i22",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i23",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i25",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i26",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i27",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i28",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i29"
+            ],
+            "evidenceRefs": [
+              {
+                "alias": "E048",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i375",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i377",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i379",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i381",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i383",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i385",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i387",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i389",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i390",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i391",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i393",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i394",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i395",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i397",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i399",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i401",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i403",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i404",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i406",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i408",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i410",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i412",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i413",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i414",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i416",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i417"
+                ]
+              },
+              {
+                "alias": "E051",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i429",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i430",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i432",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i433",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i435",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p5:i436"
+                ]
+              },
+              {
+                "alias": "E060",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i341",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i343",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i344"
+                ]
+              },
+              {
+                "alias": "E062",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i348",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i350",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i351",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i352",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i353",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i354",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i355",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i356",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i358",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i359",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i360",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i362",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i363",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i364",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i365",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i366",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i368",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i369",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i370",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i371",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i372",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i373",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i374",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i375",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i376",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i377",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i378",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i379",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i380",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i381",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i382",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p6:i383"
+                ]
+              },
+              {
+                "alias": "E071",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i0",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i1",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i2",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i3",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i4",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i6",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i7",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i8",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i10",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i11",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i12",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i13",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i14",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i15",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i16",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i18",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i19",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i21",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i22",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i23",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i25",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i26",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i27",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i28",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i29"
+                ]
+              }
+            ],
+            "claimKind": "observed_result"
+          }
+        ]
+      },
+      {
+        "id": "limitations",
+        "status": "available",
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": "评估显示，视频时长增加时 MLLMs 性能下降，open-source models 受限的输入帧数成为长视频理解的信息瓶颈（E076）；复杂时序推理数据集仍较有限（E077）。",
+            "evidenceIds": [
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i80",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i82",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i84",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i86",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i88",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i90",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i91",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i93",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i94",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i95",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i96",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i97",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i98",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i99",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i100",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i101",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i102",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i104",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i105",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i106",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i107",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i108",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i109",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i110",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i112",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i113",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i115",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i116",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i117",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i118",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i119",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i120",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i121",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i122",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i123",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i124",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i126",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i127",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i128",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i129",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i130",
+              "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i131"
+            ],
+            "evidenceRefs": [
+              {
+                "alias": "E076",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i80",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i82",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i84",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i86",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i88",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i90",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i91",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i93",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i94",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i95",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i96",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i97",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i98",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i99",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i100",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i101",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i102",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i104",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i105",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i106",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i107",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i108",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i109",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i110"
+                ]
+              },
+              {
+                "alias": "E077",
+                "evidenceIds": [
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i112",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i113",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i115",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i116",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i117",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i118",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i119",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i120",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i121",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i122",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i123",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i124",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i126",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i127",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i128",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i129",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i130",
+                  "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:pdf-evidence-ledger-v1:p7:i131"
+                ]
+              }
+            ],
+            "claimKind": "inference"
+          }
+        ]
+      }
+    ],
+    "uncertainties": []
+  },
+  "diagnostics": [
+    {
+      "id": "problem_motivation",
+      "newSourceCount": 4,
+      "availableAliasCount": 4,
+      "batchCount": 1,
+      "inputTokens": 2389,
+      "outputLimit": 32000,
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body.",
+        "Token counts are conservative estimates; provider tokenization and reasoning usage may differ."
+      ],
+      "semanticReviewEnabled": false,
+      "formatRepairCount": 0,
+      "usage": {
+        "promptTokens": 1373,
+        "completionTokens": 2129,
+        "totalTokens": 3502,
+        "promptCacheHitTokens": 640,
+        "promptCacheMissTokens": 733
+      }
+    },
+    {
+      "id": "method",
+      "newSourceCount": 27,
+      "availableAliasCount": 27,
+      "batchCount": 1,
+      "inputTokens": 7095,
+      "outputLimit": 32000,
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body.",
+        "Token counts are conservative estimates; provider tokenization and reasoning usage may differ."
+      ],
+      "semanticReviewEnabled": false,
+      "formatRepairCount": 0,
+      "usage": {
+        "promptTokens": 4577,
+        "completionTokens": 3867,
+        "totalTokens": 8444,
+        "promptCacheHitTokens": 1024,
+        "promptCacheMissTokens": 3553
+      }
+    },
+    {
+      "id": "contributions_novelty",
+      "newSourceCount": 13,
+      "availableAliasCount": 13,
+      "batchCount": 1,
+      "inputTokens": 4404,
+      "outputLimit": 32000,
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body.",
+        "Token counts are conservative estimates; provider tokenization and reasoning usage may differ."
+      ],
+      "semanticReviewEnabled": false,
+      "formatRepairCount": 0,
+      "usage": {
+        "promptTokens": 2779,
+        "completionTokens": 10325,
+        "totalTokens": 13104,
+        "promptCacheHitTokens": 640,
+        "promptCacheMissTokens": 2139
+      }
+    },
+    {
+      "id": "experiments_ablations",
+      "newSourceCount": 28,
+      "availableAliasCount": 28,
+      "batchCount": 1,
+      "inputTokens": 6132,
+      "outputLimit": 32000,
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body.",
+        "Token counts are conservative estimates; provider tokenization and reasoning usage may differ."
+      ],
+      "semanticReviewEnabled": false,
+      "formatRepairCount": 0,
+      "usage": {
+        "promptTokens": 4470,
+        "completionTokens": 3455,
+        "totalTokens": 7925,
+        "promptCacheHitTokens": 640,
+        "promptCacheMissTokens": 3830
+      }
+    },
+    {
+      "id": "limitations",
+      "newSourceCount": 7,
+      "availableAliasCount": 7,
+      "batchCount": 1,
+      "inputTokens": 2703,
+      "outputLimit": 32000,
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body.",
+        "Token counts are conservative estimates; provider tokenization and reasoning usage may differ."
+      ],
+      "semanticReviewEnabled": false,
+      "formatRepairCount": 0,
+      "usage": {
+        "promptTokens": 1586,
+        "completionTokens": 1069,
+        "totalTokens": 2655,
+        "promptCacheHitTokens": 512,
+        "promptCacheMissTokens": 1074
+      }
+    }
+  ],
+  "methodOnly": false,
+  "sourceHashes": {
+    "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+    "detailedContext": "41d32b9d33ca2583cb686546300943df6afc69408e9a136d7aa09d28c384672d",
+    "detailedOverview": "341cf6095c8d9eee2ffa22076f248c3d9ca2a4081843aa60afe74f025f298ca8",
+    "detailedOverviewPipeline": "3c645f85fd5ed69772040a1433caccfea19dc1c259c25e0c859406bc6560e97a",
+    "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+  },
+  "pricing": "Provider cost not returned; token usage retained without assuming a pricing schedule.",
+  "usageTotals": {
+    "promptTokens": 14785,
+    "completionTokens": 20845,
+    "totalTokens": 35630,
+    "promptCacheHitTokens": 3456,
+    "promptCacheMissTokens": 11329
+  },
+  "anchorValidation": {
+    "refCount": 32,
+    "evidenceIdCount": 377,
+    "uniqueEvidenceIds": 328,
+    "invalidEvidenceIds": []
+  },
+  "elapsedMs": 85093,
+  "requestCount": 5
+}

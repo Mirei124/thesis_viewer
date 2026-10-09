@@ -1,0 +1,65 @@
+{
+  "paper": "Chinchilla",
+  "arm": "C",
+  "model": "deepseek-flash",
+  "requestSha256": "c732934975faeb426624c3bf0a55d1974591e994b04c97332c21df5e2874e512",
+  "requestChars": 32444,
+  "elapsedSeconds": 48.38,
+  "usage": {
+    "prompt_tokens": 9641,
+    "completion_tokens": 11951,
+    "total_tokens": 21592,
+    "prompt_tokens_details": {
+      "cached_tokens": 9472
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 10086
+    },
+    "prompt_cache_hit_tokens": 9472,
+    "prompt_cache_miss_tokens": 169
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"任务与目标：本文研究固定 FLOPs budget C 下 model size N 与 training tokens D 的取舍；它把 final pre-training loss L(N,D) 作为目标函数，在 FLOPs(N,D)=C 约束下求 N_opt(C), D_opt(C)=argmin L(N,D)。P013\\n模型是 autoregressive transformer，输入是不同 N 与 D 的训练配置，输出是 loss，最终输出是 compute-optimal frontier 及对更大 compute 的外推。P001 P013\\n分析使用 smoothed training loss 作为 test loss 的无偏估计，因为训练 token 数小于整个 corpus 的 token 数，处于 infinite data regime。P015 P016\\n实验输入是 over 400 models，参数从 under 70M 到 over 16B，token 从 5B 到 over 400B，每个配置训练若干不同 training horizons。P014\\nFLOPs 在 Appendix F 中计算，材料没有给出具体公式，所以只能保留 FLOPs(N,D) 是 N 与 D 的确定性函数这一约束。P028 P013\\n\\n总览：三种 approach 都先训练覆盖不同 model size 与 training tokens 的模型，再用 training curves 拟合 scaling 经验估计量，假设 compute 与 model size 之间为 power-law。P027\\n三个方法均预测 parameter count 与 training tokens 应随 compute 近似等比例增加。P027\\n\\nApproach 1：固定 model sizes（70M 到 over 10B），每个参数配置训练 4 个不同 training sequences/horizon；学习率在 horizon 上 decay 10×，horizon 的 token 跨度差 16×。P065\\n对每次 run 先 smooth 再 interpolate training loss curve，得到从 FLOP count 到 training loss 的连续映射；对每个 FLOP count 选出 loss 最低的 run，于是在 1500 个 logarithmically spaced FLOP 值上得到该 compute 下最优的 N 与所需 D。P065\\n此时所有被选点位于训练最后 15% 内，因此 cosine cycle length 应在约 D 个 token 上 decay 10×。P065\\n最后对 N_opt 与 D_opt 拟合 power law，得到 N_opt ∝ C^a、D_opt ∝ C^b，Approach 1 给出 a=0.50、b=0.50。P065\\n\\nApproach 2：IsoFLOP profiles 固定 9 个 training FLOP counts（6×10^18 到 3×10^21），变化 model size 至多 16B；每个点的 cosine schedule length 设成与 token 数匹配，读取 final training loss。P065\\n对每条 IsoFLOP curve 把 final smoothed loss 对 parameter count 作抛物线拟合，用谷底位置直接估计该 FLOP budget 下最优 model size，再对 FLOPs 与 loss-optimal model size/token 数拟合 power law。P099\\nApproach 2 得到 a=0.49、b=0.51。P099\\n\\nApproach 3：把 Approach 1 与 2 的所有 final losses 汇总，建模为参数 N 与 token 数 D 的参数函数：L_hat(N,D)=E + A/N^α + B/D^β。P099 P100 P101\\n其中 E 对应数据分布上 ideal generative process 的 loss，A/N^α 表示 N 参数的 Transformer 即使完美训练也达不到 ideal process，B/D^β 表示只因有限优化步数与数据采样而未收敛到收敛点。P102\\n拟合目标是最小化预测 log loss 与观测 log loss 之间的 Huber loss，使用 L-BFGS；为避免 local minima 从一组初始化的 grid 中取最佳拟合，δ=10^-3 以增强对 outliers 的稳健性。P102 P104\\n拟合后，在 FLOPs(N,D)≈6ND 约束下最小化 L_hat 得到 efficient frontier 的闭式形式：N_opt(C)=G(C/6)^a、D_opt(C)=G^{-1}(C/6)^b，其中 G=(αA/(βB))^{1/(α+β)}，a=β/(α+β)、b=α/(α+β)。P127 P131 P138 P141\\nApproach 3 得到 a=0.46、b=0.54；它预测在更大 compute 下最优模型更小，原因是 frontier C→N_opt 出现 negative curvature，且 Huber loss 对高 FLOPs 点权重更高、把低 compute 点当 outliers。P143\\n\\nTable 2 汇总三种 approach 的 a、b，并用 bootstrapping 估计 10th/90th percentiles：每次采样 80% 数据、重复 100 次。P144 P147 P148\\n用这些外推，材料给出示例：175B 模型应在 4.41×10^24 FLOPs 和 over 4.2 trillion tokens 下训练；280B Gopher-like 模型对应约 10^25 FLOPs 与 6.8 trillion tokens；1 trillion 参数模型除非有 10^26 FLOPs（over 250× Gopher 的 compute）否则不太可能最优。P160\\n\\n验证阶段：按估计 frontier，对 Gopher 的 compute budget 最优模型应小 4×、token 多 4×；为此训练 70B、1.4T tokens 的 Chinchilla。P014 P162\\nChinchilla 与 Gopher 训练 FLOPs 相同，但 model size 与 training tokens 不同；Chinchilla 比 Gopher 小 4×，因此 memory footprint 与 inference cost 更低，也便于在较小硬件上做 downstream use；energy cost 会通过 inference 与 fine-tuning 摊销。P014 P162\\nChinchilla 沿用 Gopher 的 architecture 与 training setup，差别包括：在 MassiveText 上使用略不同的 subset distribution；用 AdamW 替代 Adam；用不施加 NFKC normalisation 的 SentencePiece tokenizer，94.15% token 与 Gopher 相同；forward/backward 用 bfloat16，而在 distributed optimiser state 中存 float32 权重副本。P162\\nTable 4 给出具体 architecture：Gopher 280B 与 Chinchilla 70B 都是 80 layers；number heads 分别为 128 与 64，key/value size 都是 128，d_model 分别为 16,384 与 8,192，max LR 分别为 4×10^-5 与 1×10^-4，batch size 分别为 3M→6M 与 1.5M→3M；feed-forward size 始终为 4×d_model，两者都在训练中途把 batch size 加倍。P169 P170 P171 P172 P173 P174 P175 P176\\n所有模型在 TPUv3/TPUv4 上用 JAX 与 Haiku 训练。P162\\n使用/推理阶段：在 language modelling、reading comprehension、question answering、common sense、MMLU、BIG-bench 等任务上评测，例子包括 WikiText-103、The Pile: PG-19、arXiv、FreeLaw、RACE-m、RACE-h、LAMBADA、Natural Questions、TriviaQA、TruthfulQA、HellaSwag、Winogrande、PIQA、SIQA、BoolQ 等。P180 P182\\n评测任务 largely 与 Rae et al. (2021) 相同，以便直接比较。P183\\n材料未给出 MassiveText 的采集、标注与质检细节（仅说明与 Gopher 同数据、subset distribution 见 Table A1），未给出 Appendix F 的 FLOPs 具体公式、Appendix D.4 的 head-to-head 比较细节，也未给出每个评测任务的具体 metric 定义。P162 P028 P065 P183\",\"sources\":[\"P001\",\"P013\",\"P014\",\"P015\",\"P016\",\"P027\",\"P028\",\"P065\",\"P099\",\"P100\",\"P101\",\"P102\",\"P104\",\"P127\",\"P131\",\"P138\",\"P141\",\"P143\",\"P144\",\"P147\",\"P148\",\"P160\",\"P162\",\"P169\",\"P170\",\"P171\",\"P172\",\"P173\",\"P174\",\"P175\",\"P176\",\"P180\",\"P182\",\"P183\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "任务与目标：本文研究固定 FLOPs budget C 下 model size N 与 training tokens D 的取舍；它把 final pre-training loss L(N,D) 作为目标函数，在 FLOPs(N,D)=C 约束下求 N_opt(C), D_opt(C)=argmin L(N,D)。P013\n模型是 autoregressive transformer，输入是不同 N 与 D 的训练配置，输出是 loss，最终输出是 compute-optimal frontier 及对更大 compute 的外推。P001 P013\n分析使用 smoothed training loss 作为 test loss 的无偏估计，因为训练 token 数小于整个 corpus 的 token 数，处于 infinite data regime。P015 P016\n实验输入是 over 400 models，参数从 under 70M 到 over 16B，token 从 5B 到 over 400B，每个配置训练若干不同 training horizons。P014\nFLOPs 在 Appendix F 中计算，材料没有给出具体公式，所以只能保留 FLOPs(N,D) 是 N 与 D 的确定性函数这一约束。P028 P013\n\n总览：三种 approach 都先训练覆盖不同 model size 与 training tokens 的模型，再用 training curves 拟合 scaling 经验估计量，假设 compute 与 model size 之间为 power-law。P027\n三个方法均预测 parameter count 与 training tokens 应随 compute 近似等比例增加。P027\n\nApproach 1：固定 model sizes（70M 到 over 10B），每个参数配置训练 4 个不同 training sequences/horizon；学习率在 horizon 上 decay 10×，horizon 的 token 跨度差 16×。P065\n对每次 run 先 smooth 再 interpolate training loss curve，得到从 FLOP count 到 training loss 的连续映射；对每个 FLOP count 选出 loss 最低的 run，于是在 1500 个 logarithmically spaced FLOP 值上得到该 compute 下最优的 N 与所需 D。P065\n此时所有被选点位于训练最后 15% 内，因此 cosine cycle length 应在约 D 个 token 上 decay 10×。P065\n最后对 N_opt 与 D_opt 拟合 power law，得到 N_opt ∝ C^a、D_opt ∝ C^b，Approach 1 给出 a=0.50、b=0.50。P065\n\nApproach 2：IsoFLOP profiles 固定 9 个 training FLOP counts（6×10^18 到 3×10^21），变化 model size 至多 16B；每个点的 cosine schedule length 设成与 token 数匹配，读取 final training loss。P065\n对每条 IsoFLOP curve 把 final smoothed loss 对 parameter count 作抛物线拟合，用谷底位置直接估计该 FLOP budget 下最优 model size，再对 FLOPs 与 loss-optimal model size/token 数拟合 power law。P099\nApproach 2 得到 a=0.49、b=0.51。P099\n\nApproach 3：把 Approach 1 与 2 的所有 final losses 汇总，建模为参数 N 与 token 数 D 的参数函数：L_hat(N,D)=E + A/N^α + B/D^β。P099 P100 P101\n其中 E 对应数据分布上 ideal generative process 的 loss，A/N^α 表示 N 参数的 Transformer 即使完美训练也达不到 ideal process，B/D^β 表示只因有限优化步数与数据采样而未收敛到收敛点。P102\n拟合目标是最小化预测 log loss 与观测 log loss 之间的 Huber loss，使用 L-BFGS；为避免 local minima 从一组初始化的 grid 中取最佳拟合，δ=10^-3 以增强对 outliers 的稳健性。P102 P104\n拟合后，在 FLOPs(N,D)≈6ND 约束下最小化 L_hat 得到 efficient frontier 的闭式形式：N_opt(C)=G(C/6)^a、D_opt(C)=G^{-1}(C/6)^b，其中 G=(αA/(βB))^{1/(α+β)}，a=β/(α+β)、b=α/(α+β)。P127 P131 P138 P141\nApproach 3 得到 a=0.46、b=0.54；它预测在更大 compute 下最优模型更小，原因是 frontier C→N_opt 出现 negative curvature，且 Huber loss 对高 FLOPs 点权重更高、把低 compute 点当 outliers。P143\n\nTable 2 汇总三种 approach 的 a、b，并用 bootstrapping 估计 10th/90th percentiles：每次采样 80% 数据、重复 100 次。P144 P147 P148\n用这些外推，材料给出示例：175B 模型应在 4.41×10^24 FLOPs 和 over 4.2 trillion tokens 下训练；280B Gopher-like 模型对应约 10^25 FLOPs 与 6.8 trillion tokens；1 trillion 参数模型除非有 10^26 FLOPs（over 250× Gopher 的 compute）否则不太可能最优。P160\n\n验证阶段：按估计 frontier，对 Gopher 的 compute budget 最优模型应小 4×、token 多 4×；为此训练 70B、1.4T tokens 的 Chinchilla。P014 P162\nChinchilla 与 Gopher 训练 FLOPs 相同，但 model size 与 training tokens 不同；Chinchilla 比 Gopher 小 4×，因此 memory footprint 与 inference cost 更低，也便于在较小硬件上做 downstream use；energy cost 会通过 inference 与 fine-tuning 摊销。P014 P162\nChinchilla 沿用 Gopher 的 architecture 与 training setup，差别包括：在 MassiveText 上使用略不同的 subset distribution；用 AdamW 替代 Adam；用不施加 NFKC normalisation 的 SentencePiece tokenizer，94.15% token 与 Gopher 相同；forward/backward 用 bfloat16，而在 distributed optimiser state 中存 float32 权重副本。P162\nTable 4 给出具体 architecture：Gopher 280B 与 Chinchilla 70B 都是 80 layers；number heads 分别为 128 与 64，key/value size 都是 128，d_model 分别为 16,384 与 8,192，max LR 分别为 4×10^-5 与 1×10^-4，batch size 分别为 3M→6M 与 1.5M→3M；feed-forward size 始终为 4×d_model，两者都在训练中途把 batch size 加倍。P169 P170 P171 P172 P173 P174 P175 P176\n所有模型在 TPUv3/TPUv4 上用 JAX 与 Haiku 训练。P162\n使用/推理阶段：在 language modelling、reading comprehension、question answering、common sense、MMLU、BIG-bench 等任务上评测，例子包括 WikiText-103、The Pile: PG-19、arXiv、FreeLaw、RACE-m、RACE-h、LAMBADA、Natural Questions、TriviaQA、TruthfulQA、HellaSwag、Winogrande、PIQA、SIQA、BoolQ 等。P180 P182\n评测任务 largely 与 Rae et al. (2021) 相同，以便直接比较。P183\n材料未给出 MassiveText 的采集、标注与质检细节（仅说明与 Gopher 同数据、subset distribution 见 Table A1），未给出 Appendix F 的 FLOPs 具体公式、Appendix D.4 的 head-to-head 比较细节，也未给出每个评测任务的具体 metric 定义。P162 P028 P065 P183",
+    "sources": [
+      "P001",
+      "P013",
+      "P014",
+      "P015",
+      "P016",
+      "P027",
+      "P028",
+      "P065",
+      "P099",
+      "P100",
+      "P101",
+      "P102",
+      "P104",
+      "P127",
+      "P131",
+      "P138",
+      "P141",
+      "P143",
+      "P144",
+      "P147",
+      "P148",
+      "P160",
+      "P162",
+      "P169",
+      "P170",
+      "P171",
+      "P172",
+      "P173",
+      "P174",
+      "P175",
+      "P176",
+      "P180",
+      "P182",
+      "P183"
+    ]
+  },
+  "parseError": null,
+  "unknownAliases": []
+}

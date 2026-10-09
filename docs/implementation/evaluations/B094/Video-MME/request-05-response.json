@@ -1,0 +1,12 @@
+{
+  "index": 5,
+  "elapsedMs": 6822,
+  "content": "{\"status\":\"available\",\"text\":\"材料明确承认的覆盖范围限制有两处：多数 open-source 模型不支持音频输入，因此 audio 评估被省略，这些模型在音频模态下的表现无从比较（E103）；Video-MME 的 900 个视频中仅 744 个附带字幕，字幕模态覆盖并不完整（E045）。此外，certificate length 统计仅从每个类别随机抽取 3 个视频进行（E061）。上述覆盖边界制约了涉及 audio 与 subtitle 的结论以及时序难度结论的可外推范围。\",\"sources\":[\"E103\",\"E045\",\"E061\"]}",
+  "usage": {
+    "promptTokens": 13181,
+    "completionTokens": 1322,
+    "totalTokens": 14503,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 12669
+  }
+}

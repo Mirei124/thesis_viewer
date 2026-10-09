@@ -1,0 +1,39 @@
+{
+  "paper": "Video-MME",
+  "arm": "split",
+  "model": "deepseek-flash",
+  "requestSha256": "7b9dfee77e998c6acf652ff1b9f515dacf7db371da098ba5dcd5da7f53cd3a17",
+  "requestChars": 29257,
+  "elapsedSeconds": 22.1,
+  "usage": {
+    "prompt_tokens": 8881,
+    "completion_tokens": 5252,
+    "total_tokens": 14133,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 4786
+    },
+    "prompt_cache_hit_tokens": 256,
+    "prompt_cache_miss_tokens": 8625
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"核心贡献\\n① 交付 Video-MME：900 videos、2,700 道 multiple-choice questions（每视频 3 题），覆盖 6 visual domains 与 30 categories，时长 11 秒至 1 小时（P003）。数据集含 744 条 subtitles、900 条 audios（P051），并设 Video-MME-S/M/L 三档（P048）。\\n② 以 video collection、QA annotation、quality review 三步构建，用 Gemini 1.5 Pro 做 text-only 过滤，纯文本准确率低于 15%，剔除仅凭问题即可作答的 QA（P051, P052）。\\n③ 用 certificate length 量化时序难度，短/中/长中位数为 26s/164.7s/890.7s；作者据此主张其为当时最具挑战的 Video QA dataset，比较边界限于 EgoSchema 及 Table 1 所列 benchmark（P084, P049）。\\n④ 评测发现：Gemini 1.5 Pro 平均准确率 75%，为商业模型最高；开源最高 VILA-1.5 为 59%；subtitles、audios 分别提升 6.2% 与 4.3%，长视频增益更大，性能随视频变长下降（P004, P050）。\\n\\n相对创新\\n作者称既有 video benchmarks 视频类型多样性不足、时序动态覆盖不足且偏单模态，Video-MME 因此强调多时长、开放域与 subtitles+audio 的多模态评测（P001, P049）。比较维度含 #Videos、#QA Pairs、Multi-level、Open-domain、Sub.&Aud. 等（P049），并设多级别子集（P048）。其意义在于把 MLLMs 评测从静态视觉理解推向时序视频，并指出长序列处理可能成为瓶颈（P001, P050）。“首个/最具挑战”为作者主张，未见独立第三方验证。\",\"sources\":[\"P001\",\"P003\",\"P004\",\"P048\",\"P049\",\"P050\",\"P051\",\"P052\",\"P084\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "核心贡献\n① 交付 Video-MME：900 videos、2,700 道 multiple-choice questions（每视频 3 题），覆盖 6 visual domains 与 30 categories，时长 11 秒至 1 小时（P003）。数据集含 744 条 subtitles、900 条 audios（P051），并设 Video-MME-S/M/L 三档（P048）。\n② 以 video collection、QA annotation、quality review 三步构建，用 Gemini 1.5 Pro 做 text-only 过滤，纯文本准确率低于 15%，剔除仅凭问题即可作答的 QA（P051, P052）。\n③ 用 certificate length 量化时序难度，短/中/长中位数为 26s/164.7s/890.7s；作者据此主张其为当时最具挑战的 Video QA dataset，比较边界限于 EgoSchema 及 Table 1 所列 benchmark（P084, P049）。\n④ 评测发现：Gemini 1.5 Pro 平均准确率 75%，为商业模型最高；开源最高 VILA-1.5 为 59%；subtitles、audios 分别提升 6.2% 与 4.3%，长视频增益更大，性能随视频变长下降（P004, P050）。\n\n相对创新\n作者称既有 video benchmarks 视频类型多样性不足、时序动态覆盖不足且偏单模态，Video-MME 因此强调多时长、开放域与 subtitles+audio 的多模态评测（P001, P049）。比较维度含 #Videos、#QA Pairs、Multi-level、Open-domain、Sub.&Aud. 等（P049），并设多级别子集（P048）。其意义在于把 MLLMs 评测从静态视觉理解推向时序视频，并指出长序列处理可能成为瓶颈（P001, P050）。“首个/最具挑战”为作者主张，未见独立第三方验证。",
+    "sources": [
+      "P001",
+      "P003",
+      "P004",
+      "P048",
+      "P049",
+      "P050",
+      "P051",
+      "P052",
+      "P084"
+    ]
+  },
+  "unknownAliases": []
+}

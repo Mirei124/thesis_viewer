@@ -1,0 +1,21 @@
+## method
+
+本方法解决的是 sequence transduction 问题：encoder 把输入符号序列 (x1, …, xn) 映射为连续表示 z = (z1, …, zn)，decoder 再据此逐个生成输出符号序列 (y1, …, ym)，每一步都是 auto-regressive 的，即把先前生成的符号作为额外输入来生成下一个符号 [E045]。Transformer 沿用这一 encoder-decoder 总体结构，但 encoder 与 decoder 都由堆叠的 self-attention 层和 point-wise、fully connected 层构成，完全不使用 recurrence 与 convolution [E048]。
+
+Encoder 由 N = 6 个相同的层堆叠而成，每层含两个 sub-layer：第一个是 multi-head self-attention，第二个是 position-wise fully connected feed-forward network；每个 sub-layer 外围都有 residual connection，随后接 layer normalization，即该 sub-layer 的输出为 LayerNorm(x + Sublayer(x))，其中 Sublayer(x) 是该 sub-layer 自身实现的函数；为便于残差相加，所有 sub-layer 以及 embedding 层的输出维度统一为 d_model = 512 [E050]。Decoder 同样堆叠 N = 6 个相同的层，除上述两个 sub-layer 外还插入第三个 sub-layer，对 encoder stack 的输出做 multi-head attention；同时把 decoder 的 self-attention sub-layer 改为掩码版本，阻止位置关注其后的位置，再加上输出 embedding 整体偏移一位，保证位置 i 的预测只能依赖位置小于 i 的已知输出 [E051]。
+
+Attention 函数把 query 与一组 key-value pair 映射为输出，query、key、value 与输出均为向量，输出是 value 的加权和，每个 value 的权重由 query 与对应 key 的兼容性函数计算 [E053][E058]。本文的具体形式称为 Scaled Dot-Product Attention：输入是维度 d_k 的 query、key 以及维度 d_v 的 value，先对 query 与所有 key 求点积，各自除以 √d_k，再经 softmax 得到 value 上的权重 [E060]。实现时把一组 query 打包为矩阵 Q，key 与 value 分别打包为矩阵 K 与 V，输出矩阵按式 Attention(Q, K, V) = softmax(QKᵀ/√d_k)V 计算 [E061][E064]。
+
+选择 dot-product 而非 additive attention 的理由是：两者理论复杂度相近，但 dot-product attention 在实践中更快、更省空间，因为它可以用高度优化的矩阵乘法实现 [E066][E070]。缩放也有明确动机：d_k 较大时点积幅值会变大，把 softmax 推入梯度极小的区域 [E071]；若假设 q 与 k 的各分量是均值为 0、方差为 1 的独立随机变量，其点积的均值为 0、方差为 d_k [E080]，据此点积被按 1/√d_k 缩放 [E073]。
+
+Multi-Head Attention 不满足于对 d_model 维的 query、key、value 只做一次 attention，而是用 h 组不同的可学习线性投影，分别把 query、key、value 投影到 d_k、d_k、d_v 维 [E076]。在这些投影版本上并行执行 attention，得到 d_v 维的输出，再把各 head 的输出拼接并做一次投影，得到最终结果 [E083]。写成公式即 MultiHead(Q, K, V) = Concat(head1, …, headh)W^O，其中 headi = Attention(QW_i^Q, KW_i^K, VW_i^V) [E086][E088]。这样设计是因为单个 attention head 的加权平均会抑制模型同时关注不同表示子空间、不同位置上的信息 [E084]；本工作中取 h = 8，每个 head 的 d_k = d_v = d_model / h = 64，由于每个 head 维度降低，总计算量与全维度的单 head attention 相当 [E094]。
+
+Transformer 在三处使用 multi-head attention [E096]：在 encoder-decoder attention 层，query 来自前一个 decoder 层，key 与 value 来自 encoder 的输出，使 decoder 每个位置都能关注输入序列的所有位置 [E097]；在 encoder 的 self-attention 层，key、value、query 都来自同一处，即 encoder 前一层的输出，每个位置都可关注该前一层的全部位置 [E098]；decoder 的 self-attention 层同样允许每个位置关注 decoder 中直到并包含该位置的所有位置，为保持 auto-regressive 性质，在 scaled dot-product attention 内把 softmax 输入中对应非法连接的项置为 −∞，以切断向左侧的信息流 [E099]。
+
+每个 encoder 层与 decoder 层还包含一个 fully connected feed-forward network，它对每个位置单独且以相同方式施加，由两个线性变换和中间的 ReLU 构成，即 FFN(x) = max(0, xW1 + b1)W2 + b2 [E101][E102]。同一层内不同位置共享这组线性变换参数，但层与层之间参数不同，这也可看作两个 kernel size 为 1 的卷积；其输入与输出维度为 d_model = 512，内层维度为 d_ff = 2048 [E103]。
+
+输入 token 与输出 token 先用可学习的 embedding 转成 d_model 维向量，decoder 输出再经可学习的线性变换与 softmax 得到下一个 token 的概率；两个 embedding 层与 pre-softmax 线性变换共享同一个权重矩阵，embedding 层的权重还要乘以 √d_model [E105]。由于模型没有 recurrence 也没有 convolution，为利用序列顺序，需要把 positional encoding 加到 encoder 与 decoder stack 底部的输入 embedding 上，且它与 embedding 同为 d_model 维因而可以直接相加 [E117]。本文采用不同频率的正弦与余弦函数：PE(pos, 2i) = sin(pos/10000^(2i/d_model))，PE(pos, 2i+1) = cos(pos/10000^(2i/d_model)) [E120][E122]，其中 pos 是位置、i 是维度，每个维度对应一条正弦曲线，波长构成从 2π 到 10000·2π 的几何级数 [E123][E124]。这样选择是因为假设它便于模型学习按相对位置来关注，因为对任意固定偏移 k，PE_{pos+k} 可以表示为 PE_pos 的线性函数 [E125]；论文也用 learned positional embeddings 做过对照，两者结果几乎相同 [E126]。
+
+在训练层面，模型使用标准 WMT 2014 English-German 数据集，约 450 万句对，句子以 byte-pair encoding 编码，source 与 target 共享约 37000 个 token 的词表；English-French 使用明显更大的 WMT 2014 English-French 数据集，含 36M 句，切成 32000 的 word-piece 词表；句对按近似序列长度分批，每批约含 25000 个 source token 与 25000 个 target token [E143]。训练在 8 块 NVIDIA P100 GPU 上进行，base model 每步约 0.4 秒，共训练 100,000 步，约 12 小时 [E145]。优化器为 Adam，β1 = 0.9、β2 = 0.98、ε = 10^-9 [E148]；学习率随训练过程变化，lrate = d_model^(-0.5) · min(step_num^(-0.5), step_num · warmup_steps^(-1.5))，即前 warmup_steps 步线性上升、之后按步数平方根的倒数下降 [E151]，其中 warmup_steps = 4000 [E152]。正则化方面，Residual Dropout 施加在每个 sub-layer 的输出上（在加回 sub-layer 输入并做归一化之前），也施加在 encoder 与 decoder 中 embedding 与 positional encoding 的和上，base model 的 P_drop = 0.1 [E177][E178]；此外还使用值为 ε_ls = 0.1 的 label smoothing [E179]。
+
+作为设计依据，论文从三个角度比较 self-attention 层与常用的 recurrent、convolutional 层：每层计算复杂度、可并行程度（以最少顺序操作数衡量）、以及网络中长程依赖之间的路径长度 [E130][E131][E132]。按 Table 1 的刻画，self-attention 层每层复杂度为 O(n²·d)，顺序操作为 O(1)，任意两个位置之间的最大路径长度也是 O(1) [E111]；而 recurrent 层需要 O(n) 个顺序操作 [E113]。

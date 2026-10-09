@@ -1,0 +1,12 @@
+{
+  "index": 3,
+  "elapsedMs": 15762,
+  "content": "{\"status\":\"available\",\"text\":\"论文重做固定 FLOPs 预算下模型规模与训练 token 数的权衡问题，作者结论是二者应大致等比例扩张，而非如 Kaplan et al. (2020) 那样主要放大模型 [E016][E045]。做法上是三条并行估计：Approach 1 固定模型规模、改变训练 token 数 [E056]，Approach 2 扫描 IsoFLOP profiles [E066]，Approach 3 拟合含参损失函数 [E084]。三者给出 a≈0.50/0.49/0.46、b≈0.50/0.51/0.54，文中并列 Kaplan et al. (2020) 的 0.73/0.27 [E122][E123]。据此训练的 Chinchilla (70B、1.4T tokens) 与同 FLOPs 的 Gopher (280B) 对比 [E139]：MMLU 5-shot 67.6% 对 60.0% [E176]，BIG-bench 65.1% 对 54.4% [E187]，The Pile 各子集 bpb 均更优 [E173]。IsoFLOP 分析在 C4 与 GitHub code 上复现，指数为 0.50/0.50 与 0.53/0.47 [E262]。适用边界上，Approach 3 因 Huber loss 把低计算预算点当作离群而预测更小的最优模型 [E112]，FLOP-loss frontier 的曲率未被建模、作者留作后续工作 [E366]，且语言建模基准上 Chinchilla 训练数据多 4 倍、存在 train/test leakage 之虞 [E174]。\",\"sources\":[\"E016\",\"E045\",\"E056\",\"E066\",\"E084\",\"E112\",\"E122\",\"E123\",\"E139\",\"E173\",\"E174\",\"E176\",\"E187\",\"E262\",\"E366\"],\"blocks\":[{\"text\":\"论文重做固定 FLOPs 预算下模型规模与训练 token 数的权衡问题，作者结论是二者应大致等比例扩张，而非如 Kaplan et al. (2020) 那样主要放大模型 [E016][E045]。\",\"sources\":[\"E016\",\"E045\"],\"claimKind\":\"author_claim\"},{\"text\":\"做法上是三条并行估计：Approach 1 固定模型规模、改变训练 token 数 [E056]，Approach 2 扫描 IsoFLOP profiles [E066]，Approach 3 拟合含参损失函数 [E084]。三者给出 a≈0.50/0.49/0.46、b≈0.50/0.51/0.54，文中并列 Kaplan et al. (2020) 的 0.73/0.27 [E122][E123]。\",\"sources\":[\"E056\",\"E066\",\"E084\",\"E122\",\"E123\"],\"claimKind\":\"source_fact\"},{\"text\":\"据此训练的 Chinchilla (70B、1.4T tokens) 与同 FLOPs 的 Gopher (280B) 对比 [E139]：MMLU 5-shot 67.6% 对 60.0% [E176]，BIG-bench 65.1% 对 54.4% [E187]，The Pile 各子集 bpb 均更优 [E173]。\",\"sources\":[\"E139\",\"E176\",\"E187\",\"E173\"],\"claimKind\":\"observed_result\"},{\"text\":\"IsoFLOP 分析在 C4 与 GitHub code 上复现，指数为 0.50/0.50 与 0.53/0.47 [E262]。\",\"sources\":[\"E262\"],\"claimKind\":\"source_fact\"},{\"text\":\"适用边界上，Approach 3 因 Huber loss 把低计算预算点当作离群而预测更小的最优模型 [E112]，FLOP-loss frontier 的曲率未被建模、作者留作后续工作 [E366]，且语言建模基准上 Chinchilla 训练数据多 4 倍、存在 train/test leakage 之虞 [E174]。\",\"sources\":[\"E112\",\"E366\",\"E174\"],\"claimKind\":\"inference\"}]}",
+  "usage": {
+    "promptTokens": 34083,
+    "completionTokens": 3754,
+    "totalTokens": 37837,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 33571
+  }
+}

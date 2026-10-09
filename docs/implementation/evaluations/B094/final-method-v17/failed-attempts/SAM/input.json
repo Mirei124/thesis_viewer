@@ -1,0 +1,192 @@
+{
+  "path": "/tmp/B090/SAM.pdf",
+  "documentVersion": "sha256:c6ca524e47200c3e542587ca76ac1dbc89cc67340f948c819250d16fdbd90cfb",
+  "config": {
+    "baseUrl": "https://api.deepseek.com/v1",
+    "model": "deepseek-flash",
+    "structuredOutput": true,
+    "contextLimit": 128000,
+    "outputLimit": 32000
+  },
+  "methodOnly": true,
+  "sourceHashes": {
+    "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+    "detailedContext": "c882f26739e8ba5c0261fa17915c5656d5e54a7e31646045251b012785a22b8c",
+    "detailedOverview": "ba362d0a0da519e20001c4a5083887fff7bf7f51ab097778e2745b04d03faf31",
+    "detailedOverviewPipeline": "188a7b0c3b1236eaf5e43a628e7a854d4ff47ce8497deadaaf7b1f30628696a7",
+    "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+  },
+  "pageCount": 30,
+  "paragraphCount": 634,
+  "selections": [
+    {
+      "id": "problem_motivation",
+      "paragraphCount": 190,
+      "chars": 47464,
+      "estimatedTextTokens": 16133,
+      "sections": [
+        "Abstract",
+        "1. Introduction",
+        "5. Segment Anything Dataset",
+        "6. Segment Anything RAI Analysis",
+        "A. Segment Anything Model and Task Details",
+        "D. Experiment Implementation Details",
+        "D.1. Zero-Shot Single Point Valid Mask Evaluation",
+        "D.2. Zero-Shot Edge Detection",
+        "D.3. Zero-Shot Object Proposals",
+        "D.4. Zero-Shot Instance Segmentation",
+        "D.5. Zero-Shot Text-to-Mask",
+        "D.6. Probing the Latent Space of SAM"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "method",
+      "paragraphCount": 319,
+      "chars": 77799,
+      "estimatedTextTokens": 26457,
+      "sections": [
+        "Abstract",
+        "1. Introduction",
+        "2. Segment Anything Task",
+        "3. Segment Anything Model",
+        "4. Segment Anything Data Engine",
+        "5. Segment Anything Dataset",
+        "6. Segment Anything RAI Analysis",
+        "7. Zero-Shot Transfer Experiments",
+        "7.1. Zero-Shot Single Point Valid Mask Evaluation",
+        "7.2. Zero-Shot Edge Detection",
+        "7.3. Zero-Shot Object Proposals",
+        "7.4. Zero-Shot Instance Segmentation",
+        "7.5. Zero-Shot Text-to-Mask",
+        "7.6. Ablations",
+        "A. Segment Anything Model and Task Details",
+        "D. Experiment Implementation Details",
+        "D.1. Zero-Shot Single Point Valid Mask Evaluation",
+        "D.2. Zero-Shot Edge Detection",
+        "D.3. Zero-Shot Object Proposals",
+        "D.4. Zero-Shot Instance Segmentation",
+        "D.5. Zero-Shot Text-to-Mask",
+        "D.6. Probing the Latent Space of SAM"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "contributions_novelty",
+      "paragraphCount": 319,
+      "chars": 77799,
+      "estimatedTextTokens": 26457,
+      "sections": [
+        "Abstract",
+        "1. Introduction",
+        "2. Segment Anything Task",
+        "3. Segment Anything Model",
+        "4. Segment Anything Data Engine",
+        "5. Segment Anything Dataset",
+        "6. Segment Anything RAI Analysis",
+        "7. Zero-Shot Transfer Experiments",
+        "7.1. Zero-Shot Single Point Valid Mask Evaluation",
+        "7.2. Zero-Shot Edge Detection",
+        "7.3. Zero-Shot Object Proposals",
+        "7.4. Zero-Shot Instance Segmentation",
+        "7.5. Zero-Shot Text-to-Mask",
+        "7.6. Ablations",
+        "A. Segment Anything Model and Task Details",
+        "D. Experiment Implementation Details",
+        "D.1. Zero-Shot Single Point Valid Mask Evaluation",
+        "D.2. Zero-Shot Edge Detection",
+        "D.3. Zero-Shot Object Proposals",
+        "D.4. Zero-Shot Instance Segmentation",
+        "D.5. Zero-Shot Text-to-Mask",
+        "D.6. Probing the Latent Space of SAM"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "experiments_ablations",
+      "paragraphCount": 325,
+      "chars": 82034,
+      "estimatedTextTokens": 27886,
+      "sections": [
+        "Abstract",
+        "1. Introduction",
+        "2. Segment Anything Task",
+        "3. Segment Anything Model",
+        "4. Segment Anything Data Engine",
+        "5. Segment Anything Dataset",
+        "6. Segment Anything RAI Analysis",
+        "7. Zero-Shot Transfer Experiments",
+        "7.1. Zero-Shot Single Point Valid Mask Evaluation",
+        "7.2. Zero-Shot Edge Detection",
+        "7.3. Zero-Shot Object Proposals",
+        "7.4. Zero-Shot Instance Segmentation",
+        "7.5. Zero-Shot Text-to-Mask",
+        "7.6. Ablations",
+        "8. Discussion",
+        "A. Segment Anything Model and Task Details",
+        "D. Experiment Implementation Details",
+        "D.1. Zero-Shot Single Point Valid Mask Evaluation",
+        "D.2. Zero-Shot Edge Detection",
+        "D.3. Zero-Shot Object Proposals",
+        "D.4. Zero-Shot Instance Segmentation",
+        "D.5. Zero-Shot Text-to-Mask",
+        "D.6. Probing the Latent Space of SAM"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "limitations",
+      "paragraphCount": 293,
+      "chars": 69451,
+      "estimatedTextTokens": 23628,
+      "sections": [
+        "Abstract",
+        "1. Introduction",
+        "5. Segment Anything Dataset",
+        "6. Segment Anything RAI Analysis",
+        "7. Zero-Shot Transfer Experiments",
+        "7.1. Zero-Shot Single Point Valid Mask Evaluation",
+        "7.2. Zero-Shot Edge Detection",
+        "7.3. Zero-Shot Object Proposals",
+        "7.4. Zero-Shot Instance Segmentation",
+        "7.5. Zero-Shot Text-to-Mask",
+        "7.6. Ablations",
+        "8. Discussion",
+        "A. Segment Anything Model and Task Details",
+        "D. Experiment Implementation Details",
+        "D.1. Zero-Shot Single Point Valid Mask Evaluation",
+        "D.2. Zero-Shot Edge Detection",
+        "D.3. Zero-Shot Object Proposals",
+        "D.4. Zero-Shot Instance Segmentation",
+        "D.5. Zero-Shot Text-to-Mask",
+        "D.6. Probing the Latent Space of SAM"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    }
+  ]
+}

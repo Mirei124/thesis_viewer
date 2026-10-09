@@ -1,0 +1,12 @@
+{
+  "index": 1,
+  "elapsedMs": 5678,
+  "content": "{\"status\":\"available\",\"text\":\"本文的目标是为 image segmentation 构建 foundation model：开发一个可 promptable 的模型，在广覆盖数据上预训练，从而以 prompt engineering 迁移到新数据分布与下游任务（E007）。作者指出，vision 领域的 foundation model 进展主要限于对齐文本与图像的编码器，如 CLIP 与 ALIGN 用 contrastive learning 训练文本与图像编码器对齐两个模态（E006）；而 vision 包含的问题范围远超这一范围，许多任务并不存在充足的训练数据，segmentation 也不存在 web-scale 数据源（E006,E010）。因此作者将 task、model、data 视为彼此纠缠、需要一并解决，提出 promptable segmentation task，并构建 data engine 在数据采集与模型改进之间迭代（E008,E013）。\",\"sources\":[\"E007\",\"E006\",\"E010\",\"E008\",\"E013\"]}",
+  "usage": {
+    "promptTokens": 15049,
+    "completionTokens": 901,
+    "totalTokens": 15950,
+    "promptCacheHitTokens": 128,
+    "promptCacheMissTokens": 14921
+  }
+}

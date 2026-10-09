@@ -1,0 +1,12 @@
+{
+  "index": 5,
+  "elapsedMs": 8042,
+  "content": "{\"status\":\"available\",\"text\":\"作者明确承认的局限包括：受训练成本限制，大规模上仅有 Chinchilla 与 Gopher 两个可比较的训练运行，缺少中间规模的额外检验 (E131)；方法假设计算预算、模型规模与训练 token 数之间存在 power-law 关系，但高计算预算下 log N_opt 出现 concavity，提示最优规模可能仍被高估 (E131, E139)。所有训练运行均少于一个 epoch，多 epoch 情形未被覆盖 (E131)。评测方面，语言建模基准上与 Gopher 的比较可能受 train/test set leakage 影响 (E066)，bias 与 toxicity 评测被声明并不全面 (E116)。\",\"sources\":[\"E066\",\"E116\",\"E131\",\"E139\"]}",
+  "usage": {
+    "promptTokens": 14378,
+    "completionTokens": 1570,
+    "totalTokens": 15948,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 13866
+  }
+}

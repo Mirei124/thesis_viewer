@@ -1,0 +1,12 @@
+{
+  "index": 1,
+  "elapsedMs": 7898,
+  "content": "{\"status\":\"available\",\"text\":\"MLLMs 的进展主要集中在静态图像理解，对时序视觉数据的处理能力仍未被充分探索（E002, E007）。既有 video-based benchmarks 存在视频类型多样性不足、时序动态覆盖不够、仅聚焦单一模态等问题，难以全面评估 MLLMs（E007, E037）。为此作者提出 Video-MME，覆盖 6 个视觉域与 30 个细分类别，时长自 11 秒至 1 小时，并纳入 subtitles 与 audio 以做全谱系评估（E002, E012）。实验中作者观察到 subtitles 与 audio 能显著提升视频理解，且模型性能随时长增加而下降（E005, E014）；长上下文架构与复杂时序推理训练数据只是作者展望的方向，并非本文实际采用的设计（E033）。\",\"sources\":[\"E002\",\"E005\",\"E007\",\"E012\",\"E014\",\"E033\",\"E037\"]}",
+  "usage": {
+    "promptTokens": 9842,
+    "completionTokens": 1586,
+    "totalTokens": 11428,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 9330
+  }
+}

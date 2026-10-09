@@ -1,0 +1,37 @@
+{
+  "paper": "Chinchilla",
+  "arm": "B",
+  "model": "deepseek-flash",
+  "requestSha256": "303d77eebdf1512879ae17b992be8b8a04db1cf21064ea640548a75998806263",
+  "requestChars": 8272,
+  "elapsedSeconds": 16.84,
+  "usage": {
+    "prompt_tokens": 2189,
+    "completion_tokens": 3467,
+    "total_tokens": 5656,
+    "prompt_tokens_details": {
+      "cached_tokens": 896
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 2764
+    },
+    "prompt_cache_hit_tokens": 896,
+    "prompt_cache_miss_tokens": 1293
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"本文的任务是：在给定固定 FLOPs 预算的前提下，回答应如何在 model size 与 training tokens 数量之间做权衡，其输出形式是关于最优参数规模与训练 token 数如何随 FLOPs 变化的预测 (E002)。这一设定的现实约束来自既有大模型的处境：训练大语言模型的算力与能耗成本很高，且随模型规模上升，而实践中可用的训练算力预算往往事先已知（有多少 accelerators、打算使用多久）；由于这类模型通常只训练一次，为给定算力预算准确估计最佳 model hyperparameters 就十分关键 (E005)。作者同时指出，大规模模型的能耗成本会通过 inference 与 fine-tuning 的使用被摊薄，因此一个被更优训练出来的较小模型，其收益不止于性能改善本身，还显著降低 inference 成本、便于在较小硬件上开展下游使用 (E006)。\\n\\n对既有做法的观察是：当前最大的 dense transformer 规模已超过 5000 亿参数，且除 LaMDA 外多数模型大约只训练了 3000 亿 token (E007)；同时这类模型面临算力需求庞大、需要获取更多高质量训练数据的挑战，作者发现更大、更高质量的数据集将对语言模型的进一步 scaling 起关键作用 (E001)。\\n\\n方法由三条估计路径构成。第一条路径固定一组模型家族，参数规模从 70M 到超过 10B，对每个模型用 4 个不同的 training sequence 数量（即不同的 training steps）训练，再从这些 runs 中直接提取在给定 training FLOPs 下所达到的 minimum loss 估计；该路径的训练细节列于 Appendix D (E003)。也就是说，其输入是模型规模与训练步数/序列数的组合，中间产物是各算力预算下的最小损失，输出则是据此读出的最优 model size 与 training tokens 配置。此处材料以 training sequences 与 training steps 描述训练量，如何换算为 training tokens 数量并未给出。\\n\\n第二、第三条路径采用另外的 fitting methodologies，并训练了与第一条路径不同的模型 (E004)。不过这两条路径的具体拟合流程——所拟合的函数形式、拟合目标，以及如何由拟合结果反解最优参数与 token 配比——在可见材料中没有出现，是需要核对原文的缺失。同样，决定机制的训练配置（数据集构成、优化器与 learning rate schedule、序列长度等）仅以 Appendix D 的形式被引用，其内容未出现在可见材料中 (E003)。\\n\\n在验证层面，作者将三条路径相互对照：尽管拟合方法与所用模型不同，三条路径对参数与 token 随 FLOPs 的最优缩放给出了可比的预测（Table 2），共同指向随着 compute budget 增加，model size 与训练数据量应以大致相等的比例增长；第一与第二条路径对最优 model size 的预测非常接近（Figure 1、Figure A3），而第三条路径在更大算力预算下预测的最优模型更小 (E004)。整个估计过程属于训练与拟合阶段，得出的结论则服务于 inference 与下游 fine-tuning 阶段的成本与部署考量 (E006)。\",\"sources\":[\"E001\",\"E002\",\"E003\",\"E004\",\"E005\",\"E006\",\"E007\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "本文的任务是：在给定固定 FLOPs 预算的前提下，回答应如何在 model size 与 training tokens 数量之间做权衡，其输出形式是关于最优参数规模与训练 token 数如何随 FLOPs 变化的预测 (E002)。这一设定的现实约束来自既有大模型的处境：训练大语言模型的算力与能耗成本很高，且随模型规模上升，而实践中可用的训练算力预算往往事先已知（有多少 accelerators、打算使用多久）；由于这类模型通常只训练一次，为给定算力预算准确估计最佳 model hyperparameters 就十分关键 (E005)。作者同时指出，大规模模型的能耗成本会通过 inference 与 fine-tuning 的使用被摊薄，因此一个被更优训练出来的较小模型，其收益不止于性能改善本身，还显著降低 inference 成本、便于在较小硬件上开展下游使用 (E006)。\n\n对既有做法的观察是：当前最大的 dense transformer 规模已超过 5000 亿参数，且除 LaMDA 外多数模型大约只训练了 3000 亿 token (E007)；同时这类模型面临算力需求庞大、需要获取更多高质量训练数据的挑战，作者发现更大、更高质量的数据集将对语言模型的进一步 scaling 起关键作用 (E001)。\n\n方法由三条估计路径构成。第一条路径固定一组模型家族，参数规模从 70M 到超过 10B，对每个模型用 4 个不同的 training sequence 数量（即不同的 training steps）训练，再从这些 runs 中直接提取在给定 training FLOPs 下所达到的 minimum loss 估计；该路径的训练细节列于 Appendix D (E003)。也就是说，其输入是模型规模与训练步数/序列数的组合，中间产物是各算力预算下的最小损失，输出则是据此读出的最优 model size 与 training tokens 配置。此处材料以 training sequences 与 training steps 描述训练量，如何换算为 training tokens 数量并未给出。\n\n第二、第三条路径采用另外的 fitting methodologies，并训练了与第一条路径不同的模型 (E004)。不过这两条路径的具体拟合流程——所拟合的函数形式、拟合目标，以及如何由拟合结果反解最优参数与 token 配比——在可见材料中没有出现，是需要核对原文的缺失。同样，决定机制的训练配置（数据集构成、优化器与 learning rate schedule、序列长度等）仅以 Appendix D 的形式被引用，其内容未出现在可见材料中 (E003)。\n\n在验证层面，作者将三条路径相互对照：尽管拟合方法与所用模型不同，三条路径对参数与 token 随 FLOPs 的最优缩放给出了可比的预测（Table 2），共同指向随着 compute budget 增加，model size 与训练数据量应以大致相等的比例增长；第一与第二条路径对最优 model size 的预测非常接近（Figure 1、Figure A3），而第三条路径在更大算力预算下预测的最优模型更小 (E004)。整个估计过程属于训练与拟合阶段，得出的结论则服务于 inference 与下游 fine-tuning 阶段的成本与部署考量 (E006)。",
+    "sources": [
+      "E001",
+      "E002",
+      "E003",
+      "E004",
+      "E005",
+      "E006",
+      "E007"
+    ]
+  },
+  "unknownAliases": []
+}

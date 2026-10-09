@@ -1,0 +1,51 @@
+{
+  "paper": "SAM",
+  "arm": "D",
+  "model": "deepseek-flash",
+  "requestSha256": "748f262dbf3fe98d9fda882c5eef018f5a9761063da8836b6a313d7415eba06a",
+  "outputLimit": 32000,
+  "requestChars": 32502,
+  "elapsedSeconds": 28.92,
+  "usage": {
+    "prompt_tokens": 7928,
+    "completion_tokens": 7033,
+    "total_tokens": 14961,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 5859
+    },
+    "prompt_cache_hit_tokens": 256,
+    "prompt_cache_miss_tokens": 7672
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"任务与输入输出。promptable segmentation 的目标是在给定任意 segmentation prompt 时返回一个 valid segmentation mask；prompt 可以是前景/背景点、rough box、mask、free-form text，或一般地任何指示图像中要分割什么的信息。输入是图像加 prompt，输出是 mask；当 prompt 有歧义、可指多个对象时，输出仍应是其中至少一个对象的合理 mask（P004, P014）。\\n\\n模型总览。SAM 由三个组件组成：image encoder、prompt encoder、mask decoder（P033）。image encoder 为每张图像计算一次 image embedding；prompt encoder 把 prompt 编码成 prompt embedding；mask decoder 将两者结合并输出 mask（P006）。将 image encoder 与轻量 prompt encoder / mask decoder 分离，使同一 image embedding 可被不同 prompt 重用，从而摊销图像编码成本（P030）。\\n\\nimage encoder 与 prompt encoder。image encoder 使用 MAE 预训练的 ViT，并针对高分辨率输入做最小适配，每张图像只运行一次，可在 prompt 之前预先计算。prompt encoder 分 sparse 与 dense：points、boxes、text 属于 sparse，用 positional encoding 与每种 prompt type 的 learned embedding 相加；free-form text 用 CLIP 的 off-the-shelf text encoder；dense prompts（mask）用 convolutions 嵌入，并与 image embedding 逐元素相加（P035）。\\n\\nmask decoder。mask decoder 将 image embedding、prompt embeddings 与一个 output token 映射为 mask。其结构是修改的 Transformer decoder block 加 dynamic mask prediction head：先做 prompt self-attention 与双向 cross-attention（prompt-to-image embedding 和 image-to-prompt），更新所有 embeddings；运行两个 block 后，上采样 image embedding，并用 MLP 将 output token 映射为 dynamic linear classifier，在图像每个位置计算 mask foreground probability（P037）。\\n\\n歧义 mask 与 quality score。为处理歧义，SAM 对同一 prompt 预测多个 mask，而不是把多个有效对象平均成一个 mask；通常 3 个输出足以覆盖 whole、part、subpart 等嵌套情形（P039）。模型还为每个 mask 预测 confidence score，即 estimated IoU，用于排序和选择（P032）。\\n\\n训练。预训练时，promptable segmentation 任务通过模拟 prompt 序列实现：对每个训练样本模拟 points、boxes、masks 等 prompt，并比较模型 mask 预测与 ground truth（P016）。训练随机采样 prompt 并在每个 mask 上做 11 轮模拟，使模型适应交互式使用，并能接入 data engine；mask 预测用 focal loss 与 dice loss 的线性组合监督（P034）。\\n\\ndata engine 第一阶段。data engine 有三个阶段：assisted-manual、semi-automatic、fully automatic（P003）。第一阶段 assisted-manual 中，专业 annotators 在浏览器交互式分割工具中点击前景/背景点，工具由 SAM 驱动，并可借助 pixel-precise brush 和 eraser 修正 mask；由于使用预计算 image embeddings，标注可实时进行。该阶段不设 semantic constraints，annotators 自由标注 stuff 与 things，按显著性排序，并可在单 mask 超过 30 秒时进入下一图（P038）。随着标注数据积累，SAM 被重新训练，image encoder 从 ViT-B 扩展到 ViT-H，共重训 6 次（P040）。\\n\\ndata engine 第二阶段。第二阶段 semi-automatic 先自动检测 confident masks：用第一阶段 mask 训练一个 bounding box detector，类别为 generic “object”。把图像预填这些 mask 后，annotators 只标注剩余未标注对象，以增加 mask diversity。该阶段也周期性在新数据上重训模型（5 次）（P043）。\\n\\ndata engine 第三阶段与 zero-shot 使用。第三阶段 fully automatic 不再需要 annotators。模型用 32×32 regular grid of points 作为 prompt；因为已具备 ambiguity-aware，若点落在 part/subpart，会返回 subpart、part、whole object 等一组 mask。随后用 IoU prediction module 选择 confident masks，并只保留 stable masks（对 probability map 在 0.5−δ 与 0.5+δ 阈值化得到相似 mask），再用 NMS 过滤重复；为改善小 mask 质量，还处理多个重叠的 zoomed-in image crops（P045）。该阶段对数据集全部图像生成 mask，形成 SA-1B 的自动标注（P003）。训练完成后，模型通过 prompt engineering 做 zero-shot transfer：预训练使模型能对任意 prompt 作出合适响应，因此下游任务可被改写成给模型合适 prompt（P018）。例如已有猫的 bounding box detector 时，把 detector 输出的 box 作为 prompt 输入 SAM，即可得到猫的 instance segmentation；也可把 promptable segmentation model 作为更大系统的一个组件，组合出 edge detection、object proposal generation、instance segmentation、text-to-mask 等任务（P017, P007）。\",\"sources\":[\"P004\",\"P014\",\"P033\",\"P006\",\"P030\",\"P035\",\"P037\",\"P039\",\"P032\",\"P016\",\"P034\",\"P003\",\"P038\",\"P040\",\"P043\",\"P045\",\"P018\",\"P017\",\"P007\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "任务与输入输出。promptable segmentation 的目标是在给定任意 segmentation prompt 时返回一个 valid segmentation mask；prompt 可以是前景/背景点、rough box、mask、free-form text，或一般地任何指示图像中要分割什么的信息。输入是图像加 prompt，输出是 mask；当 prompt 有歧义、可指多个对象时，输出仍应是其中至少一个对象的合理 mask（P004, P014）。\n\n模型总览。SAM 由三个组件组成：image encoder、prompt encoder、mask decoder（P033）。image encoder 为每张图像计算一次 image embedding；prompt encoder 把 prompt 编码成 prompt embedding；mask decoder 将两者结合并输出 mask（P006）。将 image encoder 与轻量 prompt encoder / mask decoder 分离，使同一 image embedding 可被不同 prompt 重用，从而摊销图像编码成本（P030）。\n\nimage encoder 与 prompt encoder。image encoder 使用 MAE 预训练的 ViT，并针对高分辨率输入做最小适配，每张图像只运行一次，可在 prompt 之前预先计算。prompt encoder 分 sparse 与 dense：points、boxes、text 属于 sparse，用 positional encoding 与每种 prompt type 的 learned embedding 相加；free-form text 用 CLIP 的 off-the-shelf text encoder；dense prompts（mask）用 convolutions 嵌入，并与 image embedding 逐元素相加（P035）。\n\nmask decoder。mask decoder 将 image embedding、prompt embeddings 与一个 output token 映射为 mask。其结构是修改的 Transformer decoder block 加 dynamic mask prediction head：先做 prompt self-attention 与双向 cross-attention（prompt-to-image embedding 和 image-to-prompt），更新所有 embeddings；运行两个 block 后，上采样 image embedding，并用 MLP 将 output token 映射为 dynamic linear classifier，在图像每个位置计算 mask foreground probability（P037）。\n\n歧义 mask 与 quality score。为处理歧义，SAM 对同一 prompt 预测多个 mask，而不是把多个有效对象平均成一个 mask；通常 3 个输出足以覆盖 whole、part、subpart 等嵌套情形（P039）。模型还为每个 mask 预测 confidence score，即 estimated IoU，用于排序和选择（P032）。\n\n训练。预训练时，promptable segmentation 任务通过模拟 prompt 序列实现：对每个训练样本模拟 points、boxes、masks 等 prompt，并比较模型 mask 预测与 ground truth（P016）。训练随机采样 prompt 并在每个 mask 上做 11 轮模拟，使模型适应交互式使用，并能接入 data engine；mask 预测用 focal loss 与 dice loss 的线性组合监督（P034）。\n\ndata engine 第一阶段。data engine 有三个阶段：assisted-manual、semi-automatic、fully automatic（P003）。第一阶段 assisted-manual 中，专业 annotators 在浏览器交互式分割工具中点击前景/背景点，工具由 SAM 驱动，并可借助 pixel-precise brush 和 eraser 修正 mask；由于使用预计算 image embeddings，标注可实时进行。该阶段不设 semantic constraints，annotators 自由标注 stuff 与 things，按显著性排序，并可在单 mask 超过 30 秒时进入下一图（P038）。随着标注数据积累，SAM 被重新训练，image encoder 从 ViT-B 扩展到 ViT-H，共重训 6 次（P040）。\n\ndata engine 第二阶段。第二阶段 semi-automatic 先自动检测 confident masks：用第一阶段 mask 训练一个 bounding box detector，类别为 generic “object”。把图像预填这些 mask 后，annotators 只标注剩余未标注对象，以增加 mask diversity。该阶段也周期性在新数据上重训模型（5 次）（P043）。\n\ndata engine 第三阶段与 zero-shot 使用。第三阶段 fully automatic 不再需要 annotators。模型用 32×32 regular grid of points 作为 prompt；因为已具备 ambiguity-aware，若点落在 part/subpart，会返回 subpart、part、whole object 等一组 mask。随后用 IoU prediction module 选择 confident masks，并只保留 stable masks（对 probability map 在 0.5−δ 与 0.5+δ 阈值化得到相似 mask），再用 NMS 过滤重复；为改善小 mask 质量，还处理多个重叠的 zoomed-in image crops（P045）。该阶段对数据集全部图像生成 mask，形成 SA-1B 的自动标注（P003）。训练完成后，模型通过 prompt engineering 做 zero-shot transfer：预训练使模型能对任意 prompt 作出合适响应，因此下游任务可被改写成给模型合适 prompt（P018）。例如已有猫的 bounding box detector 时，把 detector 输出的 box 作为 prompt 输入 SAM，即可得到猫的 instance segmentation；也可把 promptable segmentation model 作为更大系统的一个组件，组合出 edge detection、object proposal generation、instance segmentation、text-to-mask 等任务（P017, P007）。",
+    "sources": [
+      "P004",
+      "P014",
+      "P033",
+      "P006",
+      "P030",
+      "P035",
+      "P037",
+      "P039",
+      "P032",
+      "P016",
+      "P034",
+      "P003",
+      "P038",
+      "P040",
+      "P043",
+      "P045",
+      "P018",
+      "P017",
+      "P007"
+    ]
+  },
+  "parseError": null,
+  "unknownAliases": []
+}

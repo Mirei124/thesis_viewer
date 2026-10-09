@@ -1,0 +1,167 @@
+{
+  "path": "/tmp/B090/Transformer.pdf",
+  "documentVersion": "sha256:bdfaa68d8984f0dc02beaca527b76f207d99b666d31d1da728ee0728182df697",
+  "config": {
+    "baseUrl": "https://api.deepseek.com/v1",
+    "model": "deepseek-flash",
+    "structuredOutput": true,
+    "contextLimit": 128000,
+    "outputLimit": 32000
+  },
+  "methodOnly": true,
+  "sourceHashes": {
+    "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+    "detailedContext": "17be6593246ab7ff036894d13438bb85a7e9773f89528411c3613c7ba4ac102e",
+    "detailedOverview": "b4c9efd6d1efd59fa7f159151e0962cf498184ec853c7efab8132f75e24c92d5",
+    "detailedOverviewPipeline": "aaa177acce0d55c305b175b68892a2b627a6f92573ade91809c0a10803317bf0",
+    "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+  },
+  "pageCount": 15,
+  "paragraphCount": 271,
+  "selections": [
+    {
+      "id": "problem_motivation",
+      "paragraphCount": 24,
+      "chars": 7194,
+      "estimatedTextTokens": 2410,
+      "sections": [
+        "Abstract",
+        "1 Introduction",
+        "2 Background",
+        "7 Conclusion"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "method",
+      "paragraphCount": 172,
+      "chars": 24306,
+      "estimatedTextTokens": 8269,
+      "sections": [
+        "Abstract",
+        "1 Introduction",
+        "2 Background",
+        "3 Model Architecture",
+        "3.1 Encoder and Decoder Stacks",
+        "3.2 Attention",
+        "3.2.1 Scaled Dot-Product Attention",
+        "3.2.2 Multi-Head Attention",
+        "3.2.3 Applications of Attention in our Model",
+        "3.3 Position-wise Feed-Forward Networks",
+        "3.4 Embeddings and Softmax",
+        "3.5 Positional Encoding",
+        "4 Why Self-Attention",
+        "5 Training",
+        "5.1 Training Data and Batching",
+        "5.2 Hardware and Schedule",
+        "5.3 Optimizer",
+        "5.4 Regularization",
+        "6.2 Model Variations"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "contributions_novelty",
+      "paragraphCount": 203,
+      "chars": 29670,
+      "estimatedTextTokens": 10069,
+      "sections": [
+        "Abstract",
+        "1 Introduction",
+        "2 Background",
+        "3 Model Architecture",
+        "3.1 Encoder and Decoder Stacks",
+        "3.2 Attention",
+        "3.2.1 Scaled Dot-Product Attention",
+        "3.2.2 Multi-Head Attention",
+        "3.2.3 Applications of Attention in our Model",
+        "3.3 Position-wise Feed-Forward Networks",
+        "3.4 Embeddings and Softmax",
+        "3.5 Positional Encoding",
+        "4 Why Self-Attention",
+        "5 Training",
+        "5.1 Training Data and Batching",
+        "5.2 Hardware and Schedule",
+        "5.3 Optimizer",
+        "5.4 Regularization",
+        "6 Results",
+        "6.1 Machine Translation",
+        "6.2 Model Variations",
+        "6.3 English Constituency Parsing",
+        "7 Conclusion"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "experiments_ablations",
+      "paragraphCount": 198,
+      "chars": 28444,
+      "estimatedTextTokens": 9659,
+      "sections": [
+        "Abstract",
+        "1 Introduction",
+        "2 Background",
+        "3 Model Architecture",
+        "3.1 Encoder and Decoder Stacks",
+        "3.2 Attention",
+        "3.2.1 Scaled Dot-Product Attention",
+        "3.2.2 Multi-Head Attention",
+        "3.2.3 Applications of Attention in our Model",
+        "3.3 Position-wise Feed-Forward Networks",
+        "3.4 Embeddings and Softmax",
+        "3.5 Positional Encoding",
+        "4 Why Self-Attention",
+        "5 Training",
+        "5.1 Training Data and Batching",
+        "5.2 Hardware and Schedule",
+        "5.3 Optimizer",
+        "5.4 Regularization",
+        "6 Results",
+        "6.1 Machine Translation",
+        "6.2 Model Variations",
+        "6.3 English Constituency Parsing"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "limitations",
+      "paragraphCount": 67,
+      "chars": 13466,
+      "estimatedTextTokens": 4521,
+      "sections": [
+        "Abstract",
+        "1 Introduction",
+        "2 Background",
+        "6 Results",
+        "6.1 Machine Translation",
+        "6.2 Model Variations",
+        "6.3 English Constituency Parsing",
+        "7 Conclusion"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    }
+  ]
+}

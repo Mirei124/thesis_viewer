@@ -1,0 +1,12 @@
+{
+  "index": 5,
+  "elapsedMs": 6650,
+  "content": "{\"status\":\"available\",\"text\":\"论文明确承认若干局限：受 GPT-3 175B 训练成本限制，实验只报告各任务在随机种子下的典型标准差，而非逐条目的标准差 (E118)；低秩分析因篇幅限制仅考察 96 层中的第 48 层 (E170)。作者还指出，复制既有设置使部分 baseline 只出现在特定实验中 (E036)。此外，很小的 rank r 不预期对每个任务或数据集都有效 (E150)，而选择对哪些权重矩阵施加 LoRA 仍主要依赖 heuristics (E215)。\",\"sources\":[\"E036\",\"E118\",\"E150\",\"E170\",\"E215\"]}",
+  "usage": {
+    "promptTokens": 20920,
+    "completionTokens": 1283,
+    "totalTokens": 22203,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 20408
+  }
+}

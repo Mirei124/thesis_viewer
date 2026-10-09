@@ -1,0 +1,12 @@
+{
+  "index": 4,
+  "elapsedMs": 23321,
+  "content": "{\"status\":\"available\",\"text\":\"实验覆盖 RoBERTa base/large、DeBERTa XXL、GPT-2 medium/large 与 GPT-3 175B，NLU 用 GLUE，GPT-3 另测 WikiSQL 与 SAMSum，均使用 NVIDIA Tesla V100 (E109)。主结果：GPT-3 175B 的 LoRA 仅 4.7M 可训练参数，MNLI-m 达 91.7、SAMSum R1/R2/RL 为 53.8/29.8/45.9，在 MNLI-m 与 SAMSum 上高于 175,255.8M 参数的 FT（89.5、52.0/28.0/44.5）(E184,E188)。消融一（模块）：18M 参数预算下（单类 r=8、两类 r=4，96 层），只适应 W_q 或 W_k 明显更差，W_q+W_v 最好，WikiSQL 73.7、MultiNLI 91.3 (E210,E212,E213)。消融二（秩）：r 由 1 到 64 影响很小，r=1 的 W_q+W_v 已达 73.4/91.3，而只用 W_q 需更大 r (E217,E219)。消融三（组合）：LoRA+PE 在 WikiSQL 显著优于 LoRA 与 prefix-embedding tuning，在 MultiNLI 未超过 LoRA，LoRA+PL 参数更多却略差 (E332)。这些消融只报 WikiSQL（验证集 8,421 例 (E313)）与 MultiNLI 的验证准确率，MultiNLI 规模未给出；MLP、LayerNorm、bias 的消融被留作未来工作 (E101)。速度方面，GPT-2 medium 单次前向在 batch size 1、sequence length 128 时 adapter 慢 20.7%–30.3%（100 trials，RTX8000）(E061,E063,E064,E065)；GPT-3 175B 在相同 weight shards 下吞吐由 32.5 升至 43.1 tokens/s per V100 GPU (E118)。\",\"sources\":[\"E101\",\"E109\",\"E118\",\"E184\",\"E188\",\"E210\",\"E212\",\"E213\",\"E217\",\"E219\",\"E313\",\"E332\",\"E061\",\"E063\",\"E064\",\"E065\"]}",
+  "usage": {
+    "promptTokens": 27731,
+    "completionTokens": 6017,
+    "totalTokens": 33748,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 27219
+  }
+}

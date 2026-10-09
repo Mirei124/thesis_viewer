@@ -1,0 +1,12 @@
+{
+  "index": 3,
+  "elapsedMs": 40768,
+  "content": "{\"status\":\"available\",\"text\":\"作者提出 Video-MME，定位首个 MLLMs 视频分析综合多模态评测基准（E002）。含 900 视频、2,700 选择题，跨 6 域 30 细类，时长 11 秒–1 小时，带字幕与音轨（E004）。评测 GPT-4V、GPT-4o、Gemini 1.5 Pro 及开源模型（E005）。Gemini 1.5 Pro 均准 75%，VILA-1.5 59%，字幕/音频提升 6.2%/4.3%，长视频增益更大，性能随视频变长下降（E006, E008）。比较仅限多项选择子集（E007）。相对既有 image MLLM 与视频时序基准（E013），其加入字幕/音轨与跨时长评测；属解读（E002, E004）。并指出长上下文架构与复杂时序推理数据方向（E009）。\",\"sources\":[\"E002\",\"E004\",\"E005\",\"E006\",\"E007\",\"E008\",\"E009\",\"E013\"],\"blocks\":[{\"text\":\"作者提出 Video-MME，定位首个 MLLMs 视频分析综合多模态评测基准（E002）。\",\"sources\":[\"E002\"],\"claimKind\":\"author_claim\"},{\"text\":\"含 900 视频、2,700 选择题，跨 6 域 30 细类，时长 11 秒–1 小时，带字幕与音轨（E004）。\",\"sources\":[\"E004\"],\"claimKind\":\"source_fact\"},{\"text\":\"评测 GPT-4V、GPT-4o、Gemini 1.5 Pro 及开源模型（E005）。\",\"sources\":[\"E005\"],\"claimKind\":\"source_fact\"},{\"text\":\"Gemini 1.5 Pro 均准 75%，VILA-1.5 59%，字幕/音频提升 6.2%/4.3%，长视频增益更大，性能随视频变长下降（E006, E008）。\",\"sources\":[\"E006\",\"E008\"],\"claimKind\":\"observed_result\"},{\"text\":\"比较仅限多项选择子集（E007）。\",\"sources\":[\"E007\"],\"claimKind\":\"source_fact\"},{\"text\":\"相对既有 image MLLM 与视频时序基准（E013），其加入字幕/音轨与跨时长评测；属解读（E002, E004）。\",\"sources\":[\"E013\",\"E002\",\"E004\"],\"claimKind\":\"inference\"},{\"text\":\"并指出长上下文架构与复杂时序推理数据方向（E009）。\",\"sources\":[\"E009\"],\"claimKind\":\"author_claim\"}]}",
+  "usage": {
+    "promptTokens": 2779,
+    "completionTokens": 10325,
+    "totalTokens": 13104,
+    "promptCacheHitTokens": 640,
+    "promptCacheMissTokens": 2139
+  }
+}

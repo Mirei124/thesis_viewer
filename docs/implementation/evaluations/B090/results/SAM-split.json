@@ -1,0 +1,49 @@
+{
+  "paper": "SAM",
+  "arm": "split",
+  "model": "deepseek-flash",
+  "requestSha256": "a5d4692fa2e8933567a6f047073759dcb0b85f895197c695bafadad148ada1de",
+  "requestChars": 31986,
+  "elapsedSeconds": 33.08,
+  "usage": {
+    "prompt_tokens": 7667,
+    "completion_tokens": 8298,
+    "total_tokens": 15965,
+    "prompt_tokens_details": {
+      "cached_tokens": 384
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 7582
+    },
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 7283
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"以下区分作者主张、已验证结果与推断。\\n核心贡献\\n1. 作者提出 promptable segmentation task：给定 point、box、mask 或 text 等 prompt，返回 valid mask；即使 prompt 有歧义，也须至少给出一个合理对象的结果；作者称该任务既提供预训练目标，也可通过 prompt engineering 解决下游分割任务，并类比 NLP 的 prompt。P014 P004\\n2. 作者交付 SAM：image encoder、prompt encoder、mask decoder 三组件。P006\\n3. 作者称该分离是为了复用同一 image embedding 并摊销计算，给定 embedding 后 prompt encoder 与 mask decoder 在浏览器 CPU 约 50ms；对歧义 prompt 输出多张 valid masks 与 confidence score。P034 P030\\n4. 作者以 data engine 三阶段（assisted-manual、semi-automatic、fully automatic）构建 SA-1B：11M images、1.1B masks，99.1% 自动生成。P044 P045\\n5. 作者把数据引擎描述为模型与数据迭代：模型辅助标注，新数据再改进模型。P003\\n6. 作者报告 500 images 抽样中 94% 自动-修正 mask 对 IoU>90%；在 23 segmentation datasets 上由 single foreground point 产生高质量 mask，并零样本迁移到 edge detection、object proposal generation、instance segmentation 与初步 text-to-mask。P046 P007\\n相对创新\\n1. 相对 multi-task segmentation systems：后者训练与测试任务固定，而作者主张 promptable segmentation 模型可在推理时作为更大系统组件执行新任务，属 task generalization；比较边界是文中定义的多任务系统。P017 P018\\n2. 相对 interactive segmentation：作者称其目标不是等足够用户输入后得到有效 mask，而是对任意 prompt 始终预测 valid mask，并可通过 composition 嵌入算法流程；比较边界是文中 interactive segmentation 的设定。P016 P019\\n3. 数据维度：作者称 masks 非网络自然充沛，故采用 model-in-the-loop data engine。P003\\n4. SA-1B 较 Open Images 多 11× images、400× masks，每图平均 masks 多 36×，该比较限于文中列出的数据集。P074 P077\\n5. Responsible AI：作者报告 SA-1B 在 Europe、Asia & Oceania 与 middle income countries 的代表性高于 COCO 与 Open Images，但所有比较数据集都 underrepresent Africa 与 low income countries。P079 P080\\n6. 作者认为这有助于更 equitable 的真实使用。P005\\n7. 区分与边界：任务定义、架构、数据引擎与发布属作者交付；零样本迁移与 mask 质量由实验和抽样验证。P007 P046\\n8. 作者希望 SA-1B 成为构建新 foundation models 的资源，但文中未把结论扩展为全领域首次或未比较任务上的优势。P005\",\"sources\":[\"P003\",\"P004\",\"P005\",\"P006\",\"P007\",\"P014\",\"P016\",\"P017\",\"P018\",\"P019\",\"P030\",\"P034\",\"P044\",\"P045\",\"P046\",\"P074\",\"P077\",\"P079\",\"P080\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "以下区分作者主张、已验证结果与推断。\n核心贡献\n1. 作者提出 promptable segmentation task：给定 point、box、mask 或 text 等 prompt，返回 valid mask；即使 prompt 有歧义，也须至少给出一个合理对象的结果；作者称该任务既提供预训练目标，也可通过 prompt engineering 解决下游分割任务，并类比 NLP 的 prompt。P014 P004\n2. 作者交付 SAM：image encoder、prompt encoder、mask decoder 三组件。P006\n3. 作者称该分离是为了复用同一 image embedding 并摊销计算，给定 embedding 后 prompt encoder 与 mask decoder 在浏览器 CPU 约 50ms；对歧义 prompt 输出多张 valid masks 与 confidence score。P034 P030\n4. 作者以 data engine 三阶段（assisted-manual、semi-automatic、fully automatic）构建 SA-1B：11M images、1.1B masks，99.1% 自动生成。P044 P045\n5. 作者把数据引擎描述为模型与数据迭代：模型辅助标注，新数据再改进模型。P003\n6. 作者报告 500 images 抽样中 94% 自动-修正 mask 对 IoU>90%；在 23 segmentation datasets 上由 single foreground point 产生高质量 mask，并零样本迁移到 edge detection、object proposal generation、instance segmentation 与初步 text-to-mask。P046 P007\n相对创新\n1. 相对 multi-task segmentation systems：后者训练与测试任务固定，而作者主张 promptable segmentation 模型可在推理时作为更大系统组件执行新任务，属 task generalization；比较边界是文中定义的多任务系统。P017 P018\n2. 相对 interactive segmentation：作者称其目标不是等足够用户输入后得到有效 mask，而是对任意 prompt 始终预测 valid mask，并可通过 composition 嵌入算法流程；比较边界是文中 interactive segmentation 的设定。P016 P019\n3. 数据维度：作者称 masks 非网络自然充沛，故采用 model-in-the-loop data engine。P003\n4. SA-1B 较 Open Images 多 11× images、400× masks，每图平均 masks 多 36×，该比较限于文中列出的数据集。P074 P077\n5. Responsible AI：作者报告 SA-1B 在 Europe、Asia & Oceania 与 middle income countries 的代表性高于 COCO 与 Open Images，但所有比较数据集都 underrepresent Africa 与 low income countries。P079 P080\n6. 作者认为这有助于更 equitable 的真实使用。P005\n7. 区分与边界：任务定义、架构、数据引擎与发布属作者交付；零样本迁移与 mask 质量由实验和抽样验证。P007 P046\n8. 作者希望 SA-1B 成为构建新 foundation models 的资源，但文中未把结论扩展为全领域首次或未比较任务上的优势。P005",
+    "sources": [
+      "P003",
+      "P004",
+      "P005",
+      "P006",
+      "P007",
+      "P014",
+      "P016",
+      "P017",
+      "P018",
+      "P019",
+      "P030",
+      "P034",
+      "P044",
+      "P045",
+      "P046",
+      "P074",
+      "P077",
+      "P079",
+      "P080"
+    ]
+  },
+  "unknownAliases": []
+}

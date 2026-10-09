@@ -1,0 +1,32 @@
+{
+  "paper": "Chinchilla",
+  "arm": "problem",
+  "model": "deepseek-flash",
+  "requestSha256": "463bbb31ec0044d407c1e794072246f43e9863793e16a369ab3943e02c989903",
+  "requestChars": 3862,
+  "elapsedSeconds": 4.33,
+  "usage": {
+    "prompt_tokens": 918,
+    "completion_tokens": 765,
+    "total_tokens": 1683,
+    "prompt_tokens_details": {
+      "cached_tokens": 384
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 608
+    },
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 534
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"本文的研究问题是：在给定固定 FLOPs 预算时，应如何在 model size 与 training tokens 数量之间进行权衡，作者为此提出三种不同的估计路径 (E002)。就既有做法而言，近年出现的大型语言模型既包括 dense transformer 也包括 mixture-of-expert (MoE)，其中最大的 dense transformer 参数量已超过 5000 亿，且扩大规模迄今改善了许多语言建模任务的表现 (E001)。但作者指出，这类模型面临训练与推理成本随规模增长、以及需要获取更多高质量训练数据的挑战，并发现更大、更高质量的数据集对语言模型的进一步 scaling 起关键作用 (E001)。\",\"sources\":[\"E001\",\"E002\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "本文的研究问题是：在给定固定 FLOPs 预算时，应如何在 model size 与 training tokens 数量之间进行权衡，作者为此提出三种不同的估计路径 (E002)。就既有做法而言，近年出现的大型语言模型既包括 dense transformer 也包括 mixture-of-expert (MoE)，其中最大的 dense transformer 参数量已超过 5000 亿，且扩大规模迄今改善了许多语言建模任务的表现 (E001)。但作者指出，这类模型面临训练与推理成本随规模增长、以及需要获取更多高质量训练数据的挑战，并发现更大、更高质量的数据集对语言模型的进一步 scaling 起关键作用 (E001)。",
+    "sources": [
+      "E001",
+      "E002"
+    ]
+  },
+  "unknownAliases": []
+}

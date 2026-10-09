@@ -1,0 +1,65 @@
+{
+  "paper": "Transformer",
+  "arm": "C",
+  "model": "deepseek-flash",
+  "requestSha256": "01bddaac1786dc317da87c4d2c0215d66dcc4826c4fa7dc82cbec02327f9bed2",
+  "requestChars": 25069,
+  "elapsedSeconds": 27.99,
+  "usage": {
+    "prompt_tokens": 6157,
+    "completion_tokens": 6893,
+    "total_tokens": 13050,
+    "prompt_tokens_details": {
+      "cached_tokens": 512
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 4234
+    },
+    "prompt_cache_hit_tokens": 512,
+    "prompt_cache_miss_tokens": 5645
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"本文处理的是 sequence transduction 问题，落点是机器翻译：encoder 接收长度为 n 的输入符号表示序列 (x1, ..., xn)，把它映射为一串连续表示 z = (z1, ..., zn)；decoder 以 z 为条件生成输出符号序列 (y1, ..., ym)，并且是逐元素生成，每一步都按 auto-regressive 方式把此前已生成的符号当作额外输入来产生下一个符号 (P008)。作者提出的 Transformer 放弃 recurrence，完全依赖 attention 机制在输入与输出之间建立全局依赖，因此可以获得大得多的并行度，并在很短训练时间下取得当时最好的翻译质量 (P002)。\\n\\n整体结构沿用 encoder-decoder，encoder 与 decoder 都由堆叠的 self-attention 与 point-wise 全连接层组成 (P009)。encoder 是 N = 6 个相同层的堆叠，每层含两个 sub-layer：第一个是 multi-head self-attention，第二个是 position-wise fully connected feed-forward network；每个 sub-layer 外面包一个 residual connection 再跟 layer normalization，即该 sub-layer 的输出为 LayerNorm(x + Sublayer(x))，其中 x 是 sub-layer 的输入、Sublayer(x) 是它自身实现的函数 (P011)。为了能这样相加，模型中所有 sub-layer 以及 embedding 层的输出维度统一取 dmodel = 512，这也是贯穿全模型的维度 (P011)。\\n\\ndecoder 同样是 N = 6 层堆叠，但在 encoder 的两个 sub-layer 之外插入第三个 sub-layer，对 encoder stack 的输出做 multi-head attention；同时 decoder 的 self-attention sub-layer 被做上 masking，再配合输出 embedding 相对输入偏移一位，保证位置 i 的预测只能依赖位置小于 i 的已知输出 (P011)。attention 在模型中有三种用法：encoder-decoder attention 里 query 来自上一层 decoder，key 与 value 来自 encoder 输出，使 decoder 的每个位置都能关注输入序列的所有位置；encoder 内的 self-attention 里 query、key、value 全部来自上一层 encoder 的输出，每个位置可关注上一层所有位置；decoder 内的 self-attention 让每个位置只能关注到当前及之前的位置，这是通过在 scaled dot-product attention 内把 softmax 输入中对应非法连接的数值置为 −∞ 实现的 (P029)。\\n\\nattention 函数本身可描述为一个映射：给定一个 query 和一组 key-value 对（都是向量），输出是 value 的加权和，每个 value 的权重由 query 与对应 key 的兼容性函数算出 (P013, P016)。本文用的是 Scaled Dot-Product Attention：输入是维度 dk 的 query 与 key、维度 dv 的 value，先算 query 与所有 key 的点积，把每个点积除以 sqrt(dk)，再经 softmax 得到 value 上的权重；实现上把一组 query 打包成矩阵 Q、key 与 value 打包成 K 和 V，一次算出 Attention(Q, K, V ) = softmax(QK^T / sqrt(dk))V (P018)。缩放这一步是必要的，因为 dk 较大时点积数值会变大，把 softmax 推到梯度极小的区域；若 q 与 k 的各分量是均值 0、方差 1 的独立随机变量，其点积的方差恰为 dk，这正是要除以 sqrt(dk) 的原因 (P020, P024)。\\n\\n单个 attention 会对被加权的位置取平均，削弱有效分辨率，因此用 Multi-Head Attention 来对抗：把 query、key、value 分别用 h 组不同的可学习线性投影投到 dk、dk、dv 维，在每一组投影上并行执行 attention，得到 dv 维输出，把这些输出拼接后再投影一次得到最终结果，即 MultiHead(Q, K, V ) = Concat(head1, ..., headh)W^O，其中 headi = Attention(Q Wi^Q, K Wi^K, V Wi^V ) (P023, P026)。本文取 h = 8 个并行 head，每个 head 的 dk = dv = dmodel/h = 64，投影矩阵 Wi^Q ∈ R^{dmodel×dk}、Wi^K ∈ R^{dmodel×dk}、Wi^V ∈ R^{dmodel×dv}、W^O ∈ R^{hdv×dmodel}；由于每个 head 的维度被压低，总计算量与全维度的单 head attention 相当 (P027)。\\n\\n每个 encoder 与 decoder 层还含一个 position-wise feed-forward network，对每个位置分别且同样地作用，由两个线性变换中间夹一个 ReLU 组成：FFN(x) = max(0, xW1 + b1)W2 + b2 (P031)。它的输入输出维度是 dmodel = 512，内层维度是 dff = 2048，不同层使用各自不同的参数，也可以理解为两次 kernel size 为 1 的卷积 (P033)。\\n\\n输入的 token 与输出的 token 都先经可学习 embedding 变成 dmodel 维向量，decoder 输出再经一个可学习的线性变换加 softmax，得到下一个 token 的概率；两个 embedding 层与 pre-softmax 线性变换共享同一个权重矩阵，而 embedding 层中的这些权重还要乘以 sqrt(dmodel) (P035)。由于模型既无 recurrence 也无 convolution，序列顺序信息靠加在 encoder 与 decoder 底部输入 embedding 上的 positional encoding 注入，两者维度同为 dmodel 所以可以直接相加；本文用不同频率的正弦与余弦函数，PE(pos, 2i) = sin(pos/10000^{2i/dmodel})、PE(pos, 2i+1) = cos(pos/10000^{2i/dmodel})，其中 pos 是位置、i 是维度，各维波长构成从 2π 到 10000·2π 的等比数列，这样对任意固定偏移 k，PEpos+k 都能写成 PEpos 的线性函数，便于模型学出按相对位置去关注的行为 (P044)。\\n\\n作者用三项标准把 self-attention 与 recurrent、convolutional 层做对照：每层总计算复杂度、可并行程度（用最少顺序操作数衡量）、以及网络中任意输入输出位置之间的最大路径长度，路径越短越容易学到长程依赖 (P046, P047)。self-attention 用常数个顺序执行的操作连接所有位置，而 recurrent 层需要 O(n) 个顺序操作；当序列长度 n 小于表示维度 d 时 self-attention 快于 recurrent 层，而在当时最好的翻译模型所用的 word-piece、byte-pair 表示下这一条件通常成立 (P047, P048)。按 Table 1 的统计，self-attention 每层复杂度为 O(n²·d)，recurrent 为 O(n·d²)，convolutional 为 O(k·n·d²)，restricted self-attention 为 O(r·n·d) (P040)。顺序操作数上 self-attention、convolutional 与 restricted self-attention 均为 O(1)，recurrent 为 O(n) (P041)。最大路径长度上 self-attention、recurrent、convolutional、restricted self-attention 分别为 O(1)、O(n)、O(logk(n))、O(n/r)，其中 n 是序列长度、d 是表示维度、k 是卷积核大小、r 是受限 self-attention 的邻域大小 (P036, P042)。更早的卷积式模型里，把任意两个位置联系起来所需操作数随距离增长，ConvS2S 是线性、ByteNet 是对数，Transformer 把它降到常数，代价是 attention 加权平均带来的有效分辨率下降，这一副作用由 Multi-Head Attention 抵消 (P005)。作者也指出，若要处理很长的序列，可以把 self-attention 限制在以输出位置为中心、大小为 r 的邻域内，此时最大路径长度变为 O(n/r)；作为附带好处，检查模型的 attention 分布还显示不同 head 确实学到不同任务，且许多 head 的行为与句子的句法和语义结构相关 (P048)。\\n\\n训练数据与批处理：English-German 用标准 WMT 2014 English-German 数据集，约 450 万句对，用 byte-pair encoding 编码，源与目标共享约 37000 个 token 的词表；English-French 用大得多的 WMT 2014 English-French，共 36M 句，切成 32000 的 word-piece 词表；句对按近似长度组 batch，每个 batch 约含 25000 个源 token 和 25000 个目标 token (P053)。硬件与训练计划：单机 8 块 NVIDIA P100，base 模型每个训练 step 约 0.4 秒，共训练 100,000 步、约 12 小时；big 模型 step 时间 1.0 秒，训练 300,000 步、约 3.5 天 (P055)。优化器用 Adam，β1 = 0.9、β2 = 0.98、ϵ = 10⁻⁹，学习率按 lrate = dmodel^{-0.5} · min(step_num^{-0.5}, step_num · warmup_steps^{-1.5}) 变化，即前 warmup_steps 步线性升高、之后按步数平方根的倒数下降，warmup_steps = 4000 (P057, P059)。\\n\\n训练中采用三类正则化 (P061)，材料中详述了其中两类：residual dropout 施加在每个 sub-layer 的输出上（在加回 sub-layer 输入并做归一化之前），也施加在 encoder 与 decoder 中 embedding 与 positional encoding 之和上，base 模型取 Pdrop = 0.1；label smoothing 取 ϵls = 0.1，它会让 perplexity 变差，因为模型学会更不确定，但能提升准确率与 BLEU (P068)。评测在 English-to-German 与 English-to-French 的 newstest2014 测试集上进行，指标是 BLEU，同时报告训练成本 FLOPs (P062, P063)。材料列出的结果包含 Transformer (base model) 与 Transformer (big) 两行，以及 ByteNet、Deep-Att + PosUnk、GNMT + RL、ConvS2S、MoE 等对照模型在 EN-DE、EN-FR 上的 BLEU 与 FLOPs 数值 (P062, P064, P067)。作者还把可学习 positional embedding 与正弦版本做了对照，发现两者结果几乎一致（见 Table 3 行 (E)），最终选正弦版本，因为它可能外推到训练时未遇到的更长序列 (P044)。\\n\\n有几处本文材料没有覆盖，需要按缺口标注而非补造：一是使用/推理阶段的具体解码流程（例如每步如何选取下一个符号、是否使用某种搜索策略）没有给出，材料只说明了 decoder 的 auto-regressive 性质以及 masking 加偏移一位保证位置 i 只依赖更早输出这一约束 (P008, P011)；二是超参数只完整给出 base 模型一侧（N = 6、dmodel = 512、dff = 2048、h = 8），Table 3 底部那行 big 模型的具体配置未在材料中出现 (P011, P027, P055)；三是 P061 声称的三类正则化中，除 residual dropout 与 label smoothing 之外的第三类内容未在材料中展开 (P061, P068)。\",\"sources\":[\"P002\",\"P005\",\"P008\",\"P009\",\"P011\",\"P013\",\"P016\",\"P018\",\"P020\",\"P023\",\"P024\",\"P026\",\"P027\",\"P029\",\"P031\",\"P033\",\"P035\",\"P036\",\"P040\",\"P041\",\"P042\",\"P044\",\"P046\",\"P047\",\"P048\",\"P053\",\"P055\",\"P057\",\"P059\",\"P061\",\"P062\",\"P063\",\"P064\",\"P067\",\"P068\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "本文处理的是 sequence transduction 问题，落点是机器翻译：encoder 接收长度为 n 的输入符号表示序列 (x1, ..., xn)，把它映射为一串连续表示 z = (z1, ..., zn)；decoder 以 z 为条件生成输出符号序列 (y1, ..., ym)，并且是逐元素生成，每一步都按 auto-regressive 方式把此前已生成的符号当作额外输入来产生下一个符号 (P008)。作者提出的 Transformer 放弃 recurrence，完全依赖 attention 机制在输入与输出之间建立全局依赖，因此可以获得大得多的并行度，并在很短训练时间下取得当时最好的翻译质量 (P002)。\n\n整体结构沿用 encoder-decoder，encoder 与 decoder 都由堆叠的 self-attention 与 point-wise 全连接层组成 (P009)。encoder 是 N = 6 个相同层的堆叠，每层含两个 sub-layer：第一个是 multi-head self-attention，第二个是 position-wise fully connected feed-forward network；每个 sub-layer 外面包一个 residual connection 再跟 layer normalization，即该 sub-layer 的输出为 LayerNorm(x + Sublayer(x))，其中 x 是 sub-layer 的输入、Sublayer(x) 是它自身实现的函数 (P011)。为了能这样相加，模型中所有 sub-layer 以及 embedding 层的输出维度统一取 dmodel = 512，这也是贯穿全模型的维度 (P011)。\n\ndecoder 同样是 N = 6 层堆叠，但在 encoder 的两个 sub-layer 之外插入第三个 sub-layer，对 encoder stack 的输出做 multi-head attention；同时 decoder 的 self-attention sub-layer 被做上 masking，再配合输出 embedding 相对输入偏移一位，保证位置 i 的预测只能依赖位置小于 i 的已知输出 (P011)。attention 在模型中有三种用法：encoder-decoder attention 里 query 来自上一层 decoder，key 与 value 来自 encoder 输出，使 decoder 的每个位置都能关注输入序列的所有位置；encoder 内的 self-attention 里 query、key、value 全部来自上一层 encoder 的输出，每个位置可关注上一层所有位置；decoder 内的 self-attention 让每个位置只能关注到当前及之前的位置，这是通过在 scaled dot-product attention 内把 softmax 输入中对应非法连接的数值置为 −∞ 实现的 (P029)。\n\nattention 函数本身可描述为一个映射：给定一个 query 和一组 key-value 对（都是向量），输出是 value 的加权和，每个 value 的权重由 query 与对应 key 的兼容性函数算出 (P013, P016)。本文用的是 Scaled Dot-Product Attention：输入是维度 dk 的 query 与 key、维度 dv 的 value，先算 query 与所有 key 的点积，把每个点积除以 sqrt(dk)，再经 softmax 得到 value 上的权重；实现上把一组 query 打包成矩阵 Q、key 与 value 打包成 K 和 V，一次算出 Attention(Q, K, V ) = softmax(QK^T / sqrt(dk))V (P018)。缩放这一步是必要的，因为 dk 较大时点积数值会变大，把 softmax 推到梯度极小的区域；若 q 与 k 的各分量是均值 0、方差 1 的独立随机变量，其点积的方差恰为 dk，这正是要除以 sqrt(dk) 的原因 (P020, P024)。\n\n单个 attention 会对被加权的位置取平均，削弱有效分辨率，因此用 Multi-Head Attention 来对抗：把 query、key、value 分别用 h 组不同的可学习线性投影投到 dk、dk、dv 维，在每一组投影上并行执行 attention，得到 dv 维输出，把这些输出拼接后再投影一次得到最终结果，即 MultiHead(Q, K, V ) = Concat(head1, ..., headh)W^O，其中 headi = Attention(Q Wi^Q, K Wi^K, V Wi^V ) (P023, P026)。本文取 h = 8 个并行 head，每个 head 的 dk = dv = dmodel/h = 64，投影矩阵 Wi^Q ∈ R^{dmodel×dk}、Wi^K ∈ R^{dmodel×dk}、Wi^V ∈ R^{dmodel×dv}、W^O ∈ R^{hdv×dmodel}；由于每个 head 的维度被压低，总计算量与全维度的单 head attention 相当 (P027)。\n\n每个 encoder 与 decoder 层还含一个 position-wise feed-forward network，对每个位置分别且同样地作用，由两个线性变换中间夹一个 ReLU 组成：FFN(x) = max(0, xW1 + b1)W2 + b2 (P031)。它的输入输出维度是 dmodel = 512，内层维度是 dff = 2048，不同层使用各自不同的参数，也可以理解为两次 kernel size 为 1 的卷积 (P033)。\n\n输入的 token 与输出的 token 都先经可学习 embedding 变成 dmodel 维向量，decoder 输出再经一个可学习的线性变换加 softmax，得到下一个 token 的概率；两个 embedding 层与 pre-softmax 线性变换共享同一个权重矩阵，而 embedding 层中的这些权重还要乘以 sqrt(dmodel) (P035)。由于模型既无 recurrence 也无 convolution，序列顺序信息靠加在 encoder 与 decoder 底部输入 embedding 上的 positional encoding 注入，两者维度同为 dmodel 所以可以直接相加；本文用不同频率的正弦与余弦函数，PE(pos, 2i) = sin(pos/10000^{2i/dmodel})、PE(pos, 2i+1) = cos(pos/10000^{2i/dmodel})，其中 pos 是位置、i 是维度，各维波长构成从 2π 到 10000·2π 的等比数列，这样对任意固定偏移 k，PEpos+k 都能写成 PEpos 的线性函数，便于模型学出按相对位置去关注的行为 (P044)。\n\n作者用三项标准把 self-attention 与 recurrent、convolutional 层做对照：每层总计算复杂度、可并行程度（用最少顺序操作数衡量）、以及网络中任意输入输出位置之间的最大路径长度，路径越短越容易学到长程依赖 (P046, P047)。self-attention 用常数个顺序执行的操作连接所有位置，而 recurrent 层需要 O(n) 个顺序操作；当序列长度 n 小于表示维度 d 时 self-attention 快于 recurrent 层，而在当时最好的翻译模型所用的 word-piece、byte-pair 表示下这一条件通常成立 (P047, P048)。按 Table 1 的统计，self-attention 每层复杂度为 O(n²·d)，recurrent 为 O(n·d²)，convolutional 为 O(k·n·d²)，restricted self-attention 为 O(r·n·d) (P040)。顺序操作数上 self-attention、convolutional 与 restricted self-attention 均为 O(1)，recurrent 为 O(n) (P041)。最大路径长度上 self-attention、recurrent、convolutional、restricted self-attention 分别为 O(1)、O(n)、O(logk(n))、O(n/r)，其中 n 是序列长度、d 是表示维度、k 是卷积核大小、r 是受限 self-attention 的邻域大小 (P036, P042)。更早的卷积式模型里，把任意两个位置联系起来所需操作数随距离增长，ConvS2S 是线性、ByteNet 是对数，Transformer 把它降到常数，代价是 attention 加权平均带来的有效分辨率下降，这一副作用由 Multi-Head Attention 抵消 (P005)。作者也指出，若要处理很长的序列，可以把 self-attention 限制在以输出位置为中心、大小为 r 的邻域内，此时最大路径长度变为 O(n/r)；作为附带好处，检查模型的 attention 分布还显示不同 head 确实学到不同任务，且许多 head 的行为与句子的句法和语义结构相关 (P048)。\n\n训练数据与批处理：English-German 用标准 WMT 2014 English-German 数据集，约 450 万句对，用 byte-pair encoding 编码，源与目标共享约 37000 个 token 的词表；English-French 用大得多的 WMT 2014 English-French，共 36M 句，切成 32000 的 word-piece 词表；句对按近似长度组 batch，每个 batch 约含 25000 个源 token 和 25000 个目标 token (P053)。硬件与训练计划：单机 8 块 NVIDIA P100，base 模型每个训练 step 约 0.4 秒，共训练 100,000 步、约 12 小时；big 模型 step 时间 1.0 秒，训练 300,000 步、约 3.5 天 (P055)。优化器用 Adam，β1 = 0.9、β2 = 0.98、ϵ = 10⁻⁹，学习率按 lrate = dmodel^{-0.5} · min(step_num^{-0.5}, step_num · warmup_steps^{-1.5}) 变化，即前 warmup_steps 步线性升高、之后按步数平方根的倒数下降，warmup_steps = 4000 (P057, P059)。\n\n训练中采用三类正则化 (P061)，材料中详述了其中两类：residual dropout 施加在每个 sub-layer 的输出上（在加回 sub-layer 输入并做归一化之前），也施加在 encoder 与 decoder 中 embedding 与 positional encoding 之和上，base 模型取 Pdrop = 0.1；label smoothing 取 ϵls = 0.1，它会让 perplexity 变差，因为模型学会更不确定，但能提升准确率与 BLEU (P068)。评测在 English-to-German 与 English-to-French 的 newstest2014 测试集上进行，指标是 BLEU，同时报告训练成本 FLOPs (P062, P063)。材料列出的结果包含 Transformer (base model) 与 Transformer (big) 两行，以及 ByteNet、Deep-Att + PosUnk、GNMT + RL、ConvS2S、MoE 等对照模型在 EN-DE、EN-FR 上的 BLEU 与 FLOPs 数值 (P062, P064, P067)。作者还把可学习 positional embedding 与正弦版本做了对照，发现两者结果几乎一致（见 Table 3 行 (E)），最终选正弦版本，因为它可能外推到训练时未遇到的更长序列 (P044)。\n\n有几处本文材料没有覆盖，需要按缺口标注而非补造：一是使用/推理阶段的具体解码流程（例如每步如何选取下一个符号、是否使用某种搜索策略）没有给出，材料只说明了 decoder 的 auto-regressive 性质以及 masking 加偏移一位保证位置 i 只依赖更早输出这一约束 (P008, P011)；二是超参数只完整给出 base 模型一侧（N = 6、dmodel = 512、dff = 2048、h = 8），Table 3 底部那行 big 模型的具体配置未在材料中出现 (P011, P027, P055)；三是 P061 声称的三类正则化中，除 residual dropout 与 label smoothing 之外的第三类内容未在材料中展开 (P061, P068)。",
+    "sources": [
+      "P002",
+      "P005",
+      "P008",
+      "P009",
+      "P011",
+      "P013",
+      "P016",
+      "P018",
+      "P020",
+      "P023",
+      "P024",
+      "P026",
+      "P027",
+      "P029",
+      "P031",
+      "P033",
+      "P035",
+      "P036",
+      "P040",
+      "P041",
+      "P042",
+      "P044",
+      "P046",
+      "P047",
+      "P048",
+      "P053",
+      "P055",
+      "P057",
+      "P059",
+      "P061",
+      "P062",
+      "P063",
+      "P064",
+      "P067",
+      "P068"
+    ]
+  },
+  "unknownAliases": []
+}

@@ -1,0 +1,216 @@
+[
+  {
+    "name": "SAM",
+    "pdfSha256": "sha256:c6ca524e47200c3e542587ca76ac1dbc89cc67340f948c819250d16fdbd90cfb",
+    "pages": 30,
+    "sourceSpans": [
+      [
+        3333,
+        10644
+      ],
+      [
+        10644,
+        29946
+      ]
+    ],
+    "pdftotextSha256": "1efbfe4b3c1e0b088920a3a27b4741507586e5adc4572984149ef129bf2d1e6b",
+    "A_sourceChars": 2425,
+    "C_sourceChars": 26447,
+    "C_sources": 80,
+    "variants": [
+      {
+        "targetChars": 520,
+        "maxChars": 1500,
+        "passageCount": 196,
+        "medianChars": 177,
+        "under200": 108,
+        "allPassageChars": 43650
+      },
+      {
+        "targetChars": 1200,
+        "maxChars": 3000,
+        "passageCount": 195,
+        "medianChars": 177,
+        "under200": 107,
+        "allPassageChars": 43651
+      }
+    ]
+  },
+  {
+    "name": "3DGS",
+    "pdfSha256": "sha256:f4c0c9f27e2d02b0265017f66049d471eb66cb50203bc918f51ba07d20cbbe11",
+    "pages": 14,
+    "sourceSpans": [
+      [
+        4119,
+        8976
+      ],
+      [
+        20025,
+        36630
+      ]
+    ],
+    "pdftotextSha256": "012c13134a0b41be525ce4d98b4702a68d93df8f74c522ee03773de40c376739",
+    "A_sourceChars": 4780,
+    "C_sourceChars": 21339,
+    "C_sources": 60,
+    "variants": [
+      {
+        "targetChars": 520,
+        "maxChars": 1500,
+        "passageCount": 145,
+        "medianChars": 176,
+        "under200": 75,
+        "allPassageChars": 47854
+      },
+      {
+        "targetChars": 1200,
+        "maxChars": 3000,
+        "passageCount": 136,
+        "medianChars": 164,
+        "under200": 74,
+        "allPassageChars": 47963
+      }
+    ]
+  },
+  {
+    "name": "Transformer",
+    "pdfSha256": "sha256:bdfaa68d8984f0dc02beaca527b76f207d99b666d31d1da728ee0728182df697",
+    "pages": 15,
+    "sourceSpans": [
+      [
+        2874,
+        22753
+      ]
+    ],
+    "pdftotextSha256": "fd24294de87f1b5ed253e922d697c11193b23ecb6c108792240257e370c188d9",
+    "A_sourceChars": 3039,
+    "C_sourceChars": 19735,
+    "C_sources": 69,
+    "variants": [
+      {
+        "targetChars": 520,
+        "maxChars": 1500,
+        "passageCount": 105,
+        "medianChars": 144,
+        "under200": 67,
+        "allPassageChars": 23679
+      },
+      {
+        "targetChars": 1200,
+        "maxChars": 3000,
+        "passageCount": 101,
+        "medianChars": 144,
+        "under200": 65,
+        "allPassageChars": 23683
+      }
+    ]
+  },
+  {
+    "name": "Chinchilla",
+    "pdfSha256": "sha256:3fd3632a8ef48171bd25282990221d49535d75356192f068b3b2ebe08f2aedd4",
+    "pages": 36,
+    "sourceSpans": [
+      [
+        1750,
+        7542
+      ],
+      [
+        13104,
+        29973
+      ]
+    ],
+    "pdftotextSha256": "72d6cf4ee205db132ce23740f586abaa24938089298772371983c60c8cdbb8e5",
+    "A_sourceChars": 3708,
+    "C_sourceChars": 22288,
+    "C_sources": 183,
+    "variants": [
+      {
+        "targetChars": 520,
+        "maxChars": 1500,
+        "passageCount": 191,
+        "medianChars": 122,
+        "under200": 134,
+        "allPassageChars": 36167
+      },
+      {
+        "targetChars": 1200,
+        "maxChars": 3000,
+        "passageCount": 185,
+        "medianChars": 120,
+        "under200": 132,
+        "allPassageChars": 36206
+      }
+    ]
+  },
+  {
+    "name": "Video-MME",
+    "pdfSha256": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2",
+    "pages": 13,
+    "sourceSpans": [
+      [
+        2736,
+        9374
+      ],
+      [
+        11969,
+        25294
+      ]
+    ],
+    "pdftotextSha256": "d431a96cac624e945a9a58af8cbbac3146ea35e444c72856ee582db19307ff61",
+    "A_sourceChars": 4903,
+    "C_sourceChars": 19602,
+    "C_sources": 178,
+    "variants": [
+      {
+        "targetChars": 520,
+        "maxChars": 1500,
+        "passageCount": 98,
+        "medianChars": 219,
+        "under200": 43,
+        "allPassageChars": 27627
+      },
+      {
+        "targetChars": 1200,
+        "maxChars": 3000,
+        "passageCount": 97,
+        "medianChars": 219,
+        "under200": 42,
+        "allPassageChars": 27654
+      }
+    ]
+  },
+  {
+    "name": "LoopVL",
+    "pdfSha256": "sha256:e0f47aed641b87b74dee372c07ab2940b9733182d4d361cd31fce5c2a10bb88e",
+    "pages": 32,
+    "sourceSpans": [
+      [
+        6631,
+        36267
+      ]
+    ],
+    "pdftotextSha256": "08794cd726933d4d3da23f3dcf5084c56bb09da42828c39fbd24f7873f2f6586",
+    "A_sourceChars": 5991,
+    "C_sourceChars": 29155,
+    "C_sources": 237,
+    "variants": [
+      {
+        "targetChars": 520,
+        "maxChars": 1500,
+        "passageCount": 183,
+        "medianChars": 277,
+        "under200": 70,
+        "allPassageChars": 68241
+      },
+      {
+        "targetChars": 1200,
+        "maxChars": 3000,
+        "passageCount": 165,
+        "medianChars": 256,
+        "under200": 65,
+        "allPassageChars": 68296
+      }
+    ]
+  }
+]

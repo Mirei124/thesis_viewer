@@ -1,0 +1,12 @@
+{
+  "index": 1,
+  "elapsedMs": 7197,
+  "content": "{\"status\":\"available\",\"text\":\"已有范式是先在通用数据上预训练，再 fine-tuning 到具体任务，而这需要更新模型的全部参数（E004）。作者指出，随着模型规模不断增大，为每个任务部署独立实例在存储与硬件上代价高昂，GPT-3 175B 的部署即属此列（E002, E014）。既有缓解做法或只适配部分参数、或引入外部模块，但往往引入 inference latency，或占用输入位置而缩短可用序列长度，且难以匹敌 fine-tuning 的质量（E015, E023）。受学习到的过参数化模型具有 low intrinsic dimension 这一观察启发，作者假设适配过程中的权重变化同样具有 low \\\"intrinsic rank\\\"，据此提出 LoRA（E024）。\",\"sources\":[\"E002\",\"E004\",\"E014\",\"E015\",\"E023\",\"E024\"]}",
+  "usage": {
+    "promptTokens": 12820,
+    "completionTokens": 1454,
+    "totalTokens": 14274,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 12308
+  }
+}

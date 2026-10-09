@@ -1,0 +1,32 @@
+{
+  "paper": "Transformer",
+  "arm": "problem",
+  "model": "deepseek-flash",
+  "requestSha256": "58019b4d694a585c171ad4c420ac617fb250584a3117da6fa42c16bdbe651610",
+  "requestChars": 4216,
+  "elapsedSeconds": 6.13,
+  "usage": {
+    "prompt_tokens": 952,
+    "completion_tokens": 1286,
+    "total_tokens": 2238,
+    "prompt_tokens_details": {
+      "cached_tokens": 384
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1107
+    },
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 568
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"既有以 convolutional neural networks 为基本构建块的 Extended Neural GPU、ByteNet 与 ConvS2S 同以降低 sequential computation 为目标，为所有位置并行计算 hidden representations，但它们关联任意两个位置所需操作数随距离增长，ConvS2S 为线性、ByteNet 为对数，使远距离依赖更难学习（E002）。本文提出的 Transformer 的动机即把该代价降为常数级操作，其代价是 attention-weighted positions 平均带来的有效分辨率下降，作者以 Multi-Head Attention 抵消（E002）。作者报告该设计在 WMT 2014 英德任务上取得 28.4 BLEU，超过包括 ensemble 在内的既有最佳结果 2 BLEU 以上（E001）。\",\"sources\":[\"E001\",\"E002\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "既有以 convolutional neural networks 为基本构建块的 Extended Neural GPU、ByteNet 与 ConvS2S 同以降低 sequential computation 为目标，为所有位置并行计算 hidden representations，但它们关联任意两个位置所需操作数随距离增长，ConvS2S 为线性、ByteNet 为对数，使远距离依赖更难学习（E002）。本文提出的 Transformer 的动机即把该代价降为常数级操作，其代价是 attention-weighted positions 平均带来的有效分辨率下降，作者以 Multi-Head Attention 抵消（E002）。作者报告该设计在 WMT 2014 英德任务上取得 28.4 BLEU，超过包括 ensemble 在内的既有最佳结果 2 BLEU 以上（E001）。",
+    "sources": [
+      "E001",
+      "E002"
+    ]
+  },
+  "unknownAliases": []
+}

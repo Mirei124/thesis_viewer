@@ -1,0 +1,12 @@
+{
+  "index": 5,
+  "elapsedMs": 6300,
+  "content": "{\"status\":\"available\",\"text\":\"论文明确承认若干未决问题：对 plain 网络随深度增加而优化困难的原因，作者只给出猜想，并明确表示将在未来研究（E086、E088）。在更深模型上，1202-layer ResNet 的训练误差虽低于 0.1%，测试误差却劣于 110-layer，作者将其归因于过拟合，并指出这类极端深度模型仍存在开放问题（E193、E201）。此外，检测任务的结论主要来自以 ResNet-101 替换 VGG-16 的 Faster R-CNN 设定（E203）。\",\"sources\":[\"E086\",\"E088\",\"E193\",\"E201\",\"E203\"]}",
+  "usage": {
+    "promptTokens": 16178,
+    "completionTokens": 1133,
+    "totalTokens": 17311,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 15666
+  }
+}

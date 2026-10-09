@@ -1,0 +1,36 @@
+{
+  "paper": "SAM",
+  "arm": "B",
+  "model": "deepseek-flash",
+  "requestSha256": "fbc48fe22ffa0b7f2c0a8b2b5fc2f58b0e940284a6a8f5e9155d18f33a2433b9",
+  "requestChars": 6763,
+  "elapsedSeconds": 8.95,
+  "usage": {
+    "prompt_tokens": 1817,
+    "completion_tokens": 1796,
+    "total_tokens": 3613,
+    "prompt_tokens_details": {
+      "cached_tokens": 640
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1204
+    },
+    "prompt_cache_hit_tokens": 640,
+    "prompt_cache_miss_tokens": 1177
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"本文处理的是 promptable segmentation：模型接收一张 image 与一个 prompt，输出对应的 segmentation mask（E006）。prompt 的类型包括 points、boxes、free-form text 和 mask（E003）。E001 说明该任务与 ambiguity 有关，并称要把这一任务做好需要专门的 modeling 与 training loss 选择，但材料中并未给出 loss 的具体形式，mask decoder 的内部结构、output token 如何参与计算同样未在片段中交代（E001）。\\n\\n模型结构由三部分组成，作者称之为 Segment Anything Model（SAM）：powerful image encoder 计算 image embedding，prompt encoder 把 prompt 编码，两者再由 lightweight mask decoder 融合并预测 segmentation mask（E006）。image encoder 使用 MAE 预训练的 Vision Transformer（ViT），为处理 high resolution 输入做了 minimal adaptation；它每张图只运行一次，因此可以在 prompting 之前预先算好（E002）。prompt encoder 一侧，points 与 boxes 用 positional encodings 与每种 prompt type 各自的 learned embeddings 相加来表示，free-form text 交给 CLIP 的 off-the-shelf text encoder，dense prompts（即 masks）则用 convolutions 嵌入后与 image embedding 逐元素相加（E003）。mask decoder 接收 image embedding、prompt embeddings 和一个 output token，输出 mask（E003）。就推理流程而言，image encoder 只需一次前向，后续的 prompt 编码与解码在已算好的 image embedding 上进行（E002）。\\n\\n数据侧对应 Segment Anything Data Engine，分三阶段：（1）model-assisted manual annotation；（2）半自动阶段，自动预测的 masks 与 model-assisted annotation 混合；（3）完全自动阶段，模型在无标注者输入的情况下生成 masks（E004）。E001 提到该任务的自动标注能力正是 data engine 所需要的。片段只展开了第二阶段的做法：先自动检测 confident masks——为此用 generic “object” 这一类目在全部第一阶段 masks 上训练一个 bounding box detector——再把预填这些 masks 的 image 呈现给标注者，要求其标注其余尚未标注的对象；该阶段在 180k 张 image 上新增 5.9M masks，累计 10.2M masks，期间周期性重训模型 5 次。由于这些对象更难标注，每个 mask 的平均标注时间回升到 34 秒（不含自动 masks），每张 image 的平均 mask 数从 44 增至 72（含自动 masks）（E005）。第一、第三阶段的具体操作，以及 E006 中另外两项约束的名称，均未在所给材料中给出（E004）。\",\"sources\":[\"E001\",\"E002\",\"E003\",\"E004\",\"E005\",\"E006\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "本文处理的是 promptable segmentation：模型接收一张 image 与一个 prompt，输出对应的 segmentation mask（E006）。prompt 的类型包括 points、boxes、free-form text 和 mask（E003）。E001 说明该任务与 ambiguity 有关，并称要把这一任务做好需要专门的 modeling 与 training loss 选择，但材料中并未给出 loss 的具体形式，mask decoder 的内部结构、output token 如何参与计算同样未在片段中交代（E001）。\n\n模型结构由三部分组成，作者称之为 Segment Anything Model（SAM）：powerful image encoder 计算 image embedding，prompt encoder 把 prompt 编码，两者再由 lightweight mask decoder 融合并预测 segmentation mask（E006）。image encoder 使用 MAE 预训练的 Vision Transformer（ViT），为处理 high resolution 输入做了 minimal adaptation；它每张图只运行一次，因此可以在 prompting 之前预先算好（E002）。prompt encoder 一侧，points 与 boxes 用 positional encodings 与每种 prompt type 各自的 learned embeddings 相加来表示，free-form text 交给 CLIP 的 off-the-shelf text encoder，dense prompts（即 masks）则用 convolutions 嵌入后与 image embedding 逐元素相加（E003）。mask decoder 接收 image embedding、prompt embeddings 和一个 output token，输出 mask（E003）。就推理流程而言，image encoder 只需一次前向，后续的 prompt 编码与解码在已算好的 image embedding 上进行（E002）。\n\n数据侧对应 Segment Anything Data Engine，分三阶段：（1）model-assisted manual annotation；（2）半自动阶段，自动预测的 masks 与 model-assisted annotation 混合；（3）完全自动阶段，模型在无标注者输入的情况下生成 masks（E004）。E001 提到该任务的自动标注能力正是 data engine 所需要的。片段只展开了第二阶段的做法：先自动检测 confident masks——为此用 generic “object” 这一类目在全部第一阶段 masks 上训练一个 bounding box detector——再把预填这些 masks 的 image 呈现给标注者，要求其标注其余尚未标注的对象；该阶段在 180k 张 image 上新增 5.9M masks，累计 10.2M masks，期间周期性重训模型 5 次。由于这些对象更难标注，每个 mask 的平均标注时间回升到 34 秒（不含自动 masks），每张 image 的平均 mask 数从 44 增至 72（含自动 masks）（E005）。第一、第三阶段的具体操作，以及 E006 中另外两项约束的名称，均未在所给材料中给出（E004）。",
+    "sources": [
+      "E001",
+      "E002",
+      "E003",
+      "E004",
+      "E005",
+      "E006"
+    ]
+  },
+  "unknownAliases": []
+}

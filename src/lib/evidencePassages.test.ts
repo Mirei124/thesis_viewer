@@ -78,7 +78,7 @@ describe('local evidence passages', () => {
     const pages = positionedPages(entries);
     const passages = createEvidencePassages(source, { targetChars: 520, maxChars: 1500, pages });
     const session = createProgressiveEvidenceSession(source, { maxExcerptChars: 1500 });
-    for (const stage of ['problem_motivation', 'method', 'contributions', 'relative_novelty'] as const) appendProgressiveEvidenceStage(session, stage, { orderedPassages: [] });
+    for (const stage of ['problem_motivation', 'method', 'contributions_novelty'] as const) appendProgressiveEvidenceStage(session, stage, { orderedPassages: [] });
     const ordered = selectRankedPassagesForPurpose(createPassageRetrievalIndex(passages), 'experiments_ablations', { maxCandidates: 24, maxCandidatesPerPage: 2 });
     const packet = appendProgressiveEvidenceStage(session, 'experiments_ablations', { orderedPassages: ordered });
     const visible = packet.sources.map((item) => item.excerpt).join(' ');

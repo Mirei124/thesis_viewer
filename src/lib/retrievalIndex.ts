@@ -8,13 +8,14 @@ export const LOCAL_RETRIEVAL_VERSION = 'local-lexical-retrieval-v10';
 export type DetailedRetrievalPurpose =
   | 'problem_motivation'
   | 'method'
+  | 'contributions_novelty'
   | 'contributions'
   | 'relative_novelty'
   | 'experiments_ablations'
   | 'limitations';
 
 export const DETAILED_RETRIEVAL_PURPOSES: readonly DetailedRetrievalPurpose[] = [
-  'problem_motivation', 'method', 'contributions', 'relative_novelty', 'experiments_ablations', 'limitations',
+  'problem_motivation', 'method', 'contributions_novelty', 'contributions', 'relative_novelty', 'experiments_ablations', 'limitations',
 ];
 
 export type RetrievalScoreBreakdown = {
@@ -106,6 +107,10 @@ const QUERY_DEFINITIONS: Record<DetailedRetrievalPurpose, QueryDefinition> = {
       'method', 'methods', 'approach', 'model', 'framework', 'dataset', 'benchmark', 'data collection', 'annotation', 'evaluation',
       '方法', '模型', '框架', '数据集', '基准', '收集', '构建', '标注', '评测', '评估',
     ], slots: ['method_overview', 'method_step', 'experimental_setup', 'evaluation_scope'],
+  },
+  contributions_novelty: {
+    terms: ['contribution', 'propose', 'introduce', 'novel', 'compared', 'prior', 'existing', 'different', '贡献', '提出', '相比', '创新', '已有'],
+    sectionTerms: ['abstract', 'introduction', 'related', 'method', 'contribution', '摘要', '引言', '相关', '方法', '贡献'], slots: ['contribution', 'relative_novelty', 'method_overview', 'main_result'],
   },
   contributions: {
     terms: ['contribution', 'contributions', 'propose', 'introduce', 'novel', 'demonstrate', 'contribute', '贡献', '提出', '引入', '创新', '证明'],

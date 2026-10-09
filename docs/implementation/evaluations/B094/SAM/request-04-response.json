@@ -1,0 +1,12 @@
+{
+  "index": 4,
+  "elapsedMs": 15131,
+  "content": "{\"status\":\"available\",\"text\":\"实验默认用 MAE 预训练的 ViT-H image encoder，在只含自动掩码的 SA-1B 上训练；7.1 的 23 数据集评测把超过 15k masks 的数据集随机抽样到约 10k masks（E110, E211）。单 center point 下 SAM 在 16/23 个数据集优于 RITM，最大约 47 IoU（E132）。BSDS500 以 16×16 点网格得到 768 个 mask（每点 3 个）（E146），ODS .768、OIS .786、AP .794、R50 .928（E143）。LVIS v1 的 AR@1000 为 59.3，低于 ViTDet-H 的 63.0，但在 medium、large、rare、common 上反超（E155, E159）。实例分割以 ViTDet box 为提示，SAM 得 COCO 46.5、LVIS 44.7 AP，低于 ViTDet-H 的 51.0 与 46.6（E166, E168）。消融方面，只用自动掩码比三阶段全部数据低约 0.5 mIoU（E190）；训练图像从 11M 抽到 1M（约 100M masks）与全量相当，降到 0.1M 则明显下降（E191）；ViT-H 相对 ViT-L 仅边际提升（E202）。给定预计算 image embedding，prompt encoder 与 mask decoder 在浏览器 CPU 上约 50 ms（E044）。\",\"sources\":[\"E044\",\"E110\",\"E132\",\"E143\",\"E146\",\"E155\",\"E159\",\"E166\",\"E168\",\"E190\",\"E191\",\"E202\",\"E211\"]}",
+  "usage": {
+    "promptTokens": 29059,
+    "completionTokens": 3577,
+    "totalTokens": 32636,
+    "promptCacheHitTokens": 384,
+    "promptCacheMissTokens": 28675
+  }
+}

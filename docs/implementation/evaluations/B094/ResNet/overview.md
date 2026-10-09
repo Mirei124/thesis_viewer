@@ -1,0 +1,33 @@
+## problem_motivation
+
+深层网络依赖 depth，但单纯堆叠更多层并不奏效：深度增加时 accuracy 先饱和、随后迅速下降，且这并非 overfitting——更深的模型反而 training error 更高（E020, E017）。作者指出，vanishing/exploding gradients 已被 normalized initialization 与中间 normalization layers 大幅缓解，故 degradation 另有原因（E019）：按构造，浅层模型加层后只需新增层取 identity mapping 即可，但现有 solver 找不到同等好的解（E021, E029）。因此本文改为让堆叠层拟合 residual mapping F(x):=H(x)−x，原映射改写为 F(x)+x，并用 parameter-free 的 identity shortcut connections 实现，假设该残差形式更易优化（E030, E031）。
+
+## method
+
+本方法解决的问题是图像分类：论文在 ImageNet 上给出两个示例模型，网络以输入图像为起点，经过卷积层堆叠后由 global average pooling 层和 1000-way fully-connected layer 加 softmax 给出类别分布，即最终的分类输出（E129、E130）。同一套深层表示还被迁移到目标检测，作为检验表示通用性的下游任务（E173）。
+
+方法的动机来自 degradation 现象。当更深的网络能够开始收敛后，随深度增加准确率先饱和、随后迅速下降；这种退化不是 overfitting 造成的，因为在适当深的模型上继续加层反而带来更高的 training error，CIFAR-10 上 20-layer 与 56-layer plain networks 的曲线就是典型例子（E089、E092）。考虑一个 shallower architecture 及其通过叠加更多层得到的 deeper counterpart：后者存在一个按构造得到的解，即新增层取 identity mapping、其余层复制已训练好的浅层模型，因此更深模型不应比它的浅层对应物产生更高的 training error，但实验显示现有 solver 找不到 comparable 或更好的解（E093）。
+
+为此作者提出 deep residual learning framework，让若干堆叠层不再直接拟合目标映射 H(x)，而是拟合残差映射 F(x) := H(x) − x，原映射相应改写为 F(x) + x（E102）。这一改写由 shortcut connections 实现：shortcut 跳过一层或多层并执行 identity mapping，其输出与堆叠层的输出相加（E103）。其合理性在于，若 identity mapping 为最优，solver 只需把多层非线性层的权重推向零即可逼近 identity mapping，而不必用非线性层去拟合它（E113）。若最优函数更接近 identity mapping 而非 zero mapping，求解器也更容易以 identity mapping 为参照寻找扰动，作者用实验显示学到的 residual functions 一般响应较小，说明 identity mapping 提供了合理的 preconditioning（E114）。
+
+基本 building block 的形式为 y = F(x, {W_i}) + x，其中 x 与 y 是该组层的输入与输出向量，F(x, {W_i}) 是待学习的 residual mapping（E117、E118）。以两层为例，F = W_2 σ(W_1 x)，σ 表示 ReLU，为简化记号省略偏置（E118）；F + x 由 shortcut connection 与 element-wise addition 完成，加法之后再施加第二个非线性 σ(y)（E121）。F 的形式是灵活的：本文实验使用两到三层的 F，更多层也可以；若 F 只有单层，等式退化为类似线性层的 y = W_1 x + x，作者未观察到优势（E126）。这些记号虽以 fully-connected layer 书写，但同样适用于 convolutional layers：此时 F 可表示多个卷积层，element-wise addition 逐通道作用于两个 feature map（E127）。
+
+identity shortcut 不引入额外参数与计算复杂度，因此 plain 与 residual 网络可以在参数数量、深度、宽度和计算量一致的前提下公平比较（E122）。当 x 与 F 维度不一致时（例如改变输入/输出通道数），可在 shortcut 上用线性投影 W_s 匹配维度，即 y = F(x, {W_i}) + W_s x（E123、E124）。作者指出 identity mapping 已足以应对 degradation 且更经济，W_s 只在需要匹配维度时使用（E125）。
+
+ImageNet 上的 plain baseline 参考 VGG nets 的设计：卷积层大多使用 3×3 滤波器，遵循两条规则——输出 feature map 尺寸相同时滤波器数量相同，尺寸减半时滤波器数量翻倍以保持每层的时间复杂度；下采样直接由 stride 为 2 的卷积层完成；网络以 global average pooling 层和 1000-way fully-connected layer 加 softmax 结束，共 34 个加权层、约 3.6 billion FLOPs，仅为 VGG-19 的 18%（E130、E131）。residual 版本在此基础上插入 shortcut connections：输入输出维度相同时可直接使用 identity shortcut（E137）；维度增加时有两种选择，(A) shortcut 仍执行 identity mapping，对增加的维度补零，不引入额外参数；(B) 使用投影 shortcut（由 1×1 convolution 实现）匹配维度；两种选择下，shortcut 跨越两种尺寸的 feature map 时都以 stride 2 执行（E139）。
+
+ImageNet 上的训练遵循既有实践：图像短边在 [256, 480] 内随机采样做尺度增强，从图像或其水平翻转中随机裁出 224×224 的 crop，减去 per-pixel mean，并使用标准颜色增强（E141）。每个 convolution 之后、activation 之前加入 batch normalization，权重按相应初始化方式设置，所有 plain/residual 网络从零训练；优化使用 SGD，mini-batch 大小为 256，学习率从 0.1 开始并在误差进入平台期时除以 10，最多训练 60 × 10^4 次迭代，weight decay 为 0.0001，momentum 为 0.9，不使用 dropout（E141、E143）。测试时，对比实验采用标准 10-crop testing；为取得最佳结果则采用 fully-convolutional form 并在多个尺度上平均分数，图像短边取 {224, 256, 384, 480, 640}（E144、E145）。
+
+作者还用 layer responses 的标准差分析 residual functions：response 是每个 3×3 层在 batch normalization 之后、非线性（ReLU/加法）之前的输出，ResNet 的响应总体小于其 plain 对应物，并且 ResNet-20、56、110 的对比显示网络越深、单层对信号的修改越小（E157、E159）。在 CIFAR-10 上，设 n = 200 得到的 1202-layer 网络也能把 training error 降到 0.1% 以下，test error 为 7.93%，但测试结果不如 110 层版本，作者归因于 overfitting，并说明本文未使用 maxout/dropout 等强正则（E160、E162、E171）。检测迁移实验以 Faster R-CNN 为检测方法，只把 VGG-16 换成 ResNet-101，其余实现完全相同，因此 COCO 标准指标 mAP@[.5, .95] 上 6.0% 的提升只能归因于更好的网络表示（E173）。
+
+## contributions_novelty
+
+本部分回答未通过来源绑定校验，无法安全展示；请重新生成或查阅原文。
+
+## experiments_ablations
+
+实验在 ImageNet 2012（1000 类、1.28M 训练图、50k 验证图，另报 100k 测试图）上以 top-1/top-5 error 评估（E501）。在 10-crop 验证下，plain-18 为 27.94、plain-34 为 28.54，ResNet-18 为 27.88、ResNet-34 为 25.03（E545, E546）；34 层 ResNet 比 18 层 ResNet 好 2.8%，较同层 plain 降 3.5% top-1（E555, E572）。shortcut 替换消融中，A（零填充）、B（仅升维用 projection）、C（全 projection）均优于 plain，B 略优于 A，C 仅略优于 B，差异小故后续不用 C（E579, E580, E581）。在 CIFAR-10（50k 训练/10k 测试）上，ResNet 的层响应幅度普遍小于 plain，且更深 ResNet 更小（E595, E650, E652）；1202 层训练误差 <0.1%，测试误差 7.93%（E653, E655）。检测以 Faster R-CNN 将 VGG-16 换成 ResNet-101，COCO mAP@[.5, .95] 增 6.0%（相对 28%）（E666）。论文只报 FLOPs，未给出带计时条件的速度（E484, E591）。
+
+## limitations
+
+论文明确承认若干未决问题：对 plain 网络随深度增加而优化困难的原因，作者只给出猜想，并明确表示将在未来研究（E754、E756）。在更深模型上，1202-layer ResNet 的训练误差虽低于 0.1%，测试误差却劣于 110-layer，作者将其归因于过拟合，并指出这类极端深度模型仍存在开放问题（E861、E869）。此外，检测任务的结论主要来自以 ResNet-101 替换 VGG-16 的 Faster R-CNN 设定（E871）。

@@ -1,0 +1,12 @@
+{
+  "index": 1,
+  "elapsedMs": 7441,
+  "content": "{\"status\":\"available\",\"text\":\"既有 sequence modeling 与 transduction 以 recurrent 结构（如 LSTM、gated recurrent）为主，其沿符号位置逐步生成隐藏状态，这种固有顺序性使样本内部无法并行，序列变长时更受内存与批处理限制；factorization tricks 与 conditional computation 只能提升效率，顺序计算的根本约束仍在（E011、E012）。attention 虽能无视距离建模依赖，却几乎总与 recurrent 网络结合使用（E013）；卷积路线上，ConvS2S、ByteNet 关联任意两位置所需运算数随距离线性或对数增长，远距离依赖更难学习（E016）。作者由此提出 Transformer，完全摒弃 recurrence 与 convolution，仅靠 attention 建立输入输出间的全局依赖，以获得更强并行性与更短训练时间（E014）。\",\"sources\":[\"E011\",\"E012\",\"E013\",\"E014\",\"E016\"]}",
+  "usage": {
+    "promptTokens": 2900,
+    "completionTokens": 1488,
+    "totalTokens": 4388,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 2388
+  }
+}

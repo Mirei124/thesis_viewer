@@ -1,0 +1,12 @@
+{
+  "index": 1,
+  "elapsedMs": 4951,
+  "content": "{\"status\":\"available\",\"text\":\"作者要回答的核心问题是：Loop Transformers 能否被有效扩展到 vision–language models（E025）。既有 recurrent Transformers 以及后续 recurrent-depth language models 的工作主要面向语言模型，而图像提供具有显式空间结构的候选证据、instruction 决定哪些区域相关；一轮 vision–language 交互之后，visual tokens 的表征与相对重要性都可能发生变化，后续循环可能继续关注同一批区域，也可能重新分配 attention（E022,E024）。作者认为 visual tokens 与 image patches 保持空间对应，因而可把视觉模态当作观察 recurrent computation 的窗口（E026），据此在统一的 vision–language state 上执行持续的 recurrent computation（E027）。\",\"sources\":[\"E022\",\"E024\",\"E025\",\"E026\",\"E027\"]}",
+  "usage": {
+    "promptTokens": 13850,
+    "completionTokens": 852,
+    "totalTokens": 14702,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 13338
+  }
+}

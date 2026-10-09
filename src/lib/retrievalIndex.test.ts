@@ -336,8 +336,7 @@ describe('local lexical retrieval index', () => {
     const session = createProgressiveEvidenceSession(source, { maxExcerptChars: 960 });
     appendProgressiveEvidenceStage(session, 'problem_motivation', { orderedPassages: [] });
     const methodInput = appendProgressiveEvidenceStage(session, 'method', { orderedPassages: method });
-    appendProgressiveEvidenceStage(session, 'contributions', { orderedPassages: [] });
-    appendProgressiveEvidenceStage(session, 'relative_novelty', { orderedPassages: [] });
+    appendProgressiveEvidenceStage(session, 'contributions_novelty', { orderedPassages: [] });
     const experimentInput = appendProgressiveEvidenceStage(session, 'experiments_ablations', { orderedPassages: experiments });
     const visible = [...methodInput.sources, ...experimentInput.sources].map((item) => item.excerpt).join(' ');
     expect(visible).toContain('human annotators watch each video');

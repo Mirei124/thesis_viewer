@@ -1,0 +1,41 @@
+{
+  "paper": "Video-MME",
+  "arm": "merged",
+  "model": "deepseek-flash",
+  "requestSha256": "a48ab9b955141ebdac5710e88bafab1be70ec72ab5038c1d0297e54cb37b50a0",
+  "requestChars": 29305,
+  "elapsedSeconds": 11.03,
+  "usage": {
+    "prompt_tokens": 8907,
+    "completion_tokens": 2517,
+    "total_tokens": 11424,
+    "prompt_tokens_details": {
+      "cached_tokens": 384
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 2023
+    },
+    "prompt_cache_hit_tokens": 384,
+    "prompt_cache_miss_tokens": 8523
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"一、Video-MME 基准的提出：作者构建了含 900 个视频、2,700 道 multiple-choice QA 的评测集，覆盖 6 个视觉域与 30 个细分类别，视频时长由 11 秒到 1 小时，并附带字幕与音频（P003）。相对既有 video-based benchmarks，作者以 Multi-level、Open-domain、Sub.&Aud. 等维度标出其差异，但 Table 1 的比较明确只针对各数据集的 multiple-choice 子集，故这些差异的适用范围受此限制，\\\"first-ever comprehensive\\\" 亦属作者主张而非独立验证（P001、P049）。\\n\\n二、构建与质控方式：流程为 video collection、question-answer annotation、quality review 三步，标注者完整观看视频后各写 3 题、每题 4 个选项，合计 12 类任务；复核阶段另以 Gemini 1.5 Pro 做 text-only 过滤，其准确率低于 15%（P051、P052）。相较表中标注方式为 A 或 A&M 的基准，Video-MME 为全人工标注 M（P021、P032、P042）。\\n\\n三、评测结果：闭源模型中 Gemini 1.5 Pro 平均 75% 最高，开源最强的 VILA-1.5 为 59%；image MLLMs 扩展为 multi-frame 输入后接近 video-specific 模型，作者据此认为 image understanding 是 video understanding 的基础（P004）。\\n\\n四、多模态与时长分析：字幕与音频分别使 Gemini 1.5 Pro 提升 6.2% 与 4.3%，长视频增益更明显，且性能随视频长度下降（P004、P050）。作者借 EgoSchema 的 certificate length 指出中、长视频中位数为 164.7s 与 890.7s，并称其为 most challenging Video QA dataset to date；该结论的比较对象仅限 EgoSchema，属推断性主张（P084）。\",\"sources\":[\"P001\",\"P003\",\"P004\",\"P021\",\"P032\",\"P042\",\"P049\",\"P050\",\"P051\",\"P052\",\"P084\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "一、Video-MME 基准的提出：作者构建了含 900 个视频、2,700 道 multiple-choice QA 的评测集，覆盖 6 个视觉域与 30 个细分类别，视频时长由 11 秒到 1 小时，并附带字幕与音频（P003）。相对既有 video-based benchmarks，作者以 Multi-level、Open-domain、Sub.&Aud. 等维度标出其差异，但 Table 1 的比较明确只针对各数据集的 multiple-choice 子集，故这些差异的适用范围受此限制，\"first-ever comprehensive\" 亦属作者主张而非独立验证（P001、P049）。\n\n二、构建与质控方式：流程为 video collection、question-answer annotation、quality review 三步，标注者完整观看视频后各写 3 题、每题 4 个选项，合计 12 类任务；复核阶段另以 Gemini 1.5 Pro 做 text-only 过滤，其准确率低于 15%（P051、P052）。相较表中标注方式为 A 或 A&M 的基准，Video-MME 为全人工标注 M（P021、P032、P042）。\n\n三、评测结果：闭源模型中 Gemini 1.5 Pro 平均 75% 最高，开源最强的 VILA-1.5 为 59%；image MLLMs 扩展为 multi-frame 输入后接近 video-specific 模型，作者据此认为 image understanding 是 video understanding 的基础（P004）。\n\n四、多模态与时长分析：字幕与音频分别使 Gemini 1.5 Pro 提升 6.2% 与 4.3%，长视频增益更明显，且性能随视频长度下降（P004、P050）。作者借 EgoSchema 的 certificate length 指出中、长视频中位数为 164.7s 与 890.7s，并称其为 most challenging Video QA dataset to date；该结论的比较对象仅限 EgoSchema，属推断性主张（P084）。",
+    "sources": [
+      "P001",
+      "P003",
+      "P004",
+      "P021",
+      "P032",
+      "P042",
+      "P049",
+      "P050",
+      "P051",
+      "P052",
+      "P084"
+    ]
+  },
+  "unknownAliases": []
+}

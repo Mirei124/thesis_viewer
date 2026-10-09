@@ -1,0 +1,49 @@
+{
+  "paper": "3DGS",
+  "arm": "D",
+  "model": "deepseek-flash",
+  "requestSha256": "de635530436d0942775269d921a69b3a87e1c87d186b05331a3c3678aecba548",
+  "outputLimit": 32000,
+  "requestChars": 26495,
+  "elapsedSeconds": 54.94,
+  "usage": {
+    "prompt_tokens": 6453,
+    "completion_tokens": 13438,
+    "total_tokens": 19891,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 12032
+    },
+    "prompt_cache_hit_tokens": 256,
+    "prompt_cache_miss_tokens": 6197
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"任务可表述为：给定静态场景的一组图像及由 SfM [Schönberger and Frahm 2016] 标定的相机，方法输出一组显式 3D Gaussians 参数，并在训练后从新视角渲染图像。P009 P006\\n输入中的 SfM 过程会附带产生稀疏点云，方法用这些点初始化 3D Gaussians；输出表示由位置（mean）、协方差矩阵、不透明度 α 与 spherical harmonics (SH) 颜色系数构成，最终用于 novel-view synthesis。P009 P006\\n\\n初始化与各向异性协方差参数化\\n方法从 SfM 稀疏点云创建 3D Gaussians，每个 Gaussian 的几何由世界坐标中的完整 3D 协方差矩阵 Σ 和中心 μ 定义，且不依赖法线，以避免从极稀疏点估计噪声法线。P013 P012\\n但直接优化 Σ 很难保持半正定，因此把 Σ 重写为 Σ=RSS^T R^T，其中 S 为 scaling matrix、R 为 rotation matrix，并分别存储 3D 向量 s 和 quaternion q，训练时归一化 q；初始协方差取各向同性 Gaussian，轴长等于到最近三个点的平均距离。P017 P019 P040\\n位置、α、协方差和 SH 系数一起优化，颜色由 SH 表示视角相关 appearance。P022 P006\\n\\n可微投影与颜色合成\\n渲染时先把 3D Gaussian 投影到 2D：给定 viewing transformation W，相机坐标中的协方差为 Σ'=J W Σ W^T J^T，J 是 projective transformation 仿射近似的 Jacobian；去掉 Σ' 的第三行和第三列后得到 2×2 variance matrix，使其像 planar point 一样参与后续 α-blending。P015 P017\\n这里采用的 primitive 是 3D Gaussians，它们既可微又可投影成 2D splats，使图像形成既保留 volumetric representation 的可微性，又能用标准 α-blending 高效合成像素。P012 P006\\n每个投影后的 Gaussian 在 blending 中乘以 α，颜色来自 SH 系数。P013 P022\\n\\n图像监督与优化\\n优化按迭代进行：每次渲染当前 3D Gaussians 并与 captured dataset 的训练视图比较，用 L1 与 D-SSIM 组合损失 L=(1−λ)L1+λLD-SSIM，其中 λ=0.2，并以 Stochastic Gradient Descent 在 GPU 框架中更新参数。P040 P043 P033\\n由于 3D 到 2D 投影存在歧义，优化必须能创建、销毁或移动几何。P040\\nα 经 sigmoid 激活限制在 [0−1) 以得到平滑梯度，covariance 的 scale 经 exponential 激活，位置使用指数衰减调度；对所有参数的梯度被显式推导，以减少自动微分开销。P040 P019\\n该循环同时依赖快速 rasterization，因为它是优化主要计算瓶颈。P040\\n\\n自适应密度控制：clone、split 与移除\\n在 optimization warm-up 后，每 100 iterations 执行 densify，并移除 α 小于阈值 εα 的透明 Gaussians。P042\\n增密关注两类区域：欠重建（underreconstruction）的小 Gaussian 与过重建（over-reconstruction）的大 Gaussian，二者都有较大的 view-space positional gradients；平均幅度超过 τpos=0.0002 时触发处理。P042 P056\\n对欠重建的小 Gaussian 采用 clone：创建同尺寸副本并沿 positional gradient 方向移动，以覆盖新几何；对过重建的大 Gaussian 采用 split：用两个新 Gaussian 替换，scale 除以 φ=1.6，并以原 3D Gaussian 作为 PDF 采样初始化位置。P042 P056\\n为抑制靠近输入相机的 floaters 造成密度不合理增长，每 N=3000 iterations 把 α 设到接近零，再让优化恢复需要的 α；同时周期性移除 worldspace 很大或在 viewspace footprint 很大的 Gaussians，以控制总数。P042 P057\\n\\nTile-based 深度排序渲染\\n实时渲染器把屏幕划分成 16×16 tiles，先对 3D Gaussians 做 view frustum 与 tile 级 culling，只保留 99% confidence interval 与 view frustum 相交的 Gaussian，并用 guard band 拒绝均值靠近近平面且远在 frustum 外的极端位置。P058\\n每个 Gaussian 按其覆盖的 tile 数实例化，实例 key 由 view space depth 与 tile ID 组合；所有实例用一次快速 GPU Radix sort 排序，从而按深度顺序组织 splats，而不做逐像素排序。P058\\n这种全局排序使 α-blending 在 splats 远大于像素时可以是近似，但当 splats 接近像素大小时近似误差可忽略。P058\\n\\n前向光栅化与反向传播\\n排序后为每个 tile 生成列表，记录覆盖该 tile 的第一个和最后一个深度排序条目；每个 tile 启动一个 thread block，先将 Gaussians 分批加载到 shared memory，再对每个像素 front-to-back 遍历列表累加 color 与 α。P058\\n当像素达到 α 饱和时对应线程停止，整个 tile 在所有像素饱和（α 趋于 1）后终止；rasterization 不限制接收梯度的 blended primitives 数量，因此能处理任意变化的 depth complexity。P058\\n反向传播复用前向的排序数组与 tile ranges，按 back-to-front 重新遍历 per-tile lists；遍历从影响该 tile 任一像素的最后一个点开始，像素只在其深度小于等于前向中最后贡献颜色的点深度时才处理。P059\\n梯度计算需要每步 accumulated opacity，但只存储前向结束时总 accumulated α，然后在 back-to-front 中除以每个点自身的 α 来恢复系数，从而避免动态内存管理；该 rasterizer 完全可微。P059 P058\\n\\n推理输出\\n训练完成后，同一套 tile-based renderer 直接用于新相机位姿，经投影、深度排序、α-blending 输出 novel-view 图像，并允许对捕获场景进行实时导航。P032 P006\",\"sources\":[\"P006\",\"P009\",\"P012\",\"P013\",\"P015\",\"P017\",\"P019\",\"P022\",\"P032\",\"P033\",\"P040\",\"P042\",\"P043\",\"P056\",\"P057\",\"P058\",\"P059\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "任务可表述为：给定静态场景的一组图像及由 SfM [Schönberger and Frahm 2016] 标定的相机，方法输出一组显式 3D Gaussians 参数，并在训练后从新视角渲染图像。P009 P006\n输入中的 SfM 过程会附带产生稀疏点云，方法用这些点初始化 3D Gaussians；输出表示由位置（mean）、协方差矩阵、不透明度 α 与 spherical harmonics (SH) 颜色系数构成，最终用于 novel-view synthesis。P009 P006\n\n初始化与各向异性协方差参数化\n方法从 SfM 稀疏点云创建 3D Gaussians，每个 Gaussian 的几何由世界坐标中的完整 3D 协方差矩阵 Σ 和中心 μ 定义，且不依赖法线，以避免从极稀疏点估计噪声法线。P013 P012\n但直接优化 Σ 很难保持半正定，因此把 Σ 重写为 Σ=RSS^T R^T，其中 S 为 scaling matrix、R 为 rotation matrix，并分别存储 3D 向量 s 和 quaternion q，训练时归一化 q；初始协方差取各向同性 Gaussian，轴长等于到最近三个点的平均距离。P017 P019 P040\n位置、α、协方差和 SH 系数一起优化，颜色由 SH 表示视角相关 appearance。P022 P006\n\n可微投影与颜色合成\n渲染时先把 3D Gaussian 投影到 2D：给定 viewing transformation W，相机坐标中的协方差为 Σ'=J W Σ W^T J^T，J 是 projective transformation 仿射近似的 Jacobian；去掉 Σ' 的第三行和第三列后得到 2×2 variance matrix，使其像 planar point 一样参与后续 α-blending。P015 P017\n这里采用的 primitive 是 3D Gaussians，它们既可微又可投影成 2D splats，使图像形成既保留 volumetric representation 的可微性，又能用标准 α-blending 高效合成像素。P012 P006\n每个投影后的 Gaussian 在 blending 中乘以 α，颜色来自 SH 系数。P013 P022\n\n图像监督与优化\n优化按迭代进行：每次渲染当前 3D Gaussians 并与 captured dataset 的训练视图比较，用 L1 与 D-SSIM 组合损失 L=(1−λ)L1+λLD-SSIM，其中 λ=0.2，并以 Stochastic Gradient Descent 在 GPU 框架中更新参数。P040 P043 P033\n由于 3D 到 2D 投影存在歧义，优化必须能创建、销毁或移动几何。P040\nα 经 sigmoid 激活限制在 [0−1) 以得到平滑梯度，covariance 的 scale 经 exponential 激活，位置使用指数衰减调度；对所有参数的梯度被显式推导，以减少自动微分开销。P040 P019\n该循环同时依赖快速 rasterization，因为它是优化主要计算瓶颈。P040\n\n自适应密度控制：clone、split 与移除\n在 optimization warm-up 后，每 100 iterations 执行 densify，并移除 α 小于阈值 εα 的透明 Gaussians。P042\n增密关注两类区域：欠重建（underreconstruction）的小 Gaussian 与过重建（over-reconstruction）的大 Gaussian，二者都有较大的 view-space positional gradients；平均幅度超过 τpos=0.0002 时触发处理。P042 P056\n对欠重建的小 Gaussian 采用 clone：创建同尺寸副本并沿 positional gradient 方向移动，以覆盖新几何；对过重建的大 Gaussian 采用 split：用两个新 Gaussian 替换，scale 除以 φ=1.6，并以原 3D Gaussian 作为 PDF 采样初始化位置。P042 P056\n为抑制靠近输入相机的 floaters 造成密度不合理增长，每 N=3000 iterations 把 α 设到接近零，再让优化恢复需要的 α；同时周期性移除 worldspace 很大或在 viewspace footprint 很大的 Gaussians，以控制总数。P042 P057\n\nTile-based 深度排序渲染\n实时渲染器把屏幕划分成 16×16 tiles，先对 3D Gaussians 做 view frustum 与 tile 级 culling，只保留 99% confidence interval 与 view frustum 相交的 Gaussian，并用 guard band 拒绝均值靠近近平面且远在 frustum 外的极端位置。P058\n每个 Gaussian 按其覆盖的 tile 数实例化，实例 key 由 view space depth 与 tile ID 组合；所有实例用一次快速 GPU Radix sort 排序，从而按深度顺序组织 splats，而不做逐像素排序。P058\n这种全局排序使 α-blending 在 splats 远大于像素时可以是近似，但当 splats 接近像素大小时近似误差可忽略。P058\n\n前向光栅化与反向传播\n排序后为每个 tile 生成列表，记录覆盖该 tile 的第一个和最后一个深度排序条目；每个 tile 启动一个 thread block，先将 Gaussians 分批加载到 shared memory，再对每个像素 front-to-back 遍历列表累加 color 与 α。P058\n当像素达到 α 饱和时对应线程停止，整个 tile 在所有像素饱和（α 趋于 1）后终止；rasterization 不限制接收梯度的 blended primitives 数量，因此能处理任意变化的 depth complexity。P058\n反向传播复用前向的排序数组与 tile ranges，按 back-to-front 重新遍历 per-tile lists；遍历从影响该 tile 任一像素的最后一个点开始，像素只在其深度小于等于前向中最后贡献颜色的点深度时才处理。P059\n梯度计算需要每步 accumulated opacity，但只存储前向结束时总 accumulated α，然后在 back-to-front 中除以每个点自身的 α 来恢复系数，从而避免动态内存管理；该 rasterizer 完全可微。P059 P058\n\n推理输出\n训练完成后，同一套 tile-based renderer 直接用于新相机位姿，经投影、深度排序、α-blending 输出 novel-view 图像，并允许对捕获场景进行实时导航。P032 P006",
+    "sources": [
+      "P006",
+      "P009",
+      "P012",
+      "P013",
+      "P015",
+      "P017",
+      "P019",
+      "P022",
+      "P032",
+      "P033",
+      "P040",
+      "P042",
+      "P043",
+      "P056",
+      "P057",
+      "P058",
+      "P059"
+    ]
+  },
+  "parseError": null,
+  "unknownAliases": []
+}

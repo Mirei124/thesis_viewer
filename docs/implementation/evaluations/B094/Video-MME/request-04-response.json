@@ -1,0 +1,12 @@
+{
+  "index": 4,
+  "elapsedMs": 30183,
+  "content": "{\"status\":\"available\",\"text\":\"评测覆盖Video-MME全量900个视频、2,700个QA pairs，并分short/medium/long三个子集，各含300个视频、900个QA（E018、E016）。比较对象为4个commercial models、9个open-source video MLLMs，以及Qwen-VL-Chat/Max、InternVL-Chat-V1.5等image MLLMs（E119）。帧采样按官方配置：Gemini 1.5 Pro在short/medium取1 fps、long每2秒1帧，GPT-4o为384帧、VILA-1.5为8帧（E123）；subtitle设置取与采样帧时间戳对应的字幕（E124），准确率以正则抽取输出直接与ground truth比较，不用外部judge（E127）。仅输入frames时，Gemini 1.5 Pro平均准确率75%，高于GPT-4V 15.1个百分点、高于GPT-4o 3.1个百分点（E099）；open-source中34B VILA-1.5为59%，7B中最优的VITA-1.5为56.1%（E102），且多数open-source模型不支持audio，audio评测被省略（E103）。Table 5的模态对比中，Gemini 1.5 Pro整体加subtitles、audio分别提升6.2%、4.3%（E093、E014）；long的multilingual上subtitles、audio分别提升16.7%、12.5%，subtitles对short、long分别为2.8%、10.1%（E108）。性能随duration增加而下降，short到long为−14.3%（E099）。论文未报告移除或替换模块的消融，Table 5只是输入模态组合分析，不应视为模块消融（E107）。\",\"sources\":[\"E016\",\"E018\",\"E093\",\"E014\",\"E099\",\"E102\",\"E103\",\"E107\",\"E108\",\"E119\",\"E123\",\"E124\",\"E127\"]}",
+  "usage": {
+    "promptTokens": 14164,
+    "completionTokens": 7647,
+    "totalTokens": 21811,
+    "promptCacheHitTokens": 640,
+    "promptCacheMissTokens": 13524
+  }
+}

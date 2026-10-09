@@ -1,0 +1,154 @@
+{
+  "path": "/tmp/B090/3DGS.pdf",
+  "documentVersion": "sha256:f4c0c9f27e2d02b0265017f66049d471eb66cb50203bc918f51ba07d20cbbe11",
+  "config": {
+    "baseUrl": "https://api.deepseek.com/v1",
+    "model": "deepseek-flash",
+    "structuredOutput": true,
+    "contextLimit": 128000,
+    "outputLimit": 32000
+  },
+  "methodOnly": true,
+  "sourceHashes": {
+    "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+    "detailedContext": "17be6593246ab7ff036894d13438bb85a7e9773f89528411c3613c7ba4ac102e",
+    "detailedOverview": "b4c9efd6d1efd59fa7f159151e0962cf498184ec853c7efab8132f75e24c92d5",
+    "detailedOverviewPipeline": "aaa177acce0d55c305b175b68892a2b627a6f92573ade91809c0a10803317bf0",
+    "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+  },
+  "pageCount": 14,
+  "paragraphCount": 414,
+  "selections": [
+    {
+      "id": "problem_motivation",
+      "paragraphCount": 55,
+      "chars": 16572,
+      "estimatedTextTokens": 5662,
+      "sections": [
+        "1 INTRODUCTION",
+        "2 RELATED WORK",
+        "2.1 Traditional Scene Reconstruction and Rendering",
+        "2.2 Neural Rendering and Radiance Fields",
+        "2.3 Point-Based Rendering and Radiance Fields",
+        "ACKNOWLEDGMENTS"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "method",
+      "paragraphCount": 261,
+      "chars": 45736,
+      "estimatedTextTokens": 15787,
+      "sections": [
+        "1 INTRODUCTION",
+        "3 OVERVIEW",
+        "4 DIFFERENTIABLE 3D GAUSSIAN SPLATTING",
+        "5 OPTIMIZATION WITH ADAPTIVE DENSITY",
+        "5.1 Optimization",
+        "5.2 Adaptive Control of Gaussians",
+        "6 FAST DIFFERENTIABLE RASTERIZER FOR GAUSSIANS",
+        "7 IMPLEMENTATION, RESULTS AND EVALUATION",
+        "7.1 Implementation",
+        "7.2 Results and Evaluation",
+        "7.3 Ablations",
+        "7.4 Limitations",
+        "ACKNOWLEDGMENTS",
+        "A DETAILS OF GRADIENT COMPUTATION",
+        "B OPTIMIZATION AND DENSIFICATION ALGORITHM",
+        "C DETAILS OF THE RASTERIZER",
+        "Algorithm 2 GPU software rasterization of 3D Gaussians"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "contributions_novelty",
+      "paragraphCount": 276,
+      "chars": 54537,
+      "estimatedTextTokens": 18698,
+      "sections": [
+        "1 INTRODUCTION",
+        "2 RELATED WORK",
+        "2.1 Traditional Scene Reconstruction and Rendering",
+        "2.2 Neural Rendering and Radiance Fields",
+        "2.3 Point-Based Rendering and Radiance Fields",
+        "3 OVERVIEW",
+        "4 DIFFERENTIABLE 3D GAUSSIAN SPLATTING",
+        "5 OPTIMIZATION WITH ADAPTIVE DENSITY",
+        "5.1 Optimization",
+        "5.2 Adaptive Control of Gaussians",
+        "6 FAST DIFFERENTIABLE RASTERIZER FOR GAUSSIANS",
+        "7 IMPLEMENTATION, RESULTS AND EVALUATION",
+        "7.1 Implementation",
+        "7.2 Results and Evaluation",
+        "7.3 Ablations",
+        "7.4 Limitations",
+        "ACKNOWLEDGMENTS",
+        "A DETAILS OF GRADIENT COMPUTATION",
+        "C DETAILS OF THE RASTERIZER"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "experiments_ablations",
+      "paragraphCount": 268,
+      "chars": 47671,
+      "estimatedTextTokens": 16441,
+      "sections": [
+        "1 INTRODUCTION",
+        "3 OVERVIEW",
+        "4 DIFFERENTIABLE 3D GAUSSIAN SPLATTING",
+        "5 OPTIMIZATION WITH ADAPTIVE DENSITY",
+        "5.1 Optimization",
+        "5.2 Adaptive Control of Gaussians",
+        "6 FAST DIFFERENTIABLE RASTERIZER FOR GAUSSIANS",
+        "7 IMPLEMENTATION, RESULTS AND EVALUATION",
+        "7.1 Implementation",
+        "7.2 Results and Evaluation",
+        "7.3 Ablations",
+        "7.4 Limitations",
+        "8 DISCUSSION AND CONCLUSIONS",
+        "ACKNOWLEDGMENTS",
+        "A DETAILS OF GRADIENT COMPUTATION",
+        "B OPTIMIZATION AND DENSIFICATION ALGORITHM",
+        "C DETAILS OF THE RASTERIZER",
+        "Algorithm 2 GPU software rasterization of 3D Gaussians"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "limitations",
+      "paragraphCount": 81,
+      "chars": 20842,
+      "estimatedTextTokens": 7060,
+      "sections": [
+        "1 INTRODUCTION",
+        "7.2 Results and Evaluation",
+        "7.3 Ablations",
+        "7.4 Limitations",
+        "8 DISCUSSION AND CONCLUSIONS",
+        "ACKNOWLEDGMENTS"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    }
+  ]
+}

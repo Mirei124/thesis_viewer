@@ -1,0 +1,47 @@
+{
+  "paper": "3DGS",
+  "arm": "C",
+  "model": "deepseek-flash",
+  "requestSha256": "27bc1b66b262f9059e69f16f97ab74fb59d2c160e440946513bbac488d6549c9",
+  "requestChars": 26289,
+  "elapsedSeconds": 27.64,
+  "usage": {
+    "prompt_tokens": 6336,
+    "completion_tokens": 6232,
+    "total_tokens": 12568,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 4164
+    },
+    "prompt_cache_hit_tokens": 256,
+    "prompt_cache_miss_tokens": 6080
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"本文解决的任务是从一组静态场景的多视角照片出发完成 novel view synthesis，并让训练时间与最快的 radiance field 方法竞争、同时在 1080p 分辨率下实现实时渲染。方法的输入是一组图像以及由 Structure-from-Motion (SfM) 标定得到的对应相机，SfM 在标定过程中顺带产生一个稀疏点云，该点云被直接用于初始化（P009, P002）。与多数依赖 Multi-View Stereo (MVS) 数据的 point-based 方法不同，本方法只以 SfM 点为输入；在 NeRF-synthetic dataset 上即使随机初始化也能达到高质量（P006）。输出是一个显式、非结构化的 radiance field 表示：一组 3D Gaussians，可以直接栅格化渲染。整条 pipeline 由三部分构成——3D Gaussians 场景表示、与 adaptive density control 交错的参数优化、以及基于 tile 的可微实时渲染（P006）。\\n\\n表示的基元与参数。每个 3D Gaussian 由世界坐标系下的中心（mean）μ、一个完整 3D 协方差矩阵 Σ 和不透明度 α 定义，其空间衰减为以 μ 为中心的高斯函数 G(x) = exp(−½ (x)ᵀ Σ⁻¹ (x))，渲染混合时该高斯值再乘上 α（P013, P015）。选择 3D Gaussians 的原因是它既可微、又可以被投影成 2D splats 从而支持快速的 α-blending，并且不需要法向量——SfM 点极其稀疏，估计法向量并对其进行优化非常困难（P012）。除位置、协方差与 α 外，每个 Gaussian 还用 spherical harmonics (SH) 系数表示与视角相关的颜色 c，这与既有 radiance field 做法一致（P022, P009）。这种各向异性协方差可以让 3D Gaussians 适配不同形状的几何，形成相当紧凑的表示（P019）。\\n\\n从 3D 到 2D 的可微投影。渲染前需要把 3D Gaussian 投影到图像空间：给定 viewing transformation W，相机坐标系下的协方差为 Σ′ = J W Σ Wᵀ Jᵀ，其中 J 是投影变换的仿射近似的 Jacobian（P015, P017）。去掉 Σ′ 的第三行与第三列后得到 2×2 的 variance matrix，其结构与性质等同于从带法向量的 planar point 出发的情形（P017）。\\n\\n协方差的参数化。直接对 Σ 做梯度下降不可行，因为协方差矩阵只有在 positive semi-definite 时才有物理意义，而更新步与梯度很容易产生非法矩阵（P017）。因此改为优化等价但更直观的分解 Σ = R S Sᵀ Rᵀ，其中 S 为 scaling matrix、R 为 rotation matrix（P017）；实现上分别存储 3D 向量 s（scaling）与四元数 q（rotation），并保证把 q 归一化成合法的单位四元数（P019）。为避免训练时 automatic differentiation 的开销，所有参数的梯度都被显式推导（P019）。协方差的初值设为各向同性 Gaussian，其轴长等于该点到最近三个点的平均距离（P040）。\\n\\n训练循环与损失。优化基于反复迭代的“渲染—与训练视图比较”，因为 3D 到 2D 投影存在歧义，几何可能被放错位置，所以优化过程必须既能创建几何、也能销毁或移动放错的几何（P040）。优化使用 Stochastic Gradient Descent，借助 GPU 加速框架并可为部分算子编写自定义 CUDA kernel；其中栅格化是优化的主要计算瓶颈（P040）。α 用 sigmoid 激活限制在 [0−1) 区间并获得平滑梯度，协方差的 scale 用指数激活，位置使用类似 Plenoxels 的标准指数衰减调度（P040）。损失为 L1 与 D-SSIM 的组合 L = (1−λ)L1 + λL_D-SSIM，所有测试取 λ = 0.2（P043, P033）。\\n\\n与优化交错进行的 adaptive density control 负责从稀疏初始集合生成更密、参数更正确的 Gaussian 集合（P042）。在 optimization warm-up 之后，每 100 次迭代做一次 densification，并剔除基本透明（α 小于阈值 ε_α）的 Gaussian（P042）。是否加密由 view-space positional gradient 的平均幅值决定：无论“欠重建”（under-reconstruction）还是“过重建”（over-reconstruction）区域，这类梯度都较大，因此平均幅值超过 τ_pos = 0.0002 的 Gaussian 会被加密（P042）。欠重建区域需要新增几何，做法是 clone：复制一个同样大小的副本并沿位置梯度方向移动（P042, P056）。过重建区域中覆盖面积过大的 Gaussian 则被 split 成两个，其 scale 除以实验确定的因子 φ = 1.6，新位置以原 3D Gaussian 作为 PDF 采样得到（P042, P056）。为抑制相机附近 floaters 造成的密度不合理增长，每 N = 3000 次迭代把 α 设为接近零，让优化只在需要处重新抬高 α，同时由 α < ε_α 的剔除机制清理多余 Gaussian（P042）。此外还会周期性移除在世界空间中过大、以及在 view space 中 footprint 过大的 Gaussian（P057）。所有 Gaussian 始终是欧氏空间中的 primitive，不需要针对远处或大型 Gaussian 做空间压缩、warping 或投影（P057）。\\n\\n渲染器的前向。tile-based rasterizer 把屏幕划分为 16×16 的 tile，再把 3D Gaussians 对 view frustum 和每个 tile 做 culling：只保留 99% 置信区间与 frustum 相交的 Gaussian，并用 guard band 直接剔除位置极端（均值靠近近平面且远在 frustum 之外）的 Gaussian，因为这类点投影后的 2D 协方差计算不稳定（P058）。随后按 Gaussian 覆盖的 tile 数生成实例，每个实例带一个由 view space depth 与 tile ID 组合的 key，所有 Gaussian 用一次 GPU Radix sort 排序（P058）。该流程不做额外的逐像素排序，blending 依据这一次初始排序完成，因此 α-blending 在某些配置下是近似的；当 splat 接近单像素大小时近似可忽略，且这种取舍显著提升了训练与渲染性能（P058）。排序后为每个 tile 找出落在其上、按深度排序的首尾条目形成 tile 列表；栅格化时每个 tile 启动一个 thread block，协作把成包的 Gaussian 载入 shared memory，再对每个像素从前到后累加颜色与 α（P058）。当某像素的 α 达到饱和时对应线程停止，整个 tile 在所有像素都饱和后终止——α 饱和是唯一停止条件，方法不限制能够接收梯度更新的混合 primitive 数量，从而适应深度复杂度差异很大的场景而无需逐场景调参（P058, P002）。\\n\\n渲染器的反向。反向传播复用前向的已排序 Gaussian 数组与 tile 范围，改为从后到前遍历 per-tile 列表，以避免在 global memory 中保存任意长的逐像素混合点列表所带来的动态内存管理开销（P058）。遍历从影响该 tile 中任一像素的最后一个点开始，点仍以协作方式载入 shared memory；每个像素只在点的深度小于等于其在前向中最后贡献颜色的点的深度时，才进行开销较大的 overlap testing 与处理（P058）。梯度计算需要混合过程中每一步的累计不透明度，实现上只在前向结束时保存每个点的最终累计 α，反向时用它除以该点自身的 α 来恢复所需系数（P058）。\\n\\n训练阶段与推理阶段的区别。训练阶段用同一套 tile-based renderer 做前向渲染并回传梯度，从而把训练时间压到与最快的 radiance field 方法相当；一旦训练完成，同一渲染器可以支持对多种场景的实时导航（P032）。训练后的表示规模在测试场景中为 1–5 million 个 Gaussian（P006）。\\n\\n评测所用数据与参照。实验在若干已发表数据集上进行（Barron et al. 2022; Hedman et al. 2018; Knapitsch et al. 2017）（P002）；其中 Mip-NeRF360 被作为 SOTA NeRF 质量参照，其训练时间可达 48 小时，而快速的 radiance field 方法只能做到随场景约 10–15 fps 的交互级渲染，达不到高分辨率实时（P006）。NeRF-synthetic dataset 也被用于说明初始化下的鲁棒性（P006）。\\n\\n材料中未提供的关键细节包括：Sec. 7.1 所述的 learning schedule 及其余训练设置（P040, P033）、appendix A 中显式梯度求导的具体过程（P019）、Appendix C 中排序与栅格化流程的细节（P058）、以及对透明 Gaussian 做剔除所用的阈值 ε_α 的数值（P042）。这些数据集的具体采集方式、标注、质检流程与评测协议，也不在所提供的材料中（P002）。\",\"sources\":[\"P002\",\"P006\",\"P009\",\"P012\",\"P013\",\"P015\",\"P017\",\"P019\",\"P022\",\"P032\",\"P033\",\"P040\",\"P042\",\"P043\",\"P056\",\"P057\",\"P058\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "本文解决的任务是从一组静态场景的多视角照片出发完成 novel view synthesis，并让训练时间与最快的 radiance field 方法竞争、同时在 1080p 分辨率下实现实时渲染。方法的输入是一组图像以及由 Structure-from-Motion (SfM) 标定得到的对应相机，SfM 在标定过程中顺带产生一个稀疏点云，该点云被直接用于初始化（P009, P002）。与多数依赖 Multi-View Stereo (MVS) 数据的 point-based 方法不同，本方法只以 SfM 点为输入；在 NeRF-synthetic dataset 上即使随机初始化也能达到高质量（P006）。输出是一个显式、非结构化的 radiance field 表示：一组 3D Gaussians，可以直接栅格化渲染。整条 pipeline 由三部分构成——3D Gaussians 场景表示、与 adaptive density control 交错的参数优化、以及基于 tile 的可微实时渲染（P006）。\n\n表示的基元与参数。每个 3D Gaussian 由世界坐标系下的中心（mean）μ、一个完整 3D 协方差矩阵 Σ 和不透明度 α 定义，其空间衰减为以 μ 为中心的高斯函数 G(x) = exp(−½ (x)ᵀ Σ⁻¹ (x))，渲染混合时该高斯值再乘上 α（P013, P015）。选择 3D Gaussians 的原因是它既可微、又可以被投影成 2D splats 从而支持快速的 α-blending，并且不需要法向量——SfM 点极其稀疏，估计法向量并对其进行优化非常困难（P012）。除位置、协方差与 α 外，每个 Gaussian 还用 spherical harmonics (SH) 系数表示与视角相关的颜色 c，这与既有 radiance field 做法一致（P022, P009）。这种各向异性协方差可以让 3D Gaussians 适配不同形状的几何，形成相当紧凑的表示（P019）。\n\n从 3D 到 2D 的可微投影。渲染前需要把 3D Gaussian 投影到图像空间：给定 viewing transformation W，相机坐标系下的协方差为 Σ′ = J W Σ Wᵀ Jᵀ，其中 J 是投影变换的仿射近似的 Jacobian（P015, P017）。去掉 Σ′ 的第三行与第三列后得到 2×2 的 variance matrix，其结构与性质等同于从带法向量的 planar point 出发的情形（P017）。\n\n协方差的参数化。直接对 Σ 做梯度下降不可行，因为协方差矩阵只有在 positive semi-definite 时才有物理意义，而更新步与梯度很容易产生非法矩阵（P017）。因此改为优化等价但更直观的分解 Σ = R S Sᵀ Rᵀ，其中 S 为 scaling matrix、R 为 rotation matrix（P017）；实现上分别存储 3D 向量 s（scaling）与四元数 q（rotation），并保证把 q 归一化成合法的单位四元数（P019）。为避免训练时 automatic differentiation 的开销，所有参数的梯度都被显式推导（P019）。协方差的初值设为各向同性 Gaussian，其轴长等于该点到最近三个点的平均距离（P040）。\n\n训练循环与损失。优化基于反复迭代的“渲染—与训练视图比较”，因为 3D 到 2D 投影存在歧义，几何可能被放错位置，所以优化过程必须既能创建几何、也能销毁或移动放错的几何（P040）。优化使用 Stochastic Gradient Descent，借助 GPU 加速框架并可为部分算子编写自定义 CUDA kernel；其中栅格化是优化的主要计算瓶颈（P040）。α 用 sigmoid 激活限制在 [0−1) 区间并获得平滑梯度，协方差的 scale 用指数激活，位置使用类似 Plenoxels 的标准指数衰减调度（P040）。损失为 L1 与 D-SSIM 的组合 L = (1−λ)L1 + λL_D-SSIM，所有测试取 λ = 0.2（P043, P033）。\n\n与优化交错进行的 adaptive density control 负责从稀疏初始集合生成更密、参数更正确的 Gaussian 集合（P042）。在 optimization warm-up 之后，每 100 次迭代做一次 densification，并剔除基本透明（α 小于阈值 ε_α）的 Gaussian（P042）。是否加密由 view-space positional gradient 的平均幅值决定：无论“欠重建”（under-reconstruction）还是“过重建”（over-reconstruction）区域，这类梯度都较大，因此平均幅值超过 τ_pos = 0.0002 的 Gaussian 会被加密（P042）。欠重建区域需要新增几何，做法是 clone：复制一个同样大小的副本并沿位置梯度方向移动（P042, P056）。过重建区域中覆盖面积过大的 Gaussian 则被 split 成两个，其 scale 除以实验确定的因子 φ = 1.6，新位置以原 3D Gaussian 作为 PDF 采样得到（P042, P056）。为抑制相机附近 floaters 造成的密度不合理增长，每 N = 3000 次迭代把 α 设为接近零，让优化只在需要处重新抬高 α，同时由 α < ε_α 的剔除机制清理多余 Gaussian（P042）。此外还会周期性移除在世界空间中过大、以及在 view space 中 footprint 过大的 Gaussian（P057）。所有 Gaussian 始终是欧氏空间中的 primitive，不需要针对远处或大型 Gaussian 做空间压缩、warping 或投影（P057）。\n\n渲染器的前向。tile-based rasterizer 把屏幕划分为 16×16 的 tile，再把 3D Gaussians 对 view frustum 和每个 tile 做 culling：只保留 99% 置信区间与 frustum 相交的 Gaussian，并用 guard band 直接剔除位置极端（均值靠近近平面且远在 frustum 之外）的 Gaussian，因为这类点投影后的 2D 协方差计算不稳定（P058）。随后按 Gaussian 覆盖的 tile 数生成实例，每个实例带一个由 view space depth 与 tile ID 组合的 key，所有 Gaussian 用一次 GPU Radix sort 排序（P058）。该流程不做额外的逐像素排序，blending 依据这一次初始排序完成，因此 α-blending 在某些配置下是近似的；当 splat 接近单像素大小时近似可忽略，且这种取舍显著提升了训练与渲染性能（P058）。排序后为每个 tile 找出落在其上、按深度排序的首尾条目形成 tile 列表；栅格化时每个 tile 启动一个 thread block，协作把成包的 Gaussian 载入 shared memory，再对每个像素从前到后累加颜色与 α（P058）。当某像素的 α 达到饱和时对应线程停止，整个 tile 在所有像素都饱和后终止——α 饱和是唯一停止条件，方法不限制能够接收梯度更新的混合 primitive 数量，从而适应深度复杂度差异很大的场景而无需逐场景调参（P058, P002）。\n\n渲染器的反向。反向传播复用前向的已排序 Gaussian 数组与 tile 范围，改为从后到前遍历 per-tile 列表，以避免在 global memory 中保存任意长的逐像素混合点列表所带来的动态内存管理开销（P058）。遍历从影响该 tile 中任一像素的最后一个点开始，点仍以协作方式载入 shared memory；每个像素只在点的深度小于等于其在前向中最后贡献颜色的点的深度时，才进行开销较大的 overlap testing 与处理（P058）。梯度计算需要混合过程中每一步的累计不透明度，实现上只在前向结束时保存每个点的最终累计 α，反向时用它除以该点自身的 α 来恢复所需系数（P058）。\n\n训练阶段与推理阶段的区别。训练阶段用同一套 tile-based renderer 做前向渲染并回传梯度，从而把训练时间压到与最快的 radiance field 方法相当；一旦训练完成，同一渲染器可以支持对多种场景的实时导航（P032）。训练后的表示规模在测试场景中为 1–5 million 个 Gaussian（P006）。\n\n评测所用数据与参照。实验在若干已发表数据集上进行（Barron et al. 2022; Hedman et al. 2018; Knapitsch et al. 2017）（P002）；其中 Mip-NeRF360 被作为 SOTA NeRF 质量参照，其训练时间可达 48 小时，而快速的 radiance field 方法只能做到随场景约 10–15 fps 的交互级渲染，达不到高分辨率实时（P006）。NeRF-synthetic dataset 也被用于说明初始化下的鲁棒性（P006）。\n\n材料中未提供的关键细节包括：Sec. 7.1 所述的 learning schedule 及其余训练设置（P040, P033）、appendix A 中显式梯度求导的具体过程（P019）、Appendix C 中排序与栅格化流程的细节（P058）、以及对透明 Gaussian 做剔除所用的阈值 ε_α 的数值（P042）。这些数据集的具体采集方式、标注、质检流程与评测协议，也不在所提供的材料中（P002）。",
+    "sources": [
+      "P002",
+      "P006",
+      "P009",
+      "P012",
+      "P013",
+      "P015",
+      "P017",
+      "P019",
+      "P022",
+      "P032",
+      "P033",
+      "P040",
+      "P042",
+      "P043",
+      "P056",
+      "P057",
+      "P058"
+    ]
+  },
+  "unknownAliases": []
+}

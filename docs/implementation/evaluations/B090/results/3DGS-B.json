@@ -1,0 +1,37 @@
+{
+  "paper": "3DGS",
+  "arm": "B",
+  "model": "deepseek-flash",
+  "requestSha256": "3aaffe55d8335600e9c6cf5f65389641825c125eaebdedb19e0a946bfec2bbb6",
+  "requestChars": 9562,
+  "elapsedSeconds": 11.58,
+  "usage": {
+    "prompt_tokens": 2421,
+    "completion_tokens": 2459,
+    "total_tokens": 4880,
+    "prompt_tokens_details": {
+      "cached_tokens": 1152
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 1684
+    },
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 1269
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"**任务、输入与输出**\\n本文方法是面向静态场景的 novel-view synthesis：输入为一组静态场景图像，以及由 SfM 标定出的对应相机，标定过程还会以副产物形式给出一个 sparse point cloud；输出则是用一组 3D Gaussians 表示该场景，并能在 1080p 分辨率下以约 30 fps 实时渲染新视角 (E009, E008)。这里的 3D Gaussian 不是神经网络，而是显式图元，每个由位置（mean）、covariance matrix 和 opacity 定义 (E009)。作者的总体目标是让该表示在保持 SOTA 视觉质量与有竞争力训练时间的同时，借 tile-based splatting 实现 1080p 实时渲染 (E004)。\\n\\n**初始化**\\n表示直接从相机标定阶段产生的 sparse points 建立 3D Gaussians，从而使稀疏的离散点既继承 continuous volumetric radiance field 有利于场景优化的性质，又避免在空区域做无谓计算 (E008)。\\n\\n**训练阶段：交错优化与密度控制**\\n训练的核心是 interleaved optimization 与 density control，其中特别优化 anisotropic covariance，以便准确贴合场景几何 (E008)。本文与 NeRF 类方法的 image formation model 相同，区别在渲染算法本身：NeRFs 是连续表示，需要昂贵的 random sampling 才能找到成像模型所需的样本，因而带来噪声与算力开销；而 points 是无结构、离散的表示，可通过优化 opacity 与 positions 实现几何的创建、销毁与位移，这正是密度控制得以生效的前提 (E002)。\\n\\n密度控制的具体流程是：在 optimization warm-up 之后，每 100 iterations 执行一次 densify，并移除基本透明的 Gaussians (E006)。几何调整按局部重建状态分两路：位于 under-reconstructed 区域的小 Gaussians 需要覆盖新生成的几何，此时选择 clone，即复制一个同样大小的副本并沿 positional gradient 方向移动它；而处于高方差区域的大 Gaussians 则需要 split 成更小的图元，做法是用两个新 Gaussians 取代原图元，并把它们的 scale 除以一个因子 (E005)。\\n\\n**渲染阶段（训练与推理共用）**\\n渲染是方法的第三个要素，使用快速 GPU sorting 算法，思路借鉴 tile-based rasterization (E007)。得益于 3D Gaussian 表示，方法可以做 anisotropic splatting 并尊重 visibility ordering，而排序正是其前提 (E007)。作者说明该 visibility-aware rendering 算法既加速训练，又允许实时渲染，因此它同时服务于训练与推理 (E008)。优化结束后得到的是紧凑、无结构且精确的场景表示，所测场景规模为 1–5 million Gaussians (E007)。\\n\\n**材料中缺失的关键定义**\\n若干决定机制的具体定义在提供的材料中没有出现，无法据此推断：covariance matrix 的参数化方式（如何由旋转与缩放构造）、image formation model 的公式（Eq. 2 与 Eq. 3 被援引但其形式未给出）、split 时 scale 所除因子的取值、判定“基本透明”的 opacity 阈值、触发 densify 的 positional gradient 判据、warm-up 的迭代长度、损失函数与优化器配置，以及 tile-based rasterization 的分块、排序与前后合成细节 (E002, E005, E006, E007)。\", \"sources\": [\"E002\", \"E004\", \"E005\", \"E006\", \"E007\", \"E008\", \"E009\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "**任务、输入与输出**\n本文方法是面向静态场景的 novel-view synthesis：输入为一组静态场景图像，以及由 SfM 标定出的对应相机，标定过程还会以副产物形式给出一个 sparse point cloud；输出则是用一组 3D Gaussians 表示该场景，并能在 1080p 分辨率下以约 30 fps 实时渲染新视角 (E009, E008)。这里的 3D Gaussian 不是神经网络，而是显式图元，每个由位置（mean）、covariance matrix 和 opacity 定义 (E009)。作者的总体目标是让该表示在保持 SOTA 视觉质量与有竞争力训练时间的同时，借 tile-based splatting 实现 1080p 实时渲染 (E004)。\n\n**初始化**\n表示直接从相机标定阶段产生的 sparse points 建立 3D Gaussians，从而使稀疏的离散点既继承 continuous volumetric radiance field 有利于场景优化的性质，又避免在空区域做无谓计算 (E008)。\n\n**训练阶段：交错优化与密度控制**\n训练的核心是 interleaved optimization 与 density control，其中特别优化 anisotropic covariance，以便准确贴合场景几何 (E008)。本文与 NeRF 类方法的 image formation model 相同，区别在渲染算法本身：NeRFs 是连续表示，需要昂贵的 random sampling 才能找到成像模型所需的样本，因而带来噪声与算力开销；而 points 是无结构、离散的表示，可通过优化 opacity 与 positions 实现几何的创建、销毁与位移，这正是密度控制得以生效的前提 (E002)。\n\n密度控制的具体流程是：在 optimization warm-up 之后，每 100 iterations 执行一次 densify，并移除基本透明的 Gaussians (E006)。几何调整按局部重建状态分两路：位于 under-reconstructed 区域的小 Gaussians 需要覆盖新生成的几何，此时选择 clone，即复制一个同样大小的副本并沿 positional gradient 方向移动它；而处于高方差区域的大 Gaussians 则需要 split 成更小的图元，做法是用两个新 Gaussians 取代原图元，并把它们的 scale 除以一个因子 (E005)。\n\n**渲染阶段（训练与推理共用）**\n渲染是方法的第三个要素，使用快速 GPU sorting 算法，思路借鉴 tile-based rasterization (E007)。得益于 3D Gaussian 表示，方法可以做 anisotropic splatting 并尊重 visibility ordering，而排序正是其前提 (E007)。作者说明该 visibility-aware rendering 算法既加速训练，又允许实时渲染，因此它同时服务于训练与推理 (E008)。优化结束后得到的是紧凑、无结构且精确的场景表示，所测场景规模为 1–5 million Gaussians (E007)。\n\n**材料中缺失的关键定义**\n若干决定机制的具体定义在提供的材料中没有出现，无法据此推断：covariance matrix 的参数化方式（如何由旋转与缩放构造）、image formation model 的公式（Eq. 2 与 Eq. 3 被援引但其形式未给出）、split 时 scale 所除因子的取值、判定“基本透明”的 opacity 阈值、触发 densify 的 positional gradient 判据、warm-up 的迭代长度、损失函数与优化器配置，以及 tile-based rasterization 的分块、排序与前后合成细节 (E002, E005, E006, E007)。",
+    "sources": [
+      "E002",
+      "E004",
+      "E005",
+      "E006",
+      "E007",
+      "E008",
+      "E009"
+    ]
+  },
+  "unknownAliases": []
+}

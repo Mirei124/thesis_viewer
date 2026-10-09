@@ -1,0 +1,146 @@
+{
+  "path": "/tmp/B094/LoRA.pdf",
+  "documentVersion": "sha256:e9a0d3128767db616085dc0f4e6e455e672e89af823e8ed1282793682787395a",
+  "config": {
+    "baseUrl": "https://api.deepseek.com/v1",
+    "model": "deepseek-flash",
+    "structuredOutput": true,
+    "contextLimit": 128000,
+    "outputLimit": 32000
+  },
+  "pageCount": 26,
+  "paragraphCount": 667,
+  "selections": [
+    {
+      "id": "problem_motivation",
+      "paragraphCount": 145,
+      "chars": 23925,
+      "estimatedTextTokens": 8178,
+      "sections": [
+        "ABSTRACT",
+        "1 INTRODUCTION",
+        "6 RELATED WORKS",
+        "7 UNDERSTANDING THE LOW-RANK UPDATES",
+        "8 CONCLUSION AND FUTURE WORK",
+        "A LARGE LANGUAGE MODELS STILL NEED PARAMETER UPDATES",
+        "E COMBINING L ORA WITH PREFIX TUNING"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "method",
+      "paragraphCount": 222,
+      "chars": 31256,
+      "estimatedTextTokens": 10783,
+      "sections": [
+        "ABSTRACT",
+        "1 INTRODUCTION",
+        "2 PROBLEM STATEMENT",
+        "4 OUR METHOD",
+        "4.1 LOW-RANK-PARAMETRIZED UPDATE MATRICES",
+        "4.2 APPLYING L ORA TO TRANSFORMER",
+        "7 UNDERSTANDING THE LOW-RANK UPDATES",
+        "A LARGE LANGUAGE MODELS STILL NEED PARAMETER UPDATES",
+        "B INFERENCE LATENCY INTRODUCED BY ADAPTER LAYERS",
+        "E COMBINING L ORA WITH PREFIX TUNING"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "contributions_novelty",
+      "paragraphCount": 344,
+      "chars": 52398,
+      "estimatedTextTokens": 18161,
+      "sections": [
+        "ABSTRACT",
+        "1 INTRODUCTION",
+        "2 PROBLEM STATEMENT",
+        "4 OUR METHOD",
+        "4.1 LOW-RANK-PARAMETRIZED UPDATE MATRICES",
+        "4.2 APPLYING L ORA TO TRANSFORMER",
+        "5 EMPIRICAL EXPERIMENTS",
+        "5.1 BASELINES",
+        "5.2 R OBERT ABASE / LARGE",
+        "5.3 D EBERT AXXL",
+        "5.4 GPT-2 MEDIUM / LARGE",
+        "5.5 SCALING UP TO GPT-3 175B",
+        "6 RELATED WORKS",
+        "7 UNDERSTANDING THE LOW-RANK UPDATES",
+        "8 CONCLUSION AND FUTURE WORK",
+        "A LARGE LANGUAGE MODELS STILL NEED PARAMETER UPDATES",
+        "B INFERENCE LATENCY INTRODUCED BY ADAPTER LAYERS",
+        "C DATASET DETAILS",
+        "E COMBINING L ORA WITH PREFIX TUNING"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "experiments_ablations",
+      "paragraphCount": 332,
+      "chars": 46426,
+      "estimatedTextTokens": 16158,
+      "sections": [
+        "ABSTRACT",
+        "1 INTRODUCTION",
+        "2 PROBLEM STATEMENT",
+        "4 OUR METHOD",
+        "4.1 LOW-RANK-PARAMETRIZED UPDATE MATRICES",
+        "4.2 APPLYING L ORA TO TRANSFORMER",
+        "5 EMPIRICAL EXPERIMENTS",
+        "5.1 BASELINES",
+        "5.2 R OBERT ABASE / LARGE",
+        "5.3 D EBERT AXXL",
+        "5.4 GPT-2 MEDIUM / LARGE",
+        "5.5 SCALING UP TO GPT-3 175B",
+        "7 UNDERSTANDING THE LOW-RANK UPDATES",
+        "A LARGE LANGUAGE MODELS STILL NEED PARAMETER UPDATES",
+        "B INFERENCE LATENCY INTRODUCED BY ADAPTER LAYERS",
+        "C DATASET DETAILS",
+        "E COMBINING L ORA WITH PREFIX TUNING"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "limitations",
+      "paragraphCount": 248,
+      "chars": 34433,
+      "estimatedTextTokens": 11992,
+      "sections": [
+        "ABSTRACT",
+        "1 INTRODUCTION",
+        "5 EMPIRICAL EXPERIMENTS",
+        "5.1 BASELINES",
+        "5.2 R OBERT ABASE / LARGE",
+        "5.3 D EBERT AXXL",
+        "5.4 GPT-2 MEDIUM / LARGE",
+        "5.5 SCALING UP TO GPT-3 175B",
+        "7 UNDERSTANDING THE LOW-RANK UPDATES",
+        "8 CONCLUSION AND FUTURE WORK",
+        "A LARGE LANGUAGE MODELS STILL NEED PARAMETER UPDATES",
+        "C DATASET DETAILS",
+        "E COMBINING L ORA WITH PREFIX TUNING"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "SAM": {
+    "before": 2926,
+    "after": 1891,
+    "ratio": 0.646,
+    "sameSources": true
+  },
+  "Video-MME": {
+    "before": 2160,
+    "after": 900,
+    "ratio": 0.417,
+    "sameSources": true
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "paper": "Chinchilla",
+  "arm": "merged",
+  "model": "deepseek-flash",
+  "requestSha256": "e6b90124c7c179457bfcdfb5caec1863b63f116855373e668e91ddca0bcc534e",
+  "requestChars": 32241,
+  "elapsedSeconds": 28.91,
+  "usage": {
+    "prompt_tokens": 9521,
+    "completion_tokens": 6904,
+    "total_tokens": 16425,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 6429
+    },
+    "prompt_cache_hit_tokens": 256,
+    "prompt_cache_miss_tokens": 9265
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"核心贡献与相对创新：\\n1. 重新估计 compute-optimal 分配。作者主张固定 FLOPs budget 时 model size 与 training tokens 应近似等比例增加，而非 Kaplan et al. (2020) 所述主要扩大 model size；三种估计分别给出 𝑁𝑜𝑝𝑡∝𝐶^0.50/0.49/0.46、𝐷𝑜𝑝𝑡∝𝐶^0.50/0.51/0.54，并推断当前 LLMs 相对各自 compute budget 偏大、tokens 不足（P013；P144）。该判断来自经验拟合：基于 over 400 models（70M 至 16B parameters、5B 至 400B+ tokens），作者承认外推多个数量级存在不确定性（P014；P160）。\\n2. 以三种互补方法并跨数据集检验 scaling 结论。Approach 1 固定 model size 变 training tokens，Approach 2 使用 IsoFLOP profiles，Approach 3 拟合 parametric loss function（P027；P099）。三者在文中给出相近预测，并在 C4 与 GitHub code 上复现类似结论（P143；P160）。相对 Kaplan et al. (2020) 的 scaling 建议，这是文中明确对比的变化，但比较边界限于作者设定的模型规模与数据范围（P143）。\\n3. 训练 Chinchilla 进行验证。作者据 Gopher 的 compute budget 预测 optimal model 应小 4 倍、多训 4 倍 tokens，并训练 70B Chinchilla、使用 1.4T tokens（P014；P162）。文中报告其在同 FLOPs 下优于更大的 Gopher，且因小 4 倍而降低 inference cost 与 memory footprint（P014；P162）。这相对文中 GPT-3、Gopher、MT-NLG 等约 300B tokens 的配置改变了参数与数据权衡（P018；P021）。\",\"sources\":[\"P013\",\"P014\",\"P018\",\"P021\",\"P027\",\"P099\",\"P143\",\"P144\",\"P160\",\"P162\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "核心贡献与相对创新：\n1. 重新估计 compute-optimal 分配。作者主张固定 FLOPs budget 时 model size 与 training tokens 应近似等比例增加，而非 Kaplan et al. (2020) 所述主要扩大 model size；三种估计分别给出 𝑁𝑜𝑝𝑡∝𝐶^0.50/0.49/0.46、𝐷𝑜𝑝𝑡∝𝐶^0.50/0.51/0.54，并推断当前 LLMs 相对各自 compute budget 偏大、tokens 不足（P013；P144）。该判断来自经验拟合：基于 over 400 models（70M 至 16B parameters、5B 至 400B+ tokens），作者承认外推多个数量级存在不确定性（P014；P160）。\n2. 以三种互补方法并跨数据集检验 scaling 结论。Approach 1 固定 model size 变 training tokens，Approach 2 使用 IsoFLOP profiles，Approach 3 拟合 parametric loss function（P027；P099）。三者在文中给出相近预测，并在 C4 与 GitHub code 上复现类似结论（P143；P160）。相对 Kaplan et al. (2020) 的 scaling 建议，这是文中明确对比的变化，但比较边界限于作者设定的模型规模与数据范围（P143）。\n3. 训练 Chinchilla 进行验证。作者据 Gopher 的 compute budget 预测 optimal model 应小 4 倍、多训 4 倍 tokens，并训练 70B Chinchilla、使用 1.4T tokens（P014；P162）。文中报告其在同 FLOPs 下优于更大的 Gopher，且因小 4 倍而降低 inference cost 与 memory footprint（P014；P162）。这相对文中 GPT-3、Gopher、MT-NLG 等约 300B tokens 的配置改变了参数与数据权衡（P018；P021）。",
+    "sources": [
+      "P013",
+      "P014",
+      "P018",
+      "P021",
+      "P027",
+      "P099",
+      "P143",
+      "P144",
+      "P160",
+      "P162"
+    ]
+  },
+  "unknownAliases": []
+}

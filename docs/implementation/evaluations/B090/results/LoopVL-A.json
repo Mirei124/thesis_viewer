@@ -1,0 +1,35 @@
+{
+  "paper": "LoopVL",
+  "arm": "A",
+  "model": "deepseek-flash",
+  "requestSha256": "8dabe046813523454352d21067d8b463d64e13d663b44cb45403fdf50e165464",
+  "requestChars": 11130,
+  "elapsedSeconds": 14.93,
+  "usage": {
+    "prompt_tokens": 2551,
+    "completion_tokens": 4058,
+    "total_tokens": 6609,
+    "prompt_tokens_details": {
+      "cached_tokens": 1152
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 3599
+    },
+    "prompt_cache_hit_tokens": 1152,
+    "prompt_cache_miss_tokens": 1399
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"输入为图像与指令。视觉编码器保留 Penguin pretrained initialization，language backbone 用自文本预训练得到的 H2L3 checkpoint；visual features 先做 parameter-free RMS normalization，再校准到 language embedding vectors 的 median RMS，随后走 backbone 标准路径并沿用 inherited embedding scaling (E005)。alignment stage 用 LLaVA-559K WebDataset，token 分配 0.33B，max sequence length 2048，每图 256–1024 visual tokens；冻结 Penguin Vision Encoder 与 language backbone，仅优化 visual interface，以 image–caption supervision 训练且 loss 施加于 response tokens，建立稳定视觉输入通路 (E007)。dynamic-resolution Stage 1 中 projector 随机初始化并训练，不加载 previous optimizer、scheduler、trainer states；Penguin 与 language backbone 用 BF16，projector 保持 FP32 (E005)。循环结构从初始化独立训练 H1L1、H1L3、H2L1、H2L3，各模型自 language pre-training 起采用指定 H/L recurrence 结构，并在 alignment、multimodal training、post-training 中保持同一计算模式 (E008)。训练与推理 recurrence 配置需匹配：H1L3 与 H2L1 均执行 64 次 Transformer-layer calls，H2L2 与 H3L1 均 96 次，H2L3 与 H4L1 均 128 次，但 128 层对中 MMStar 在 H2L3 为 63.47、H4L1 仅 24.67 (E006)。训练前用 regression tests 验证 text-position compatibility、visual-slot counts、loss masks 与 frozen/trainable parameter boundaries (E005)。输出观察：参数复用可支持不同 effective reading roles；不能由单张 heatmap 推断层的永久固定语义功能，随 recurrent state 演化，同一 transformation 在不同 cycle 参与不同 visual attention allocations (E009)。\",\"sources\":[\"E005\",\"E006\",\"E007\",\"E008\",\"E009\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "输入为图像与指令。视觉编码器保留 Penguin pretrained initialization，language backbone 用自文本预训练得到的 H2L3 checkpoint；visual features 先做 parameter-free RMS normalization，再校准到 language embedding vectors 的 median RMS，随后走 backbone 标准路径并沿用 inherited embedding scaling (E005)。alignment stage 用 LLaVA-559K WebDataset，token 分配 0.33B，max sequence length 2048，每图 256–1024 visual tokens；冻结 Penguin Vision Encoder 与 language backbone，仅优化 visual interface，以 image–caption supervision 训练且 loss 施加于 response tokens，建立稳定视觉输入通路 (E007)。dynamic-resolution Stage 1 中 projector 随机初始化并训练，不加载 previous optimizer、scheduler、trainer states；Penguin 与 language backbone 用 BF16，projector 保持 FP32 (E005)。循环结构从初始化独立训练 H1L1、H1L3、H2L1、H2L3，各模型自 language pre-training 起采用指定 H/L recurrence 结构，并在 alignment、multimodal training、post-training 中保持同一计算模式 (E008)。训练与推理 recurrence 配置需匹配：H1L3 与 H2L1 均执行 64 次 Transformer-layer calls，H2L2 与 H3L1 均 96 次，H2L3 与 H4L1 均 128 次，但 128 层对中 MMStar 在 H2L3 为 63.47、H4L1 仅 24.67 (E006)。训练前用 regression tests 验证 text-position compatibility、visual-slot counts、loss masks 与 frozen/trainable parameter boundaries (E005)。输出观察：参数复用可支持不同 effective reading roles；不能由单张 heatmap 推断层的永久固定语义功能，随 recurrent state 演化，同一 transformation 在不同 cycle 参与不同 visual attention allocations (E009)。",
+    "sources": [
+      "E005",
+      "E006",
+      "E007",
+      "E008",
+      "E009"
+    ]
+  },
+  "unknownAliases": []
+}

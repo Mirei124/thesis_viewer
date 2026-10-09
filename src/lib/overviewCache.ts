@@ -1,3 +1,4 @@
+import { DETAILED_CONTEXT_SELECTION_VERSION } from './detailedContext';
 import { DETAILED_SECTION_IDS, PROGRESSIVE_DETAILED_OVERVIEW_PROMPT_VERSION, type DetailedOverview, type DetailedOverviewBlock } from './detailedOverview';
 import { locateEvidenceCandidate, PDF_EVIDENCE_LEDGER_VERSION, type EvidenceLedger } from './evidenceLedger';
 import type { VerifiedEvidenceRef } from './inlineEvidence';
@@ -31,6 +32,7 @@ export function overviewCacheKey(input: OverviewCacheInput): string {
     config.structuredOutput,
     config.contextLimit,
     config.outputLimit,
+    ...(input.kind === 'detailed' ? [config.semanticReview === true, DETAILED_CONTEXT_SELECTION_VERSION] : []),
   ]);
 }
 
@@ -99,8 +101,8 @@ export function verifiedCachedOverview(value: unknown, kind: OverviewCacheKind, 
         || !['author_claim', 'source_fact', 'observed_result', 'inference'].includes(String(block.claimKind))) return undefined;
       const ids = evidenceIds(block.evidenceIds, ledger, pages);
       if (!ids || ids.length === 0) return undefined;
-      const refs = evidenceRefs(block.evidenceRefs, ids, ledger, pages, /^E\d{3}$/);
-      if (!refs) return undefined;
+      const refs = evidenceRefs(block.evidenceRefs, ids, ledger, pages, /^E\d{3,}$/);
+      if (!refs || (block.text.match(/\b(?:E\d{3,}|S\d{2,})\b/g) ?? []).some((alias) => !refs.some((ref) => ref.alias === alias))) return undefined;
       blocks.push({
         type: block.type as DetailedOverviewBlock['type'], text: block.text, evidenceIds: ids,
         evidenceRefs: refs, claimKind: block.claimKind as DetailedOverviewBlock['claimKind'],

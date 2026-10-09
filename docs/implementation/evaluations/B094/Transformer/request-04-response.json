@@ -1,0 +1,12 @@
+{
+  "index": 4,
+  "elapsedMs": 28485,
+  "content": "{\"status\":\"available\",\"text\":\"实验在 WMT 2014 EN-DE（约 4.5M 句对，byte-pair encoding，共享词表约 37000 tokens）与 EN-FR（36M 句，32000 word-piece）上展开，每批约 25000 source 与 25000 target tokens (E119)。训练用单机 8 张 NVIDIA P100 GPU：base 模型每步约 0.4 秒、共 100K 步（12 小时），big 模型每步 1.0 秒、300K 步（3.5 天）(E121)。Table 2 中 Transformer (base) 的 EN-DE/EN-FR BLEU 为 27.3/38.1，Transformer (big) 为 28.4/41.8 (E150, E152)；正文另称 EN-FR 的 big 模型为 41.0，其 dropout 设为 0.1 而非 0.3 (E161, E163)。在 EN-DE 上 big 模型超过此前含 ensemble 的最佳结果逾 2.0 BLEU，base 也已超过所有已发表模型 (E159, E160)；EN-FR 的训练成本不到此前模型最佳结果的 1/4 (E162)。base 平均最后 5 个 checkpoint、big 平均最后 20 个，解码用 beam size 4 与 α=0.6 (E164, E165)。消融 Table 3 全部在 EN-DE 开发集 newstest2013、不做 checkpoint 平均，perplexity 按 wordpiece 计算 (E177, E186)。单头注意力 BLEU 24.9，比最佳设置低 0.9，头过多同样下降 (E179, E187)；缩小 d_k 损害质量 (E181, E187)；更大模型更好、dropout 有助避免过拟合，学习式 positional embedding 与正弦式近乎一致（25.7 对 25.8）(E184, E187)。解析实验用 4 层、d_model=1024 的模型，仅 WSJ 约 40K 句时词表 16K，半监督则用约 17M 句与 32K 词表 (E190)；超参数仅在 Section 22 开发集上小范围选取 (E191)，Table 4 中 WSJ-only 得 91.3 F1，半监督设置得 92.7 F1 (E194)。\",\"sources\":[\"E119\",\"E121\",\"E150\",\"E152\",\"E159\",\"E160\",\"E161\",\"E162\",\"E163\",\"E164\",\"E165\",\"E177\",\"E179\",\"E181\",\"E184\",\"E186\",\"E187\",\"E190\",\"E191\",\"E194\"]}",
+  "usage": {
+    "promptTokens": 15255,
+    "completionTokens": 7344,
+    "totalTokens": 22599,
+    "promptCacheHitTokens": 640,
+    "promptCacheMissTokens": 14615
+  }
+}

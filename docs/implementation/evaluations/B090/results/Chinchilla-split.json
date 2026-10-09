@@ -1,0 +1,49 @@
+{
+  "paper": "Chinchilla",
+  "arm": "split",
+  "model": "deepseek-flash",
+  "requestSha256": "b2e9589fdc30d5b3dc1675b090d9952ca646e28b662b19101b2ed02d132676aa",
+  "requestChars": 32193,
+  "elapsedSeconds": 11.11,
+  "usage": {
+    "prompt_tokens": 9495,
+    "completion_tokens": 2666,
+    "total_tokens": 12161,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 2072
+    },
+    "prompt_cache_hit_tokens": 256,
+    "prompt_cache_miss_tokens": 9239
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"核心贡献\\n1. 在固定 FLOPs budget 下估计 N_opt(C) 与 D_opt(C)，用三种方法：Approach 1 固定模型规模、变化训练 token 数；Approach 2 IsoFLOP profiles；Approach 3 参数化损失拟合并以 Huber loss 与 L-BFGS 求解（P065、P099、P102）。估计基于超过 400 个模型，参数不到 70M 至超过 16B，训练 5B 至超过 400B tokens（P014）。\\n2. 三种方法给出接近的指数：a、b 分别为 0.50/0.50、0.49/0.51、0.46/0.54（P147、P148）。作者据此主张模型规模与训练 token 数应随 compute 近似等比例增加（P027、P144）。\\n3. 交付 Chinchilla：70B 参数、1.4T tokens（P024、P025、P026），在与 Gopher 相同的 FLOPs 下模型小 4×、token 多 4×（P013、P162）；作者报告其优于 Gopher 及其他 large models（P013）。\\n4. 推断性预测：现有大模型相对其 compute budget 明显过大，如 175B 模型应训练超过 4.2T tokens（P160）。\\n\\n相对创新\\n1. 比较维度是 Kaplan et al. (2020) 的 scaling 建议：后者认为 compute 增加 10× 时模型规模增 5.5×、token 仅增 1.8×（P001），对应指数 a=0.73、b=0.27（P149、P150、P151）；本文的等比例结论与之直接不同（P027、P144）。\\n2. 意义在于给出可检验的预算分配预测，并用同 FLOPs 的 Chinchilla 加以检验，同时指出更小模型可降低 inference 成本（P014、P162）。\\n3. 比较边界：作者自述跨多个数量级外推存在显著不确定性（P160）；评估沿用 Rae et al. (2021) 的任务集以便直接比较（P183）；在 C4 与 GitHub code 上复现 IsoFLOP 分析得到相似结论（P160）。文中未主张全领域首次。\",\"sources\":[\"P001\",\"P013\",\"P014\",\"P024\",\"P025\",\"P026\",\"P027\",\"P065\",\"P099\",\"P102\",\"P144\",\"P147\",\"P148\",\"P149\",\"P150\",\"P151\",\"P160\",\"P162\",\"P183\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "核心贡献\n1. 在固定 FLOPs budget 下估计 N_opt(C) 与 D_opt(C)，用三种方法：Approach 1 固定模型规模、变化训练 token 数；Approach 2 IsoFLOP profiles；Approach 3 参数化损失拟合并以 Huber loss 与 L-BFGS 求解（P065、P099、P102）。估计基于超过 400 个模型，参数不到 70M 至超过 16B，训练 5B 至超过 400B tokens（P014）。\n2. 三种方法给出接近的指数：a、b 分别为 0.50/0.50、0.49/0.51、0.46/0.54（P147、P148）。作者据此主张模型规模与训练 token 数应随 compute 近似等比例增加（P027、P144）。\n3. 交付 Chinchilla：70B 参数、1.4T tokens（P024、P025、P026），在与 Gopher 相同的 FLOPs 下模型小 4×、token 多 4×（P013、P162）；作者报告其优于 Gopher 及其他 large models（P013）。\n4. 推断性预测：现有大模型相对其 compute budget 明显过大，如 175B 模型应训练超过 4.2T tokens（P160）。\n\n相对创新\n1. 比较维度是 Kaplan et al. (2020) 的 scaling 建议：后者认为 compute 增加 10× 时模型规模增 5.5×、token 仅增 1.8×（P001），对应指数 a=0.73、b=0.27（P149、P150、P151）；本文的等比例结论与之直接不同（P027、P144）。\n2. 意义在于给出可检验的预算分配预测，并用同 FLOPs 的 Chinchilla 加以检验，同时指出更小模型可降低 inference 成本（P014、P162）。\n3. 比较边界：作者自述跨多个数量级外推存在显著不确定性（P160）；评估沿用 Rae et al. (2021) 的任务集以便直接比较（P183）；在 C4 与 GitHub code 上复现 IsoFLOP 分析得到相似结论（P160）。文中未主张全领域首次。",
+    "sources": [
+      "P001",
+      "P013",
+      "P014",
+      "P024",
+      "P025",
+      "P026",
+      "P027",
+      "P065",
+      "P099",
+      "P102",
+      "P144",
+      "P147",
+      "P148",
+      "P149",
+      "P150",
+      "P151",
+      "P160",
+      "P162",
+      "P183"
+    ]
+  },
+  "unknownAliases": []
+}

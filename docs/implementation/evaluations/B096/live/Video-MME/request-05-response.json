@@ -1,0 +1,12 @@
+{
+  "index": 5,
+  "elapsedMs": 4900,
+  "content": "{\"status\":\"available\",\"text\":\"评估显示，视频时长增加时 MLLMs 性能下降，open-source models 受限的输入帧数成为长视频理解的信息瓶颈（E004）；复杂时序推理数据集仍较有限（E005）。\",\"sources\":[\"E004\",\"E005\"]}",
+  "usage": {
+    "promptTokens": 1586,
+    "completionTokens": 1069,
+    "totalTokens": 2655,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 1074
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "index": 4,
+  "elapsedMs": 11714,
+  "content": "{\"status\":\"available\",\"text\":\"实验在 ImageNet 2012（1000 类、1.28M 训练图、50k 验证图，另报 100k 测试图）上以 top-1/top-5 error 评估（E076）。在 10-crop 验证下，plain-18 为 27.94、plain-34 为 28.54，ResNet-18 为 27.88、ResNet-34 为 25.03（E120, E121）；34 层 ResNet 比 18 层 ResNet 好 2.8%，较同层 plain 降 3.5% top-1（E130, E147）。shortcut 替换消融中，A（零填充）、B（仅升维用 projection）、C（全 projection）均优于 plain，B 略优于 A，C 仅略优于 B，差异小故后续不用 C（E154, E155, E156）。在 CIFAR-10（50k 训练/10k 测试）上，ResNet 的层响应幅度普遍小于 plain，且更深 ResNet 更小（E170, E225, E227）；1202 层训练误差 <0.1%，测试误差 7.93%（E228, E230）。检测以 Faster R-CNN 将 VGG-16 换成 ResNet-101，COCO mAP@[.5, .95] 增 6.0%（相对 28%）（E241）。论文只报 FLOPs，未给出带计时条件的速度（E059, E166）。\",\"sources\":[\"E059\",\"E076\",\"E120\",\"E121\",\"E130\",\"E147\",\"E154\",\"E155\",\"E156\",\"E166\",\"E170\",\"E225\",\"E227\",\"E228\",\"E230\",\"E241\"]}",
+  "usage": {
+    "promptTokens": 20374,
+    "completionTokens": 2670,
+    "totalTokens": 23044,
+    "promptCacheHitTokens": 640,
+    "promptCacheMissTokens": 19734
+  }
+}

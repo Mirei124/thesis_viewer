@@ -1,0 +1,35 @@
+{
+  "paper": "SAM",
+  "arm": "A",
+  "model": "deepseek-flash",
+  "requestSha256": "88d379655f3fe5330f35672edb8e9c8a86b923bc90e51449520c7a6f53784ef6",
+  "requestChars": 6696,
+  "elapsedSeconds": 7.65,
+  "usage": {
+    "prompt_tokens": 1761,
+    "completion_tokens": 1160,
+    "total_tokens": 2921,
+    "prompt_tokens_details": {
+      "cached_tokens": 640
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 813
+    },
+    "prompt_cache_hit_tokens": 640,
+    "prompt_cache_miss_tokens": 1121
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"模型侧：image encoder 采用经 MAE pre-training 的 Vision Transformer (ViT)，为处理高分辨率输入做最小改动，每张图像只运行一次，可在对模型进行 prompting 之前预先计算（E002）。prompt 侧：points 与 boxes 以 positional encodings 加上各 prompt type 的 learned embeddings 表示，free-form text 由 CLIP 的 off-the-shelf text encoder 编码，dense prompts（即 masks）经 convolutions 嵌入并与 image embedding 逐元素相加（E003）。随后 lightweight mask decoder 把 image embedding、prompt embeddings 与一个 output token 映射为 mask，该设计即 Segment Anything Model（SAM），并具备 ambiguity-aware 特性（E003、E006）。\\n数据侧：data engine 分三阶段，依次为模型辅助的人工标注、自动预测 mask 与人工标注混合的半自动阶段、无需标注者输入的全自动阶段（E004）。半自动阶段先用 bounding box detector 检出 confident masks，该 detector 在第一阶段全部 mask 上以通用 “object” 类别训练，随后把 mask 预填进图像，请标注者补充未标注物体；此阶段在 180k 图像中新增 5.9M masks，累计 10.2M，并周期性地在新数据上重训模型 5 次，单 mask 平均标注时间回升至 34 秒，每图平均 mask 数由 44 增至 72（E005）。\",\"sources\":[\"E002\",\"E003\",\"E004\",\"E005\",\"E006\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "模型侧：image encoder 采用经 MAE pre-training 的 Vision Transformer (ViT)，为处理高分辨率输入做最小改动，每张图像只运行一次，可在对模型进行 prompting 之前预先计算（E002）。prompt 侧：points 与 boxes 以 positional encodings 加上各 prompt type 的 learned embeddings 表示，free-form text 由 CLIP 的 off-the-shelf text encoder 编码，dense prompts（即 masks）经 convolutions 嵌入并与 image embedding 逐元素相加（E003）。随后 lightweight mask decoder 把 image embedding、prompt embeddings 与一个 output token 映射为 mask，该设计即 Segment Anything Model（SAM），并具备 ambiguity-aware 特性（E003、E006）。\n数据侧：data engine 分三阶段，依次为模型辅助的人工标注、自动预测 mask 与人工标注混合的半自动阶段、无需标注者输入的全自动阶段（E004）。半自动阶段先用 bounding box detector 检出 confident masks，该 detector 在第一阶段全部 mask 上以通用 “object” 类别训练，随后把 mask 预填进图像，请标注者补充未标注物体；此阶段在 180k 图像中新增 5.9M masks，累计 10.2M，并周期性地在新数据上重训模型 5 次，单 mask 平均标注时间回升至 34 秒，每图平均 mask 数由 44 增至 72（E005）。",
+    "sources": [
+      "E002",
+      "E003",
+      "E004",
+      "E005",
+      "E006"
+    ]
+  },
+  "unknownAliases": []
+}

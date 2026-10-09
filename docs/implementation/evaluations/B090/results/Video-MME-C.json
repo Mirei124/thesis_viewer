@@ -1,0 +1,48 @@
+{
+  "paper": "Video-MME",
+  "arm": "C",
+  "model": "deepseek-flash",
+  "requestSha256": "b6ea95bcd6f4955130df998736acdf35579356e20fe8211c20aa794a1115b47e",
+  "requestChars": 29508,
+  "elapsedSeconds": 22.97,
+  "usage": {
+    "prompt_tokens": 9027,
+    "completion_tokens": 5255,
+    "total_tokens": 14282,
+    "prompt_tokens_details": {
+      "cached_tokens": 512
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 3774
+    },
+    "prompt_cache_hit_tokens": 512,
+    "prompt_cache_miss_tokens": 8515
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"sources\":[\"P001\",\"P002\",\"P003\",\"P004\",\"P049\",\"P050\",\"P051\",\"P052\",\"P053\",\"P054\",\"P083\",\"P084\",\"P127\",\"P130\",\"P131\",\"P132\",\"P177\",\"P178\"],\"text\":\"本文的核心贡献不是新的 MLLM 架构或训练算法，而是一个面向 MLLMs 视频分析能力的综合评测基准 Video-MME：其全部视频与标注均由人工收集与整理，用来考察模型的长时上下文理解以及复杂空间与时间推理这类组合式视频理解能力（P002）；它针对既有视频基准在视频类型多样性、时间动态覆盖不足和单一模态取向上所做的补足（P001）。\\n\\n任务与输入输出。给定一段视频及其可选的字幕与音轨，被评模型要回答与该视频内容绑定的 multiple-choice 问题，输出选项（A/B/C/D）；计分方式是直接把模型输出与 ground-truth 答案比对得到 accuracy，不使用 ChatGPT 等外部模型参与判分（P132）（P178）。题干被刻意设计成必须依赖视频内容才能回答，这是评测有效性的前提（P051）。\\n\\n数据构建按三步展开：video collection、question-answer annotation、quality review（P051）。在 video collection 阶段，先从 YouTube 建立领域层级，确定 Knowledge、Film & Television、Sports Competition、Artistic Performance、Life Record、Multilingual 六个视觉领域，再细分为 30 个 fine-grained categories（如 football、basketball、technology、esports、magic show、fashion 等），每个类别都收集 short（< 2 分钟）、medium（4–15 分钟）、long（30–60 分钟）三档时长的视频，并同时获取字幕（若提供）与音轨等 meta-information（P051）（P003）。最终得到 900 个视频，视频长度跨度从 11 秒到 1 小时，其中 744 个带字幕、900 个带音轨（P051）。\\n\\nquestion-answer annotation 阶段招募英语能力强、具备 vision-language 研究经验的标注者：每人完整观看整段视频后迭代撰写 3 个问题，每题配 4 个候选选项，全库共 2,700 个 QA pairs，问题覆盖 perception、reasoning、information synthesis 等 12 种 task types（P051）。数据统计显示，短/中/长三档的 question、option、answer 平均词数基本一致，说明 QA 格式标准化；而字幕词数随视频变长显著上升，短字幕平均 198.6 词、长视频字幕可达约 6.5K 词，意味着长视频承载的信息量更大（P053）。选项 A/B/C/D 的答案分布接近均匀（25.1/27.2/25.3/22.4%），以避免评测偏置（P083）；视频时长与题型分布也做了统计，短时长以 action、object recognition 等 perception 任务为主，长时长以 reasoning 任务为主（P054）（P053）。\\n\\nquality review 阶段有两道机制。第一道由另一名标注者复核每个 QA pair：语言表达是否清晰、问题是否可答且选项逻辑一致、指定正确项是否合理（P051）。第二道把纯文本题干（不给视频）交给 Gemini 1.5 Pro，过滤掉仅凭题干就能答对的样本——例如可由常识推出的“2022 年阿根廷 10 号的最大成就是什么”会被剔除，未通过的题目退回原标注者修改；在该 text-only 设定下 Gemini 1.5 Pro 的准确率低于 15%，说明问题确实依赖视频内容（P052）。\\n\\n时间难度用 certificate length 度量：某条 QA pair 的 certificate 被定义为“足以让人类验证者确信标注正确”的最小子片段集合，certificate length 即这些子片段的时间长度之和（P084）。每类随机抽取 3 个视频统计后，short、medium、long 三档的中位 certificate length 分别为 26s、164.7s 和 890.7s，长视频子集需要消化的视频内容明显多于 EgoSchema（P084）。此外，与既有基准的横向对比表格逐项列出 #Videos、#Clips、Len.、#QA Pairs、Anno.、QA Tokens、Sub. Tokens、Multi-level、Open-domain、Sub.&Aud. 等维度，其中 Video-MME-S/M/L 分别指短、中、长部分，且比较只针对各数据集的 multiple-choice 子集（P049）。\\n\\n评测协议。被评对象包括 4 个商业模型 GPT-4V、GPT-4o、Gemini 1.5 Flash、Gemini 1.5 Pro，开源视频 MLLMs 如 Video-LLaVA、VideoChat2-Mistral、ST-LLM、ShareGPT4Video、Chat-UniVi-V1.5、LLaVA-NeXT-Video、VITA-1.0、VITA-1.5、VILA-1.5，以及通过扩展到 multi-frame 输入参与评测的图像 MLLMs 如 Qwen-VL-Chat/Max、InternVL-Chat-V1.5（P130）（P004）。各模型遵循其官方配置，并尽量在评测中使用更多帧（P132）。主表按 short、medium、long 三档分别报告 “without subtitles” 与 “with subtitles” 两种设置，后者中字幕是按采样到的视频帧对应选取的（P127）。在模态消融上，又对 Gemini 1.5 Pro 比较 frames only、frames + subtitles、frames + audio 三种输入，并按六个大类分别统计（P177）。\\n\\n结果层面：Gemini 1.5 Pro 是表现最好的商业模型，平均准确率 75%；开源模型中最好的是 VILA-1.5，总体 59%；图像模型扩展到多帧后准确率约 50%，接近视频专用模型 LLaVA-NeXT-Video，说明图像理解是视频理解的基础（P004）。加入字幕与音频分别把 Gemini 1.5 Pro 提升 6.2% 与 4.3%，对长视频增益更明显，且在需要大量领域知识的任务上尤其有用（P004）（P050）。模型性能整体随视频变长而下降，提示长视频序列处理能力可能是关键瓶颈，counting 类问题则是各类模型的共同短板（P050）（P131）。\\n\\n材料中未给出的机制细节有两处：只说明“遵循官方配置并尽量使用更多帧”，没有给出具体采样帧数与 prompt 模板（P132）；也只说明 with subtitles 设置下字幕与采样帧对应，没有给出对齐的具体规则（P127）。\"}",
+  "parsed": {
+    "status": "available",
+    "sources": [
+      "P001",
+      "P002",
+      "P003",
+      "P004",
+      "P049",
+      "P050",
+      "P051",
+      "P052",
+      "P053",
+      "P054",
+      "P083",
+      "P084",
+      "P127",
+      "P130",
+      "P131",
+      "P132",
+      "P177",
+      "P178"
+    ],
+    "text": "本文的核心贡献不是新的 MLLM 架构或训练算法，而是一个面向 MLLMs 视频分析能力的综合评测基准 Video-MME：其全部视频与标注均由人工收集与整理，用来考察模型的长时上下文理解以及复杂空间与时间推理这类组合式视频理解能力（P002）；它针对既有视频基准在视频类型多样性、时间动态覆盖不足和单一模态取向上所做的补足（P001）。\n\n任务与输入输出。给定一段视频及其可选的字幕与音轨，被评模型要回答与该视频内容绑定的 multiple-choice 问题，输出选项（A/B/C/D）；计分方式是直接把模型输出与 ground-truth 答案比对得到 accuracy，不使用 ChatGPT 等外部模型参与判分（P132）（P178）。题干被刻意设计成必须依赖视频内容才能回答，这是评测有效性的前提（P051）。\n\n数据构建按三步展开：video collection、question-answer annotation、quality review（P051）。在 video collection 阶段，先从 YouTube 建立领域层级，确定 Knowledge、Film & Television、Sports Competition、Artistic Performance、Life Record、Multilingual 六个视觉领域，再细分为 30 个 fine-grained categories（如 football、basketball、technology、esports、magic show、fashion 等），每个类别都收集 short（< 2 分钟）、medium（4–15 分钟）、long（30–60 分钟）三档时长的视频，并同时获取字幕（若提供）与音轨等 meta-information（P051）（P003）。最终得到 900 个视频，视频长度跨度从 11 秒到 1 小时，其中 744 个带字幕、900 个带音轨（P051）。\n\nquestion-answer annotation 阶段招募英语能力强、具备 vision-language 研究经验的标注者：每人完整观看整段视频后迭代撰写 3 个问题，每题配 4 个候选选项，全库共 2,700 个 QA pairs，问题覆盖 perception、reasoning、information synthesis 等 12 种 task types（P051）。数据统计显示，短/中/长三档的 question、option、answer 平均词数基本一致，说明 QA 格式标准化；而字幕词数随视频变长显著上升，短字幕平均 198.6 词、长视频字幕可达约 6.5K 词，意味着长视频承载的信息量更大（P053）。选项 A/B/C/D 的答案分布接近均匀（25.1/27.2/25.3/22.4%），以避免评测偏置（P083）；视频时长与题型分布也做了统计，短时长以 action、object recognition 等 perception 任务为主，长时长以 reasoning 任务为主（P054）（P053）。\n\nquality review 阶段有两道机制。第一道由另一名标注者复核每个 QA pair：语言表达是否清晰、问题是否可答且选项逻辑一致、指定正确项是否合理（P051）。第二道把纯文本题干（不给视频）交给 Gemini 1.5 Pro，过滤掉仅凭题干就能答对的样本——例如可由常识推出的“2022 年阿根廷 10 号的最大成就是什么”会被剔除，未通过的题目退回原标注者修改；在该 text-only 设定下 Gemini 1.5 Pro 的准确率低于 15%，说明问题确实依赖视频内容（P052）。\n\n时间难度用 certificate length 度量：某条 QA pair 的 certificate 被定义为“足以让人类验证者确信标注正确”的最小子片段集合，certificate length 即这些子片段的时间长度之和（P084）。每类随机抽取 3 个视频统计后，short、medium、long 三档的中位 certificate length 分别为 26s、164.7s 和 890.7s，长视频子集需要消化的视频内容明显多于 EgoSchema（P084）。此外，与既有基准的横向对比表格逐项列出 #Videos、#Clips、Len.、#QA Pairs、Anno.、QA Tokens、Sub. Tokens、Multi-level、Open-domain、Sub.&Aud. 等维度，其中 Video-MME-S/M/L 分别指短、中、长部分，且比较只针对各数据集的 multiple-choice 子集（P049）。\n\n评测协议。被评对象包括 4 个商业模型 GPT-4V、GPT-4o、Gemini 1.5 Flash、Gemini 1.5 Pro，开源视频 MLLMs 如 Video-LLaVA、VideoChat2-Mistral、ST-LLM、ShareGPT4Video、Chat-UniVi-V1.5、LLaVA-NeXT-Video、VITA-1.0、VITA-1.5、VILA-1.5，以及通过扩展到 multi-frame 输入参与评测的图像 MLLMs 如 Qwen-VL-Chat/Max、InternVL-Chat-V1.5（P130）（P004）。各模型遵循其官方配置，并尽量在评测中使用更多帧（P132）。主表按 short、medium、long 三档分别报告 “without subtitles” 与 “with subtitles” 两种设置，后者中字幕是按采样到的视频帧对应选取的（P127）。在模态消融上，又对 Gemini 1.5 Pro 比较 frames only、frames + subtitles、frames + audio 三种输入，并按六个大类分别统计（P177）。\n\n结果层面：Gemini 1.5 Pro 是表现最好的商业模型，平均准确率 75%；开源模型中最好的是 VILA-1.5，总体 59%；图像模型扩展到多帧后准确率约 50%，接近视频专用模型 LLaVA-NeXT-Video，说明图像理解是视频理解的基础（P004）。加入字幕与音频分别把 Gemini 1.5 Pro 提升 6.2% 与 4.3%，对长视频增益更明显，且在需要大量领域知识的任务上尤其有用（P004）（P050）。模型性能整体随视频变长而下降，提示长视频序列处理能力可能是关键瓶颈，counting 类问题则是各类模型的共同短板（P050）（P131）。\n\n材料中未给出的机制细节有两处：只说明“遵循官方配置并尽量使用更多帧”，没有给出具体采样帧数与 prompt 模板（P132）；也只说明 with subtitles 设置下字幕与采样帧对应，没有给出对齐的具体规则（P127）。"
+  },
+  "unknownAliases": []
+}

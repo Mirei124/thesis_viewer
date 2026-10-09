@@ -13,7 +13,7 @@ describe('model configuration defaults and migration', () => {
     } } };
     expect(await loadModelConfig()).toEqual({
       baseUrl: 'https://api.deepseek.com/v1', model: 'deepseek-flash',
-      structuredOutput: true, contextLimit: 32_000, outputLimit: 32_000,
+      semanticReview: false, structuredOutput: true, contextLimit: 32_000, outputLimit: 32_000,
     });
     expect(DEFAULT_MODEL_CONFIG).not.toHaveProperty('streaming');
   });
@@ -33,9 +33,23 @@ describe('model configuration defaults and migration', () => {
     const loaded = await loadModelConfig();
     expect(loaded).toEqual({
       baseUrl: 'https://example.test/api', model: 'custom-model',
-      structuredOutput: false, contextLimit: 16_000, outputLimit: 4_000,
+      semanticReview: false, structuredOutput: false, contextLimit: 16_000, outputLimit: 4_000,
     });
     expect(await saveModelConfig(loaded)).toEqual(loaded);
     expect(values['model-config:v1']).toEqual(loaded);
   });
+  it('persists an explicit review choice and normalizes omitted legacy values to false', async () => {
+    const values: Record<string, unknown> = {};
+    (globalThis as { chrome?: unknown }).chrome = { storage: { local: {
+      get: async (key: string) => ({ [key]: values[key] }),
+      set: async (items: Record<string, unknown>) => { Object.assign(values, items); }, remove: async () => {},
+    } } };
+    await saveModelConfig({ ...DEFAULT_MODEL_CONFIG, semanticReview: true });
+    expect((await loadModelConfig()).semanticReview).toBe(true);
+    const { semanticReview: omitted, ...legacy } = DEFAULT_MODEL_CONFIG;
+    void omitted;
+    expect((await saveModelConfig(legacy)).semanticReview).toBe(false);
+    expect((await loadModelConfig()).semanticReview).toBe(false);
+  });
+
 });

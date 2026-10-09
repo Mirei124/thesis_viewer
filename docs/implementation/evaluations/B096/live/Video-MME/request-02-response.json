@@ -1,0 +1,12 @@
+{
+  "index": 2,
+  "elapsedMs": 16723,
+  "content": "{\"status\":\"available\",\"text\":\"Video-MME 的核心贡献类型是数据集与评测基准，而非新模型或算法，因此方法主线应落在它的构建流程与评测协议上。其输入是从 YouTube 采集的原始视频及配套字幕、音频等元信息，最终输出是一套可直接用于评测 MLLMs 视频理解能力的 multiple-choice QA 数据集与统一评测协议 (E002, E003)。整个构建由三个衔接步骤组成：video collection、question-answer annotation 与 quality review (E007)。\\n\\nVideo collection 首先建立 domain hierarchy，据此在 YouTube 上按领域检索原始视频：覆盖 Knowledge、Film & Television、Sports Competition、Life Record、Multilingual 等 6 个关键领域，每个领域再细分出 football、basketball 等具体标签，共得到 30 个细粒度视频类别 (E008)。每个类别都采集不同时长的视频，划分为 short（< 2 分钟）、medium（4–15 分钟）、long（30–60 分钟），并同步获取字幕与音频等元信息；最终数据集含 900 个视频，其中 744 个带字幕、900 个带音频，时长分布相对均衡 (E008)。由于字幕与音频作为独立元信息被保留，同一批视频可切换不同输入模态，把“模型能看到什么”变成受控变量，而不是把评测锁死在单一输入条件上 (E008, E024, E026)。三个步骤的职责依次收紧：collection 决定领域、时长覆盖与可支持的模态，annotation 决定任务类型与题面，quality review 决定最终哪些样本可用 (E008, E009, E012)。\\n\\nQuestion-answer annotation 阶段，标注者需完整观看视频，再迭代式地为每个视频编写 3 个问题并各配 4 个候选选项，共得到 2,700 个 QA 对 (E009)。题目统一采用 multiple-choice QA 格式，涵盖 12 种任务类型，横跨 perception、reasoning 与 information synthesis (E010, E011)。每个 QA 对都被要求与视频内容紧密绑定，使模型无法在不引用视频的情况下答对 (E011)。该基准不涉及模型训练，标注与人工审核流程本身就是数据质量的把关环节，模型侧只有推理与评分 (E009, E012)。\\n\\nQuality review 是最后一道筛子：每个 QA 对由另一位标注者复核，检查语言表达是否清晰准确、问题是否可答、候选选项逻辑是否一致、指定正确答案是否恰当 (E012)。为确认问题确实需要视频内容作为关键线索，论文将纯文本问题交给 Gemini 1.5 Pro 做 text-only 测试，剔除仅凭问题文本即可回答的 QA 对，不合格者退回原标注者修改；该设置下 Gemini 1.5 Pro 的准确率低于 15%，说明过滤后的问题确实依赖视频内容 (E013)。\\n\\n评测协议方面，评测包含三种输入模态设置：frames only、frames with subtitles、frames with audio (E024, E026)；被评测模型按各自官方配置运行，准确率由模型输出直接与 ground-truth answer 比对得到，不借助 ChatGPT 等外部模型评分 (E018, E027)。\", \"sources\": [\"E002\", \"E003\", \"E007\", \"E008\", \"E009\", \"E010\", \"E011\", \"E012\", \"E013\", \"E018\", \"E024\", \"E026\", \"E027\"]}",
+  "usage": {
+    "promptTokens": 4577,
+    "completionTokens": 3867,
+    "totalTokens": 8444,
+    "promptCacheHitTokens": 1024,
+    "promptCacheMissTokens": 3553
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "index": 5,
+  "elapsedMs": 6213,
+  "content": "{\"status\":\"available\",\"text\":\"SAM 会遗漏精细结构、虚构小连通分量，边界不如 zoom-in 方法清晰；整体非实时，text-to-mask 不够稳健 E003。\",\"sources\":[\"E003\"]}",
+  "usage": {
+    "promptTokens": 1976,
+    "completionTokens": 1438,
+    "totalTokens": 3414,
+    "promptCacheHitTokens": 384,
+    "promptCacheMissTokens": 1592
+  }
+}

@@ -3,7 +3,7 @@ import { clearReadingHistory, readReadingHistory, recordReading, type ReadingHis
 import { extractPdfTitle } from '../lib/pdfTitle';
 import { ReferenceCard } from '../components/ReferenceCard';
 import { createRoot } from 'react-dom/client';
-import { type ChangeEvent, type CSSProperties, type FormEvent, type KeyboardEvent, type MouseEvent, type PointerEvent as ReactPointerEvent, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { type ChangeEvent, type CSSProperties, type FormEvent, type KeyboardEvent, type MouseEvent, type PointerEvent as ReactPointerEvent, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   GlobalWorkerOptions,
   getDocument,
@@ -50,24 +50,16 @@ import {
   type ThreeLineOverview,
 } from '../lib/threeLineOverview';
 import {
-  DETAILED_SECTION_IDS,
-  assembleDetailedOverview,
-  parseDetailedSectionResponse,
-  progressiveDetailedSectionMessages,
-  unavailableDetailedSection,
-  validateProgressiveDetailedSectionResponse,
   type DetailedOverview,
   type DetailedSectionId,
-  type DetailedOverviewSection,
 } from '../lib/detailedOverview';
-import { appendProgressiveEvidenceStage, createProgressiveEvidenceSession } from '../lib/evidencePacket';
-import { createEvidencePassages } from '../lib/evidencePassages';
+import { generateDetailedOverview } from '../lib/detailedOverviewPipeline';
+import { createDetailedEvidenceLedger } from '../lib/structuredPaper';
 import { inlineEvidenceLabel, inlineEvidenceParts, type VerifiedEvidenceRef } from '../lib/inlineEvidence';
 import { buildInlineEvidenceExcerpts, type InlineExcerptGroup } from '../lib/inlineEvidenceExcerpts';
 import { PdfLinkLayer } from '../components/PdfLinkLayer';
 import { pdfDestinationPoint, resolvePdfLinkDestination } from '../lib/pdfLinks';
 import { LimitedMath } from '../components/LimitedMath';
-import { createPassageRetrievalIndex, selectRankedPassagesForPurpose } from '../lib/retrievalIndex';
 import {
   clearPdfHighlights,
   deletePdfHighlight,
@@ -189,10 +181,16 @@ type DetailedOverviewState = {
 
 type DetailedOverviewSectionDiagnostic = {
   id: DetailedSectionId;
-  /** Number of retrieval-selected passages actually added to this user turn. */
+  /** Number of original paragraphs sent across this section’s batches. */
   newSourceCount: number;
-  /** Number of source aliases legal after this turn, including earlier turns. */
+  /** Number of paragraph aliases made available across this section’s batches. */
   availableAliasCount: number;
+  batchCount?: number;
+  semanticReviewEnabled?: boolean;
+  formatRepairCount?: number;
+  semanticReviewCount?: number;
+  semanticReviewSkipped?: number;
+  warnings?: string[];
   usage?: CompatibleUsage;
 };
 
@@ -293,8 +291,7 @@ function overviewErrorMessage(error: unknown, subject: 'overview' | 'detailedOve
 const DETAILED_SECTION_LABEL_KEYS: Record<DetailedSectionId, MessageKey> = {
   problem_motivation: 'reader.insights.section.problem_motivation',
   method: 'reader.insights.section.method',
-  contributions: 'reader.insights.section.contributions',
-  relative_novelty: 'reader.insights.section.relative_novelty',
+  contributions_novelty: 'reader.insights.section.contributions_novelty',
   experiments_ablations: 'reader.insights.section.experiments_ablations',
   limitations: 'reader.insights.section.limitations',
 };
@@ -696,6 +693,8 @@ function ReaderPage() {
   const [searchMatches, setSearchMatches] = useState<SearchMatch[]>([]);
   const [activeSearchMatch, setActiveSearchMatch] = useState(-1);
   const [extraction, setExtraction] = useState<ExtractionState>({ kind: 'idle' });
+  const detailedLedger = useMemo(() => evidenceLedger.kind === 'ready' && extraction.kind === 'ready'
+    ? createDetailedEvidenceLedger(evidenceLedger.ledger, extraction.pages) : undefined, [evidenceLedger, extraction]);
   const [documentContentKey, setDocumentContentKey] = useState<string | null>(null);
   const [modelConfigEpoch, setModelConfigEpoch] = useState(0);
   const [viewStorageStatus, setViewStorageStatus] = useState<ReaderUiText | ''>('');
@@ -874,15 +873,26 @@ function ReaderPage() {
   }, []);
 
   useEffect(() => {
-    void Promise.all([loadModelConfig(), loadApiKey()]).then(([config, key]) => {
-      modelConfigRef.current = config;
-      apiKeyRef.current = key.apiKey;
-      modelConfigLoadErrorRef.current = null;
-      setModelConfigEpoch((epoch) => epoch + 1);
-    }).catch(() => {
-      modelConfigLoadErrorRef.current = uiText('reader.error.modelSettingsLoad');
-      setModelConfigEpoch((epoch) => epoch + 1);
-    });
+    let active = true;
+    let revision = 0;
+    const refresh = () => {
+      const current = ++revision;
+      void Promise.all([loadModelConfig(), loadApiKey()]).then(([config, key]) => {
+        if (!active || current !== revision) return;
+        modelConfigRef.current = config;
+        apiKeyRef.current = key.apiKey;
+        modelConfigLoadErrorRef.current = null;
+        setModelConfigEpoch((epoch) => epoch + 1);
+      }).catch(() => {
+        if (!active || current !== revision) return;
+        modelConfigLoadErrorRef.current = uiText('reader.error.modelSettingsLoad');
+        setModelConfigEpoch((epoch) => epoch + 1);
+      });
+    };
+    refresh();
+    // Returning from settings applies the review choice to the next generation.
+    window.addEventListener('focus', refresh);
+    return () => { active = false; window.removeEventListener('focus', refresh); };
   }, []);
 
   useEffect(() => {
@@ -929,7 +939,7 @@ function ReaderPage() {
     const requestToken = detailedOverviewRequestRef.current;
     let cancelled = false;
     void (async () => {
-      const restored = config ? await loadCachedOverview({ documentContentKey, kind: 'detailed', config }, evidenceLedger.ledger, extraction.pages).catch(() => undefined) : undefined;
+      const restored = config ? await loadCachedOverview({ documentContentKey, kind: 'detailed', config }, detailedLedger ?? evidenceLedger.ledger, extraction.pages).catch(() => undefined) : undefined;
       if (cancelled || documentToken !== requestIdRef.current || requestToken !== detailedOverviewRequestRef.current) return;
       if (restored?.kind === 'detailed') {
         setDetailedOverview({ status: 'success', result: restored });
@@ -940,7 +950,7 @@ function ReaderPage() {
       startDetailedOverview('automatic');
     })();
     return () => { cancelled = true; };
-  }, [documentContentKey, extraction, evidenceLedger, modelConfigEpoch, overviewPreferences, detailedOverview]);
+  }, [documentContentKey, extraction, evidenceLedger, modelConfigEpoch, overviewPreferences, detailedOverview, detailedLedger]);
 
   useEffect(() => {
     if (state.kind !== 'ready' || !documentContentKey || !viewRestoreReadyRef.current) return;
@@ -1417,6 +1427,7 @@ function ReaderPage() {
       return;
     }
     const config = modelConfigRef.current;
+    const generationApiKey = apiKeyRef.current;
     if (!config || !config.baseUrl || !config.model) {
       setTranslation({
         quote: draft.quote,
@@ -1523,7 +1534,7 @@ function ReaderPage() {
       try {
         const response = await requestCompatibleCompletion({
           config,
-          apiKey: apiKeyRef.current,
+          apiKey: generationApiKey,
           messages: translationMessages(source.text, translationTarget, source.neighborContext),
           signal: controller.signal,
         });
@@ -1567,6 +1578,7 @@ function ReaderPage() {
       return;
     }
     const config = modelConfigRef.current;
+    const generationApiKey = apiKeyRef.current;
     if (!config || !config.baseUrl || !config.model) {
       setOverview({ status: 'error', message: trigger === 'automatic' ? uiText('reader.insights.autoUnavailable') : modelConfigLoadErrorRef.current ?? uiText('reader.insights.configureModel') });
       return;
@@ -1598,7 +1610,7 @@ function ReaderPage() {
       try {
         const response = await requestCompatibleCompletion({
           config,
-          apiKey: apiKeyRef.current,
+          apiKey: generationApiKey,
           messages: threeLineOverviewMessages(packet),
           signal: controller.signal,
         });
@@ -1632,6 +1644,7 @@ function ReaderPage() {
       return;
     }
     const config = modelConfigRef.current;
+    const generationApiKey = apiKeyRef.current;
     if (!config || !config.baseUrl || !config.model) {
       setDetailedOverview({ status: 'error', message: trigger === 'automatic' ? uiText('reader.insights.autoUnavailable') : modelConfigLoadErrorRef.current ?? uiText('reader.insights.configureDetailedModel') });
       return;
@@ -1641,7 +1654,7 @@ function ReaderPage() {
     detailedOverviewAbortRef.current?.abort();
     const controller = new AbortController();
     detailedOverviewAbortRef.current = controller;
-    const ledger = evidenceLedger.ledger;
+    const ledger = detailedLedger ?? evidenceLedger.ledger;
     const pages = extraction.pages;
     const contentKey = documentContentKey;
     const documentRequestId = requestIdRef.current;
@@ -1654,59 +1667,26 @@ function ReaderPage() {
         return;
       }
       setDetailedOverview({ status: 'generating' });
-      const sections: DetailedOverviewSection[] = [];
-      const diagnostics: DetailedOverviewSectionDiagnostic[] = [];
-      // One session is deliberately local to this click. Each following
-      // request preserves the exact earlier messages, which lets compatible
-      // providers reuse a stable prefix while the only new material is the
-      // next retrieval-selected evidence increment and task.
-      const passages = createEvidencePassages(ledger, { targetChars: 520, maxChars: 1500, pages });
-      const retrievalIndex = createPassageRetrievalIndex(passages);
-      const evidenceSession = createProgressiveEvidenceSession(ledger, { maxExcerptChars: 1500 });
-      const history: Array<{ role: 'user' | 'assistant'; content: string }> = [];
-      for (const sectionId of DETAILED_SECTION_IDS) {
-        if (requestToken !== detailedOverviewRequestRef.current || controller.signal.aborted) return;
-        const orderedPassages = selectRankedPassagesForPurpose(retrievalIndex, sectionId, {
-          // Overfetch for the session's sent-source dedupe: later stages can
-          // still reach fresh original passages after earlier turns.
-          maxCandidates: 24,
-          maxCandidatesPerPage: 2,
-          includeAdjacent: true,
+      try {
+        // Give the browser a paint opportunity before rebuilding document structure.
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+        const { result, diagnostics } = await generateDetailedOverview({
+          ledger, pages, config, signal: controller.signal,
+          request: (request) => requestCompatibleCompletion({ ...request, apiKey: generationApiKey }),
+          onUsage: (usage) => {
+            if (requestToken === detailedOverviewRequestRef.current && !controller.signal.aborted) {
+              setInsightUsages((current) => [...current, usage]);
+            }
+          },
         });
-        const increment = appendProgressiveEvidenceStage(evidenceSession, sectionId, { orderedPassages });
-        const messages = progressiveDetailedSectionMessages(sectionId, increment, history);
-        const finalMessage = messages[messages.length - 1];
-        if (!finalMessage || finalMessage.role !== 'user') throw new Error('The progressive detailed request must end with its current evidence turn.');
-        const currentUserTurn: { role: 'user'; content: string } = { role: 'user', content: finalMessage.content };
-        const diagnostic: DetailedOverviewSectionDiagnostic = {
-          id: sectionId,
-          newSourceCount: increment.sources.length,
-          availableAliasCount: increment.sentAliases.length,
-        };
-        diagnostics.push(diagnostic);
-        try {
-          const response = await requestCompatibleCompletion({ config, apiKey: apiKeyRef.current, messages, signal: controller.signal });
-          if (requestToken !== detailedOverviewRequestRef.current || controller.signal.aborted) return;
-          setInsightUsages((current) => [...current, response.usage]);
-          diagnostic.usage = response.usage;
-          // Keep the provider's exact content as history even if it fails the
-          // local schema/evidence gate. The stable system prompt explicitly
-          // marks assistant history as an unverified draft, never as evidence.
-          history.push(currentUserTurn, { role: 'assistant', content: response.content });
-          sections.push(validateProgressiveDetailedSectionResponse(sectionId, parseDetailedSectionResponse(response.content), evidenceSession, ledger, pages));
-        } catch {
-          if (requestToken !== detailedOverviewRequestRef.current || controller.signal.aborted) return;
-          // A malformed, ungrounded, or failed section cannot erase already
-          // verified sections or become a factual fallback.
-          sections.push(unavailableDetailedSection(sectionId, 'unavailable', UNGROUNDED_DETAILED_SECTION_FALLBACK));
+        if (requestToken !== detailedOverviewRequestRef.current || controller.signal.aborted) return;
+        setDetailedOverview({ status: 'success', result, diagnostics: { sections: diagnostics } });
+        if (contentKey && documentRequestId === requestIdRef.current) {
+          void cacheVerifiedOverview({ documentContentKey: contentKey, kind: 'detailed', config }, result, ledger, pages).catch(() => undefined);
         }
-      }
-      if (requestToken !== detailedOverviewRequestRef.current || controller.signal.aborted) return;
-      const result = assembleDetailedOverview(sections);
-      setDetailedOverview({ status: 'success', result, diagnostics: { sections: diagnostics } });
-      if (contentKey && documentRequestId === requestIdRef.current) {
-        // The repository rejects any locally degraded/incomplete section.
-        void cacheVerifiedOverview({ documentContentKey: contentKey, kind: 'detailed', config }, result, ledger, pages).catch(() => undefined);
+      } catch (error) {
+        if (requestToken !== detailedOverviewRequestRef.current || controller.signal.aborted) return;
+        setDetailedOverview({ status: 'error', message: overviewErrorMessage(error) });
       }
     })();
   }
@@ -2848,7 +2828,7 @@ function ReaderPage() {
 
   function goToEvidenceCandidate(evidenceId: string) {
     if (evidenceLedger.kind !== 'ready' || extraction.kind !== 'ready') return;
-    const candidate = evidenceLedger.ledger.candidates.find((item) => item.evidenceId === evidenceId);
+    const candidate = (detailedLedger ?? evidenceLedger.ledger).candidates.find((item) => item.evidenceId === evidenceId);
     if (!candidate) return;
     const location = locateEvidenceCandidate(candidate, extraction.pages);
     if (!location) return;
@@ -2859,7 +2839,7 @@ function ReaderPage() {
     const pending = pendingEvidenceRef.current;
     if (!pending || renderedHighlightViewport?.pageIndex !== pending.pageIndex || pending.requestId !== requestIdRef.current) return;
     if (evidenceLedger.kind !== 'ready' || extraction.kind !== 'ready') return;
-    const candidate = evidenceLedger.ledger.candidates.find((item) => item.evidenceId === pending.evidenceId);
+    const candidate = (detailedLedger ?? evidenceLedger.ledger).candidates.find((item) => item.evidenceId === pending.evidenceId);
     const location = candidate && locateEvidenceCandidate(candidate, extraction.pages);
     const pageElement = pdfPageRef.current;
     const textLayer = textLayerRef.current;
@@ -2904,7 +2884,7 @@ function ReaderPage() {
     setEvidenceNavigationNotice(uiText(range ? 'reader.evidence.exact' : span ? 'reader.evidence.block' : 'reader.evidence.page', { page: location.pageIndex + 1 }));
     const timer = window.setTimeout(() => { clearEvidenceVisual(); setEvidenceNavigationNotice(''); }, 4500);
     evidenceVisualRef.current = { element: visualElement, range, timer };
-  }, [renderedHighlightViewport, evidenceLedger, extraction]);
+  }, [renderedHighlightViewport, evidenceLedger, extraction, detailedLedger]);
 
   function submitPage(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -3057,7 +3037,7 @@ function ReaderPage() {
       const category = t(part.alias.startsWith('E') ? 'reader.evidence.sourceDetailed' : 'reader.evidence.sourceThreeLine');
       const groups = buildInlineEvidenceExcerpts(
         part.evidenceIds,
-        evidenceLedger.kind === 'ready' ? evidenceLedger.ledger.candidates : [],
+        detailedLedger?.candidates ?? (evidenceLedger.kind === 'ready' ? evidenceLedger.ledger.candidates : []),
         extraction.kind === 'ready' ? extraction.pages : [],
       );
       return <button type="button" className="inline-evidence-button" key={`${part.alias}-${index}`} aria-haspopup="dialog"
@@ -3304,6 +3284,10 @@ function ReaderPage() {
                     cacheRateLabel(diagnostic.usage, t),
                   ].filter((part): part is string => Boolean(part));
                   return <li key={diagnostic.id}>
+                    {diagnostic.id === 'method' && diagnostic.semanticReviewEnabled === false && <p>{t('reader.tools.methodReviewOff')}</p>}
+                    {!!diagnostic.formatRepairCount && <p>{t('reader.tools.formatRepair', { count: diagnostic.formatRepairCount })}</p>}
+                    {diagnostic.id === 'method' && diagnostic.semanticReviewEnabled && diagnostic.semanticReviewCount !== undefined && <p>{t('reader.tools.methodReview', { count: diagnostic.semanticReviewCount, skipped: diagnostic.semanticReviewSkipped ?? 0 })}</p>}
+                    {diagnostic.batchCount && diagnostic.batchCount > 1 && <p>{t('reader.tools.chapterBatches', { count: diagnostic.batchCount })}</p>}
                     {t('reader.tools.newPassages', { section: t(DETAILED_SECTION_LABEL_KEYS[diagnostic.id]), newCount: diagnostic.newSourceCount, aliasCount: diagnostic.availableAliasCount, usage: usageParts.length > 0 ? `; ${usageParts.join(', ')}.` : t('reader.tools.usageUnavailable') })}
                   </li>;
                 })}

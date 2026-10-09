@@ -1,0 +1,12 @@
+{
+  "index": 4,
+  "elapsedMs": 18300,
+  "content": "{\"status\":\"available\",\"text\":\"设置：MassiveText 上 400 余个模型，规模 70M–16B 参数、5B–400B tokens（E021）；Approach 1 对每个规模训练 4 种序列数（E045），Approach 2 在 9 个 FLOP 预算上扫规模并用抛物线定位最低损失（E054、E067），Approach 3 用 Huber loss 拟合参数化损失（E077）。三者给出的 N_opt∝C^a、D_opt∝C^b 指数接近：0.50/0.50、0.49/0.51、0.46/0.54，Kaplan et al. (2020) 为 0.73/0.27（E110、E111）；换用 C4 与 GitHub 后分别为 0.50/0.50、0.53/0.47（E263）。主结果：Chinchilla 为 70B 参数、1.4T tokens，与 Gopher 训练 FLOPs 相同（E127）；MMLU 5-shot 平均 67.6% 对 60.0%（E164），BIG-bench 65.1% 对 54.4%（E175）。消融：680M 模型上 AdamW 加高精度权重副本的 setup 优于 Gopher 的 setup（E402），417M 与 1.4B 上 AdamW 优于 Adam（E406）；cosine cycle 超出目标步数 25% 会明显掉点（E253）；10^21 FLOPs 处 Approach 1 预测 2.86B 最优、Kaplan et al. (2020) 为 4.68B，实际训练的 2.80B 优于 4.74B（E353、E365）。本轮证据未提供带测量条件的推理吞吐数值。\",\"sources\":[\"E021\",\"E045\",\"E054\",\"E067\",\"E077\",\"E110\",\"E111\",\"E263\",\"E127\",\"E164\",\"E175\",\"E402\",\"E406\",\"E253\",\"E353\",\"E365\"]}",
+  "usage": {
+    "promptTokens": 33901,
+    "completionTokens": 4258,
+    "totalTokens": 38159,
+    "promptCacheHitTokens": 512,
+    "promptCacheMissTokens": 33389
+  }
+}

@@ -1,0 +1,136 @@
+{
+  "path": "/tmp/B094/ResNet.pdf",
+  "documentVersion": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a",
+  "config": {
+    "baseUrl": "https://api.deepseek.com/v1",
+    "model": "deepseek-flash",
+    "structuredOutput": true,
+    "contextLimit": 128000,
+    "outputLimit": 32000
+  },
+  "pageCount": 12,
+  "paragraphCount": 373,
+  "selections": [
+    {
+      "id": "problem_motivation",
+      "paragraphCount": 72,
+      "chars": 13454,
+      "estimatedTextTokens": 4546,
+      "sections": [
+        "Abstract",
+        "1. Introduction",
+        "2. Related Work",
+        "2 ResNet-56",
+        "2 ResNet-56",
+        "4.3. Object Detection on PASCAL and MS COCO"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "method",
+      "paragraphCount": 103,
+      "chars": 20002,
+      "estimatedTextTokens": 6748,
+      "sections": [
+        "Abstract",
+        "1. Introduction",
+        "3. Deep Residual Learning",
+        "3.1. Residual Learning",
+        "3.2. Identity Mapping by Shortcuts",
+        "3.3. Network Architectures",
+        "3.4. Implementation",
+        "2 ResNet-56",
+        "2 ResNet-56",
+        "4.3. Object Detection on PASCAL and MS COCO"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "contributions_novelty",
+      "paragraphCount": 250,
+      "chars": 37493,
+      "estimatedTextTokens": 12920,
+      "sections": [
+        "Abstract",
+        "1. Introduction",
+        "2. Related Work",
+        "3. Deep Residual Learning",
+        "3.1. Residual Learning",
+        "3.2. Identity Mapping by Shortcuts",
+        "3.3. Network Architectures",
+        "3.4. Implementation",
+        "4. Experiments",
+        "4.1. ImageNet Classification",
+        "4.2. CIFAR-10 and Analysis",
+        "2 ResNet-56",
+        "2 ResNet-56",
+        "4.3. Object Detection on PASCAL and MS COCO"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "experiments_ablations",
+      "paragraphCount": 243,
+      "chars": 35004,
+      "estimatedTextTokens": 12078,
+      "sections": [
+        "Abstract",
+        "1. Introduction",
+        "3. Deep Residual Learning",
+        "3.1. Residual Learning",
+        "3.2. Identity Mapping by Shortcuts",
+        "3.3. Network Architectures",
+        "3.4. Implementation",
+        "4. Experiments",
+        "4.1. ImageNet Classification",
+        "4.2. CIFAR-10 and Analysis",
+        "2 ResNet-56",
+        "2 ResNet-56",
+        "4.3. Object Detection on PASCAL and MS COCO"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    },
+    {
+      "id": "limitations",
+      "paragraphCount": 205,
+      "chars": 25967,
+      "estimatedTextTokens": 9034,
+      "sections": [
+        "Abstract",
+        "1. Introduction",
+        "4. Experiments",
+        "4.1. ImageNet Classification",
+        "4.2. CIFAR-10 and Analysis",
+        "2 ResNet-56",
+        "2 ResNet-56",
+        "4.3. Object Detection on PASCAL and MS COCO"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "An appendix reference could not be resolved precisely; method-related supplementary chapters were retained, but supplementary coverage requires review.",
+        "Unknown section titles were conservatively included; section roles require source review."
+      ]
+    }
+  ]
+}

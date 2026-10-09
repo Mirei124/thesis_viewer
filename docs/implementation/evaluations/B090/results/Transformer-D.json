@@ -1,0 +1,52 @@
+{
+  "paper": "Transformer",
+  "arm": "D",
+  "model": "deepseek-flash",
+  "requestSha256": "950d91c1d8640c2e2635178cf94197f4ab7bab50f9ab956b8e0dafe3cda46548",
+  "outputLimit": 32000,
+  "requestChars": 25354,
+  "elapsedSeconds": 49.36,
+  "usage": {
+    "prompt_tokens": 6279,
+    "completion_tokens": 11936,
+    "total_tokens": 18215,
+    "prompt_tokens_details": {
+      "cached_tokens": 256
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 10433
+    },
+    "prompt_cache_hit_tokens": 256,
+    "prompt_cache_miss_tokens": 6023
+  },
+  "finishReason": "stop",
+  "content": "{\"status\":\"available\",\"text\":\"**方法详解：从输入到 encoder/decoder 的流程**\\n\\n**任务与总览**：模型把输入符号表示序列 (x1,...,xn) 映射为连续表示 z=(z1,...,zn)，decoder 再以 z 为条件，一次一个元素地生成输出符号序列 (y1,...,ym)；每一步模型是 auto-regressive，会把此前生成的符号作为额外输入（P008）。整体 encoder 与 decoder 都用堆叠的 self-attention 和 point-wise fully connected layers 构成（P009）。\\n\\n**输入、位置表示到 encoder**：输入 token 与输出 token 先经 learned embeddings 变成 dmodel 维向量；decoder 输出用 learned linear transformation 与 softmax 得到下一 token 概率（P035）。两个 embedding 层与 pre-softmax 线性变换共享同一权重矩阵，embedding 权重再乘以 sqrt(dmodel)（P035）。由于模型没有 recurrence 和 convolution，为利用序列顺序，在 encoder 与 decoder 堆叠底部把 positional encodings 加到 input embeddings 上；两者同维可直接相加（P044）。文中用不同频率的 sine 与 cosine 函数，使 PE_pos+k 可表示为 PE_pos 的线性函数，便于模型学习按相对位置 attention，并可能外推到更长序列（P044）。\\n\\n**Encoder stack**：encoder 由 N=6 个相同 layer 堆叠；每层有两个 sub-layer，第一是多头 self-attention，第二是 position-wise fully connected feed-forward network（P011）。每个 sub-layer 外包 residual connection，再接 layer normalization，即输出为 LayerNorm(x + Sublayer(x))；为使 residual 可加，所有 sub-layer 与 embedding 输出维度均为 dmodel=512（P011）。self-attention 中 keys、values、queries 都来自上一层 encoder 输出，每个 encoder 位置可 attend 上一层所有位置（P029）。这样 self-attention layer 用常数个顺序操作连接所有位置，而不是 recurrent layer 的 O(n) 顺序操作（P047）。\\n\\n**Scaled Dot-Product Attention**：attention 函数把 query 与一组 key-value pairs 映射到输出；输出是 values 的加权和，权重由 query 与对应 key 的兼容性函数算出（P013）。Scaled Dot-Product Attention 的 query 与 key 维度为 dk，value 维度为 dv；对 query 与所有 key 做点积，除以 sqrt(dk)，经 softmax 得到 weights，再对 values 加权（P018）。批量计算时把 queries、keys、values 分别打包成 Q、K、V 矩阵，输出为 Attention(Q,K,V)=softmax(QK^T/sqrt(dk))V（P018）。除以 sqrt(dk) 是因为 dk 大时点积会变大，把 softmax 推入梯度极小区域；缩放可抵消这一效应（P020）。点积的方差随 dk 增长，这解释了为何需要缩放（P024）。\\n\\n**Multi-Head Attention**：不直接用 dmodel 维键值查询做单一 attention，而是把 Q、K、V 分别用 h 组不同的 learned linear projections 投影到 dk、dk、dv 维；在每组投影上并行执行 attention，得到 dv 维输出；这些输出拼接后再投影一次 W^O 得到最终值（P023）。公式为 MultiHead(Q,K,V)=Concat(head1,...,headh)W^O，其中 headi=Attention(QWi^Q, KWi^K, VWi^V)（P026）。这使模型能在不同 representation subspaces、不同位置联合关注信息；单头 averaging 会抑制这种能力（P026）。文中 h=8，dk=dv=dmodel/h=64，总计算量与全维单头 attention 相近（P027）。\\n\\n**Decoder、encoder-decoder attention 与 masking**：decoder 同样由 N=6 个相同 layer 堆叠；除 encoder 的两个 sub-layer 外，再插入第三 sub-layer，对 encoder stack 输出做 multi-head attention，即 encoder-decoder attention（P011）。其 queries 来自前一个 decoder layer，memory keys 与 values 来自 encoder 输出，使每个 decoder 位置都能 attend 输入序列所有位置（P029）。decoder 的 self-attention 被修改为不能 attend 后续位置；为保持 auto-regressive 性质、阻止向左信息流，在 scaled dot-product attention 内把 softmax 输入中非法连接置为 −∞（P029）。该 masking 与 output embeddings 偏移一位结合，保证位置 i 的预测只依赖位置小于 i 的已知输出（P011）。\\n\\n**FFN、residual 与 normalization**：每个 encoder/decoder layer 还含一个 position-wise FFN，对每个位置单独且相同地应用；它由两个线性变换与中间的 ReLU 组成：FFN(x)=max(0,xW1+b1)W2+b2（P031）。线性变换跨位置相同，但层与层参数不同；也可看作 kernel size 1 的两层 convolution（P031）。输入输出维度 dmodel=512，inner-layer 维度 df f=2048（P033）。residual connection 绕每个 sub-layer 后接 layer normalization，使各 sub-layer 的输出以 LayerNorm(x + Sublayer(x)) 形式连接，便于信息与梯度穿过深层（P011）。训练时对每个 sub-layer 输出在加到 sub-layer 输入并归一化前施加 dropout，也对 embedding 与 positional encoding 之和施加 dropout；base 模型 Pdrop=0.1（P068）。\\n\\n**训练目标、并行训练与自回归推理**：decoder 输出经 learned linear transformation 与 softmax 得到下一 token 概率，训练在这些下一 token 概率上进行（P035）。文中还使用 εls=0.1 的 label smoothing，使模型学得更不确定但改善 accuracy 与 BLEU（P068）。训练时目标输出整体偏移一位作为 decoder 输入，配合前述 masking，位置 i 只看已知的较早输出（P011）；该架构因此允许显著更多并行化（P002）。推理时模型按 auto-regressive 方式逐步工作：每一步消费已生成符号作为额外输入，生成下一个符号，再把它反馈给下一步（P008）。优化使用 Adam，β1=0.9、β2=0.98、ε=10−9，学习率先线性 warmup 4000 步，之后按步数 inverse square root 衰减（P057, P059）。\",\"sources\":[\"P002\",\"P008\",\"P009\",\"P011\",\"P013\",\"P018\",\"P020\",\"P023\",\"P024\",\"P026\",\"P027\",\"P029\",\"P031\",\"P033\",\"P035\",\"P044\",\"P047\",\"P057\",\"P059\",\"P068\"]}",
+  "parsed": {
+    "status": "available",
+    "text": "**方法详解：从输入到 encoder/decoder 的流程**\n\n**任务与总览**：模型把输入符号表示序列 (x1,...,xn) 映射为连续表示 z=(z1,...,zn)，decoder 再以 z 为条件，一次一个元素地生成输出符号序列 (y1,...,ym)；每一步模型是 auto-regressive，会把此前生成的符号作为额外输入（P008）。整体 encoder 与 decoder 都用堆叠的 self-attention 和 point-wise fully connected layers 构成（P009）。\n\n**输入、位置表示到 encoder**：输入 token 与输出 token 先经 learned embeddings 变成 dmodel 维向量；decoder 输出用 learned linear transformation 与 softmax 得到下一 token 概率（P035）。两个 embedding 层与 pre-softmax 线性变换共享同一权重矩阵，embedding 权重再乘以 sqrt(dmodel)（P035）。由于模型没有 recurrence 和 convolution，为利用序列顺序，在 encoder 与 decoder 堆叠底部把 positional encodings 加到 input embeddings 上；两者同维可直接相加（P044）。文中用不同频率的 sine 与 cosine 函数，使 PE_pos+k 可表示为 PE_pos 的线性函数，便于模型学习按相对位置 attention，并可能外推到更长序列（P044）。\n\n**Encoder stack**：encoder 由 N=6 个相同 layer 堆叠；每层有两个 sub-layer，第一是多头 self-attention，第二是 position-wise fully connected feed-forward network（P011）。每个 sub-layer 外包 residual connection，再接 layer normalization，即输出为 LayerNorm(x + Sublayer(x))；为使 residual 可加，所有 sub-layer 与 embedding 输出维度均为 dmodel=512（P011）。self-attention 中 keys、values、queries 都来自上一层 encoder 输出，每个 encoder 位置可 attend 上一层所有位置（P029）。这样 self-attention layer 用常数个顺序操作连接所有位置，而不是 recurrent layer 的 O(n) 顺序操作（P047）。\n\n**Scaled Dot-Product Attention**：attention 函数把 query 与一组 key-value pairs 映射到输出；输出是 values 的加权和，权重由 query 与对应 key 的兼容性函数算出（P013）。Scaled Dot-Product Attention 的 query 与 key 维度为 dk，value 维度为 dv；对 query 与所有 key 做点积，除以 sqrt(dk)，经 softmax 得到 weights，再对 values 加权（P018）。批量计算时把 queries、keys、values 分别打包成 Q、K、V 矩阵，输出为 Attention(Q,K,V)=softmax(QK^T/sqrt(dk))V（P018）。除以 sqrt(dk) 是因为 dk 大时点积会变大，把 softmax 推入梯度极小区域；缩放可抵消这一效应（P020）。点积的方差随 dk 增长，这解释了为何需要缩放（P024）。\n\n**Multi-Head Attention**：不直接用 dmodel 维键值查询做单一 attention，而是把 Q、K、V 分别用 h 组不同的 learned linear projections 投影到 dk、dk、dv 维；在每组投影上并行执行 attention，得到 dv 维输出；这些输出拼接后再投影一次 W^O 得到最终值（P023）。公式为 MultiHead(Q,K,V)=Concat(head1,...,headh)W^O，其中 headi=Attention(QWi^Q, KWi^K, VWi^V)（P026）。这使模型能在不同 representation subspaces、不同位置联合关注信息；单头 averaging 会抑制这种能力（P026）。文中 h=8，dk=dv=dmodel/h=64，总计算量与全维单头 attention 相近（P027）。\n\n**Decoder、encoder-decoder attention 与 masking**：decoder 同样由 N=6 个相同 layer 堆叠；除 encoder 的两个 sub-layer 外，再插入第三 sub-layer，对 encoder stack 输出做 multi-head attention，即 encoder-decoder attention（P011）。其 queries 来自前一个 decoder layer，memory keys 与 values 来自 encoder 输出，使每个 decoder 位置都能 attend 输入序列所有位置（P029）。decoder 的 self-attention 被修改为不能 attend 后续位置；为保持 auto-regressive 性质、阻止向左信息流，在 scaled dot-product attention 内把 softmax 输入中非法连接置为 −∞（P029）。该 masking 与 output embeddings 偏移一位结合，保证位置 i 的预测只依赖位置小于 i 的已知输出（P011）。\n\n**FFN、residual 与 normalization**：每个 encoder/decoder layer 还含一个 position-wise FFN，对每个位置单独且相同地应用；它由两个线性变换与中间的 ReLU 组成：FFN(x)=max(0,xW1+b1)W2+b2（P031）。线性变换跨位置相同，但层与层参数不同；也可看作 kernel size 1 的两层 convolution（P031）。输入输出维度 dmodel=512，inner-layer 维度 df f=2048（P033）。residual connection 绕每个 sub-layer 后接 layer normalization，使各 sub-layer 的输出以 LayerNorm(x + Sublayer(x)) 形式连接，便于信息与梯度穿过深层（P011）。训练时对每个 sub-layer 输出在加到 sub-layer 输入并归一化前施加 dropout，也对 embedding 与 positional encoding 之和施加 dropout；base 模型 Pdrop=0.1（P068）。\n\n**训练目标、并行训练与自回归推理**：decoder 输出经 learned linear transformation 与 softmax 得到下一 token 概率，训练在这些下一 token 概率上进行（P035）。文中还使用 εls=0.1 的 label smoothing，使模型学得更不确定但改善 accuracy 与 BLEU（P068）。训练时目标输出整体偏移一位作为 decoder 输入，配合前述 masking，位置 i 只看已知的较早输出（P011）；该架构因此允许显著更多并行化（P002）。推理时模型按 auto-regressive 方式逐步工作：每一步消费已生成符号作为额外输入，生成下一个符号，再把它反馈给下一步（P008）。优化使用 Adam，β1=0.9、β2=0.98、ε=10−9，学习率先线性 warmup 4000 步，之后按步数 inverse square root 衰减（P057, P059）。",
+    "sources": [
+      "P002",
+      "P008",
+      "P009",
+      "P011",
+      "P013",
+      "P018",
+      "P020",
+      "P023",
+      "P024",
+      "P026",
+      "P027",
+      "P029",
+      "P031",
+      "P033",
+      "P035",
+      "P044",
+      "P047",
+      "P057",
+      "P059",
+      "P068"
+    ]
+  },
+  "parseError": null,
+  "unknownAliases": []
+}
