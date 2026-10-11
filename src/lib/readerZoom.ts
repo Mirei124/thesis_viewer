@@ -46,3 +46,63 @@ export function fittedZoomScale(mode: Exclude<ZoomMode, 'manual'>, pageWidth: nu
   const scale = mode === 'fit-page' ? Math.min(widthScale, heightScale) : mode === 'auto' ? Math.min(1.35, widthScale) : widthScale;
   return clampZoomScale(scale);
 }
+
+/** Wheel delta units differ between trackpads and mouse/browser settings. */
+export function zoomWheelDelta(event: Pick<WheelEvent, 'ctrlKey' | 'metaKey' | 'deltaY' | 'deltaMode' | 'cancelable'>, pageHeight: number): number | null {
+  if ((!event.ctrlKey && !event.metaKey) || !event.cancelable || !Number.isFinite(event.deltaY) || event.deltaY === 0) return null;
+  return event.deltaY * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? Math.max(1, pageHeight) : 1);
+}
+
+export type ZoomPointer = { clientX: number; clientY: number };
+
+/** Coalesce high-frequency gestures, retaining sub-percent deltas between frames. */
+export function bindPdfWheelZoom(element: HTMLElement, options: {
+  getScale: () => number;
+  apply: (scale: number, pointer: ZoomPointer) => Promise<void>;
+  requestFrame: (callback: FrameRequestCallback) => number;
+  cancelFrame: (id: number) => void;
+}) {
+  let frame = 0;
+  let disposed = false;
+  let applying = false;
+  let pending = false;
+  let desiredScale = options.getScale();
+  let lastAppliedScale = desiredScale;
+  let pointer: ZoomPointer = { clientX: 0, clientY: 0 };
+  const schedule = () => {
+    if (disposed || frame || applying || !pending) return;
+    frame = options.requestFrame(() => {
+      frame = 0;
+      if (disposed) return;
+      pending = false;
+      const scale = clampZoomScale(desiredScale);
+      if (scale === options.getScale()) return;
+      lastAppliedScale = scale;
+      applying = true;
+      void (async () => {
+        try { await options.apply(scale, pointer); }
+        catch { /* The reader owns PDF render errors; allow the next gesture. */ }
+        finally { applying = false; schedule(); }
+      })();
+    });
+  };
+  const onWheel = (event: WheelEvent) => {
+    const delta = zoomWheelDelta(event, element.ownerDocument?.defaultView?.innerHeight ?? element.clientHeight);
+    if (delta === null) return;
+    event.preventDefault();
+    if (!applying && !pending && options.getScale() !== lastAppliedScale) {
+      desiredScale = options.getScale();
+      lastAppliedScale = desiredScale;
+    }
+    desiredScale = Math.min(MAX_ZOOM_SCALE, Math.max(MIN_ZOOM_SCALE, desiredScale * Math.exp(-delta * 0.002)));
+    pointer = { clientX: event.clientX, clientY: event.clientY };
+    pending = true;
+    schedule();
+  };
+  element.addEventListener('wheel', onWheel, { passive: false });
+  return () => {
+    disposed = true;
+    element.removeEventListener('wheel', onWheel);
+    if (frame) options.cancelFrame(frame);
+  };
+}

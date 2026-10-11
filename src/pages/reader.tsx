@@ -98,7 +98,7 @@ import { useUiLocale } from '../components/LocalePreferenceControl';
 import { message, type MessageKey } from '../lib/i18n';
 import { readerFragmentErrorKey, readerModelErrorKey } from '../lib/readerUiErrors';
 import { createReaderZoomPreferences, type ReaderZoomPreference } from '../lib/readerZoomPreferences';
-import { clampZoomScale, fittedZoomScale, manualZoomChoice, MAX_ZOOM_SCALE, MIN_ZOOM_SCALE, parseZoomPercentInput, shouldCommitZoomOnKeyDown, ZOOM_CHOICES, zoomChoiceMode, zoomChoiceScale, zoomPercentDisplay, type ZoomChoice, type ZoomMode } from '../lib/readerZoom';
+import { bindPdfWheelZoom, type ZoomPointer, clampZoomScale, fittedZoomScale, manualZoomChoice, MAX_ZOOM_SCALE, MIN_ZOOM_SCALE, parseZoomPercentInput, shouldCommitZoomOnKeyDown, ZOOM_CHOICES, zoomChoiceMode, zoomChoiceScale, zoomPercentDisplay, type ZoomChoice, type ZoomMode } from '../lib/readerZoom';
 
 GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
@@ -2156,9 +2156,9 @@ function ReaderPage() {
     }
   }
 
-  async function sizeAllPageCanvases(pdf: PDFDocumentProxy, view: ViewState) {
+  async function sizeAllPageCanvases(pdf: PDFDocumentProxy, view: ViewState, isStillCurrent: () => boolean = () => true) {
     const pages = await Promise.all(Array.from({ length: pdf.numPages }, (_, index) => pdf.getPage(index + 1)));
-    if (documentRef.current !== pdf) return;
+    if (documentRef.current !== pdf || !isStillCurrent()) return;
     pages.forEach((page, index) => {
       const canvas = passivePageCanvasesRef.current.get(index);
       if (!canvas) return;
@@ -2661,18 +2661,36 @@ function ReaderPage() {
     return fittedZoomScale(mode, viewport.width, viewport.height, Math.max(1, availableWidth), Math.max(1, availableHeight));
   }
 
-  async function applyZoomView(nextView: ViewState) {
+  async function applyZoomView(nextView: ViewState, pointer?: ZoomPointer) {
     if (state.kind !== 'ready' || !documentRef.current) return;
     const pdf = documentRef.current;
     const requestId = requestIdRef.current;
     const zoomChangeId = ++historyRestoreRef.current;
+    const anchorElement = pointer ? [...pageElementsRef.current.values()].reduce<HTMLElement | undefined>((nearest, element) => {
+      const rect = element.getBoundingClientRect();
+      const distance = Math.max(rect.top - pointer.clientY, pointer.clientY - rect.bottom, 0);
+      if (!nearest) return element;
+      const previous = nearest.getBoundingClientRect();
+      return distance < Math.max(previous.top - pointer.clientY, pointer.clientY - previous.bottom, 0) ? element : nearest;
+    }, undefined) : undefined;
+    const anchorRect = anchorElement?.getBoundingClientRect();
+    const anchor = pointer && anchorRect && anchorRect.width && anchorRect.height ? {
+      x: (pointer.clientX - anchorRect.left) / anchorRect.width,
+      y: (pointer.clientY - anchorRect.top) / anchorRect.height,
+    } : undefined;
     const pageOffset = window.scrollY - (pageScrollTop(state.pageIndex) ?? window.scrollY);
     const previousPageHeight = pageElementsRef.current.get(state.pageIndex)?.getBoundingClientRect().height ?? 0;
     navigationScrollUntilRef.current = performance.now() + 1200;
     changeView(nextView);
-    await sizeAllPageCanvases(pdf, nextView);
+    await sizeAllPageCanvases(pdf, nextView, () => isCurrent(requestId) && zoomChangeId === historyRestoreRef.current);
     await new Promise<void>((resolve) => window.requestAnimationFrame(() => resolve()));
     if (!isCurrent(requestId) || documentRef.current !== pdf || zoomChangeId !== historyRestoreRef.current || activePageIndexRef.current !== nextView.pageIndex) return;
+    if (pointer && anchor && anchorElement?.isConnected) {
+      const rect = anchorElement.getBoundingClientRect();
+      if (stageRef.current) stageRef.current.scrollLeft += rect.left + anchor.x * rect.width - pointer.clientX;
+      window.scrollTo({ top: Math.max(0, window.scrollY + rect.top + anchor.y * rect.height - pointer.clientY), behavior: 'instant' });
+      return;
+    }
     const pageTop = pageScrollTop(nextView.pageIndex);
     const nextPageHeight = pageElementsRef.current.get(nextView.pageIndex)?.getBoundingClientRect().height ?? 0;
     const offsetRatio = previousPageHeight > 0 && nextPageHeight > 0 ? nextPageHeight / previousPageHeight : nextView.scale / state.scale;
@@ -2730,6 +2748,35 @@ function ReaderPage() {
     persistUserZoom(manualZoomChoice(scale), scale);
     if (scale !== state.scale) void applyZoomView({ pageIndex: state.pageIndex, scale, rotation: state.rotation });
   }
+
+  const wheelZoomViewRef = useRef({ scale: 1, apply: async (_scale: number, _pointer: ZoomPointer) => {} });
+  useLayoutEffect(() => {
+    wheelZoomViewRef.current = {
+      scale: state.kind === 'ready' ? state.scale : 1,
+      apply: async (scale, pointer) => {
+        if (state.kind !== 'ready' || !documentRef.current) return;
+        setCurrentZoomChoice(manualZoomChoice(scale));
+        setZoomInputEditing(false);
+        zoomInputDirtyRef.current = false;
+        persistUserZoom(manualZoomChoice(scale), scale);
+        await applyZoomView({ pageIndex: state.pageIndex, scale, rotation: state.rotation }, pointer);
+      },
+    };
+  });
+
+  useEffect(() => {
+    if (state.kind !== 'ready' || !stageRef.current) return;
+    const requestId = requestIdRef.current;
+    const pdf = documentRef.current;
+    return bindPdfWheelZoom(stageRef.current, {
+      getScale: () => wheelZoomViewRef.current.scale,
+      apply: async (scale, pointer) => {
+        if (isCurrent(requestId) && documentRef.current === pdf) await wheelZoomViewRef.current.apply(scale, pointer);
+      },
+      requestFrame: (callback) => window.requestAnimationFrame(callback),
+      cancelFrame: (id) => window.cancelAnimationFrame(id),
+    });
+  }, [state.kind, thumbnailSession]);
 
   useEffect(() => {
     if (state.kind !== 'ready') return;

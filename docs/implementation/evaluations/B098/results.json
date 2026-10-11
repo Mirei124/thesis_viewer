@@ -1,0 +1,26 @@
+{
+  "basic": {
+    "initial": 135,
+    "enlarged": 165,
+    "reduced": 135,
+    "pinched": 146,
+    "plainWheelUntouched": true,
+    "outsideUntouched": true,
+    "browserZoomUnchanged": true,
+    "persisted": {
+      "mode": "manual",
+      "scale": 1.46
+    }
+  },
+  "boundaries": {
+    "nativeCtrlWheel": true,
+    "actualWidthBefore": 612,
+    "actualWidthAfter": 746,
+    "anchorErrorY": 0.0001725327812284183,
+    "bounds": [
+      25,
+      400
+    ],
+    "newImportPreference": true
+  }
+}
