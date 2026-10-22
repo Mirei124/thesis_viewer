@@ -1,0 +1,12 @@
+{
+  "index": 1,
+  "elapsedMs": 57134,
+  "content": "{\"status\":\"available\",\"text\":\"答对不保证视觉区域一致；现有方法依赖 preference 或 process supervision。[E002] 作者用 old policy 的 visual distribution 衡量 token 一致性。[E003]\",\"sources\":[\"E002\",\"E003\"]}",
+  "usage": {
+    "promptTokens": 1409,
+    "completionTokens": 11777,
+    "totalTokens": 13186,
+    "promptCacheHitTokens": 1275,
+    "promptCacheMissTokens": 134
+  }
+}

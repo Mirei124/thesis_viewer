@@ -1,0 +1,147 @@
+{
+  "pdfSha256": "12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d",
+  "introCharacters": 4628,
+  "problemSelection": {
+    "id": "problem_motivation",
+    "chars": 2087,
+    "estimatedTextTokens": 707,
+    "paragraphCount": 6,
+    "invalidMembers": 0,
+    "sections": [
+      {
+        "id": "section:2",
+        "title": "1 INTRODUCTION",
+        "role": "intro"
+      }
+    ],
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ]
+  },
+  "introParagraphs": [
+    {
+      "paragraphId": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p0:9",
+      "page": 1,
+      "kind": "heading",
+      "selected": true,
+      "keywordMatches": [],
+      "text": "1 I NTRODUCTION"
+    },
+    {
+      "paragraphId": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p0:10",
+      "page": 1,
+      "kind": "body",
+      "selected": false,
+      "keywordMatches": [],
+      "text": "Multimodal large language models are advancing rapidly, spanning tool-integrated reasoning, streaming perception, multi-image grounding, policy optimization, and large-scale evaluation (Chen et al., 2026b; Shen et al., 2026; Chen et al., 2026a; Zheng et al., 2026; Han et al., 2025; Xu et al., 2025). Reinforcement learning with verifiable rewards (RLVR) uses automatic feedback, such as answer correctness and format compliance, to improve reasoning. Methods such as GRPO esti- mate policy advantages from relative rewards among multiple responses to the same prompt, avoid training a separate value network, and have expanded from text reasoning to vision-language mod- els (Shao et al., 2024; Guo et al., 2025; Huang et al., 2025; Shen et al., 2025; Meng et al., 2025; Chen et al., 2025). Yet the environment usually returns only one scalar reward per response, and the resulting sequence advantage is applied to the entire generated trajectory. Every token in a response therefore receives the same advantage coefficient, leaving differences in credit within the trajectory implicit, even when individual tokens rely on different visual evidence."
+    },
+    {
+      "paragraphId": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p0:11",
+      "page": 1,
+      "kind": "body",
+      "selected": true,
+      "keywordMatches": [
+        "Existing"
+      ],
+      "text": "This granularity gap is especially important in multimodal reasoning: a correct answer does not im- ply consistent use of relevant visual regions, and equally rewarded responses may follow different vi- sual reasoning paths. Existing fine-grained approaches rely on preference or process supervision (Yu"
+    },
+    {
+      "paragraphId": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p0:12",
+      "page": 1,
+      "kind": "body",
+      "selected": false,
+      "keywordMatches": [],
+      "text": "1"
+    },
+    {
+      "paragraphId": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:13",
+      "page": 2,
+      "kind": "body",
+      "selected": false,
+      "keywordMatches": [],
+      "text": "Under review as a conference paper at ICLR 2027"
+    },
+    {
+      "paragraphId": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:14",
+      "page": 2,
+      "kind": "body",
+      "selected": false,
+      "keywordMatches": [],
+      "text": "et al., 2024; Wang et al., 2025a), or read dense guidance from teacher- and privileged-context output- token distributions (Agarwal et al., 2024; Yang et al., 2026b; Pan et al., 2026). A vision-language model also produces attention over visual inputs at every generated token, providing an internal readout distinct from output behavior. We treat visual attention as a proxy to be evaluated through behavioral diagnostics and controlled training comparisons, rather than as a causal attribution or certificate of correctness (Liu et al., 2026; Zhao et al., 2026a; Lu et al., 2026; Yang et al., 2026a). This leads to our central question: Can token-varying internal visual statistics refine credit within a trajectory while preserving the verifier-derived trajectory-mean advantage?"
+    },
+    {
+      "paragraphId": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:15",
+      "page": 2,
+      "kind": "body",
+      "selected": true,
+      "keywordMatches": [
+        "task"
+      ],
+      "text": "Attention magnitude itself has no intrinsic task direction, so directly rewarding larger attention does not address this question. We instead use the visual distribution formed by the frozen old policy π θ under the known correct answer as a reference and measure each generated token’s agreement"
+    },
+    {
+      "paragraphId": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:16",
+      "page": 2,
+      "kind": "body",
+      "selected": false,
+      "keywordMatches": [],
+      "text": "old"
+    },
+    {
+      "paragraphId": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:17",
+      "page": 2,
+      "kind": "body",
+      "selected": true,
+      "keywordMatches": [
+        "motivates"
+      ],
+      "text": "with it. Token intervention tests whether attention rank tracks behavioral sensitivity; visual-index permutation tests whether correct–incorrect separation depends on patch identity rather than the ref- erence’s marginal shape; and trajectory analysis tests whether this separation varies with generation position. These diagnostics provide evidence for a behaviorally relevant token proxy, reference- patch correspondence, and position-dependent variation. The position-dependent alignment profile further motivates us to adopt a smooth, bounded relative-position sigmoid and evaluate this design through controlled ablations."
+    },
+    {
+      "paragraphId": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:18",
+      "page": 2,
+      "kind": "body",
+      "selected": true,
+      "keywordMatches": [
+        "Motivated"
+      ],
+      "text": "Motivated by this evidence, we introduce VAttnPO . Within each update, the frozen old policy both samples responses and produces the visual reference by teacher forcing the correct answer, placing reference and rollout attention in the same parameter state; the answer supplies conditioning context without process labels or region annotations. VAttnPO converts token-wise visual similarity into trajectory-centered credit, modulates it with a smooth bounded function of relative position, and balances it into a zero-sum correction. Adding this correction to the GRPO sequence advantage allows token coefficients to vary while preserving the verifier-derived trajectory-mean advantage."
+    },
+    {
+      "paragraphId": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:19",
+      "page": 2,
+      "kind": "body",
+      "selected": false,
+      "keywordMatches": [],
+      "text": "To summarize, our contributions are as follows:"
+    },
+    {
+      "paragraphId": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:20",
+      "page": 2,
+      "kind": "body",
+      "selected": true,
+      "keywordMatches": [
+        "motivates"
+      ],
+      "text": "• Diagnostic Evidence. We identify behavioral, spatial, and positional structure in internal visual attention that motivates token-level credit differentiation."
+    },
+    {
+      "paragraphId": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:21",
+      "page": 2,
+      "kind": "body",
+      "selected": false,
+      "keywordMatches": [],
+      "text": "• Visual Attention-Guided Credit. VAttnPO derives a token-level correction from answer- conditioned visual attention through similarity centering, relative-position weighting, and sign-preserving balancing, varying credit within a response while preserving the trajectory- mean advantage."
+    },
+    {
+      "paragraphId": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:22",
+      "page": 2,
+      "kind": "body",
+      "selected": false,
+      "keywordMatches": [],
+      "text": "• Empirical Results. On Qwen3-VL-8B-Instruct, VAttnPO improves AVE over six image tasks by 2.53 points over GRPO and records higher scores on every reported metric for structured understanding, video understanding, and MME."
+    }
+  ]
+}

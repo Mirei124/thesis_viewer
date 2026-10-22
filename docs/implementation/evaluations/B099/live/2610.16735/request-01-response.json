@@ -1,0 +1,12 @@
+{
+  "index": 1,
+  "elapsedMs": 9258,
+  "content": "{\"status\":\"available\",\"text\":\"序列级奖励存在视觉粒度缺口：答对不代表各token一致使用相关视觉区域。[E002]注意力幅值本身无任务方向，故作者以冻结旧策略在正确答案下的视觉分布为参考，度量各token的一致性。[E003]\",\"sources\":[\"E002\",\"E003\"]}",
+  "usage": {
+    "promptTokens": 1409,
+    "completionTokens": 1692,
+    "totalTokens": 3101,
+    "promptCacheHitTokens": 128,
+    "promptCacheMissTokens": 1281
+  }
+}

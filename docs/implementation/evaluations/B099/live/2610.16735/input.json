@@ -1,0 +1,108 @@
+{
+  "path": "/tmp/B099/2610.16735.pdf",
+  "documentVersion": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d",
+  "config": {
+    "baseUrl": "https://api.deepseek.com/v1",
+    "model": "deepseek-flash",
+    "structuredOutput": true,
+    "contextLimit": 32000,
+    "outputLimit": 32000,
+    "semanticReview": false
+  },
+  "methodOnly": false,
+  "sourceHashes": {
+    "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+    "detailedContext": "41d32b9d33ca2583cb686546300943df6afc69408e9a136d7aa09d28c384672d",
+    "detailedOverview": "3a505666a711d2dd33543b82d5dcc7d29ab9f363f620f87612e1b0cf71d9daa6",
+    "detailedOverviewPipeline": "c321948ba57b2f0ebfd9b6e2231695d432bc7d688b54c82db2d44e3b3cb1c72e",
+    "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+  },
+  "pageCount": 27,
+  "paragraphCount": 585,
+  "selections": [
+    {
+      "id": "problem_motivation",
+      "paragraphCount": 6,
+      "chars": 2087,
+      "estimatedTextTokens": 707,
+      "sections": [
+        "1 INTRODUCTION"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+      ]
+    },
+    {
+      "id": "method",
+      "paragraphCount": 96,
+      "chars": 12029,
+      "estimatedTextTokens": 4166,
+      "sections": [
+        "1 INTRODUCTION",
+        "2.3 ATTENTION-DERIVED SUPERVISION AND VISUAL CREDIT",
+        "4 METHOD",
+        "4.1 PRELIMINARIES",
+        "4.2 STAGE 1: VISUAL REFERENCE AND ROLLOUT ATTENTION",
+        "4.4 STAGE 3: POSITION-AWARE ADVANTAGE CONSTRUCTION",
+        "5.1 EXPERIMENTAL SETUP"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "4 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+      ]
+    },
+    {
+      "id": "contributions_novelty",
+      "paragraphCount": 10,
+      "chars": 3466,
+      "estimatedTextTokens": 1165,
+      "sections": [
+        "1 INTRODUCTION",
+        "2.2 O N-POLICY DISTILLATION AND SELF-DISTILLED RL",
+        "2.3 ATTENTION-DERIVED SUPERVISION AND VISUAL CREDIT"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+      ]
+    },
+    {
+      "id": "experiments_ablations",
+      "paragraphCount": 64,
+      "chars": 9555,
+      "estimatedTextTokens": 3217,
+      "sections": [
+        "5 EXPERIMENTS",
+        "5.1 EXPERIMENTAL SETUP",
+        "5.2 MAIN RESULTS",
+        "5.3 ABLATION AND CONTROLLED ANALYSIS",
+        "5.4 CROSS-BACKBONE GENERALIZATION"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "5 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+      ]
+    },
+    {
+      "id": "limitations",
+      "paragraphCount": 6,
+      "chars": 1712,
+      "estimatedTextTokens": 575,
+      "sections": [
+        "6 CONCLUSION"
+      ],
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+      ]
+    }
+  ]
+}

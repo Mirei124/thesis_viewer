@@ -1,0 +1,12 @@
+{
+  "index": 1,
+  "elapsedMs": 52224,
+  "content": "{\"status\":\"available\",\"text\":\"答案正确≠区域一致，已有 fine-grained 方法依赖 preference/process supervision（E002）。attention 无任务方向，作者遂以 old policy 视觉参照校正优势（E003, E005）。\",\"sources\":[\"E002\",\"E003\",\"E005\"]}",
+  "usage": {
+    "promptTokens": 1409,
+    "completionTokens": 11086,
+    "totalTokens": 12495,
+    "promptCacheHitTokens": 1275,
+    "promptCacheMissTokens": 134
+  }
+}
