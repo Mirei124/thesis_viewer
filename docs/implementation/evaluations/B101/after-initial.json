@@ -1,0 +1,163 @@
+{
+  "capturedAt": "2026-10-22T15:38:52.816Z",
+  "rgbaBytes": 3422400,
+  "allocatedCanvases": 2,
+  "pages": [
+    {
+      "url": "http://127.0.0.1:8768/reader.html?b101=accepted#pdf=local-sha256-12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d",
+      "visibility": "visible",
+      "dpr": 1,
+      "scrollY": 0,
+      "scrollHeight": 20840,
+      "domNodes": 699,
+      "textSpans": 97,
+      "canvases": [
+        {
+          "width": 575,
+          "height": 744,
+          "key": "0.94:0:1",
+          "visible": true
+        },
+        {
+          "width": 575,
+          "height": 744,
+          "key": "0.94:0:1",
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        },
+        {
+          "width": 0,
+          "height": 0,
+          "visible": false
+        }
+      ],
+      "rgbaBytes": 3422400,
+      "allocatedCanvases": 2,
+      "heap": {
+        "usedSize": 16685056,
+        "totalSize": 31346688,
+        "embedderHeapUsedSize": 5179808,
+        "backingStorageSize": 3128993
+      }
+    }
+  ]
+}

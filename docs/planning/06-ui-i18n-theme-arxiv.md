@@ -39,3 +39,7 @@
 ## 技术依据
 
 Chrome `webNavigation` 要求显式 `webNavigation` 权限，且导航可能产生重复的 `onBeforeNavigate`／错误事件；MV3 不支持普通扩展使用阻塞 `webRequest`。因此先以小范围 spike 验证，不能将“自动劫持”做成未受限的网络拦截。[Chrome webNavigation](https://developer.chrome.com/docs/extensions/reference/api/webNavigation)；[Chrome MV3 网络限制](https://developer.chrome.com/docs/extensions/reference/api/webRequest)。Firefox 的同名导航 API 提供 URL filter 和顶层 frame 信息。[MDN webNavigation](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webNavigation)。
+
+## B101：连续PDF渲染资源上限（2026-10-22）
+
+用户提供Firefox多PDF纹理/扩展高内存证据，要求优先位图生命周期优化并保留清晰度与阅读交互。连续页面保留CSS占位，主位图只保留可见页与相邻页；每阅读器64MiB基础RGBA预取预算，可见页为清晰度例外。取消后等待结束再归零，过期结果不得复活；后台暂停绘制、连续隐藏15秒后释放主位图，前台恢复位置/标注。Pages缩略图按面板/前台生成，后台移除IMG，保留低成本数据；文档替换/关闭由loadingTask.destroy负责worker销毁，不并发cleanup。实现及Firefox复测边界见[B101](../implementation/evaluations/B101.md)。

@@ -1,3 +1,4 @@
+import { READER_BITMAP_BUDGET, bitmapBytes, selectReaderBitmaps, settleBitmapTask, releaseReaderBitmap, retireReaderBitmap } from '../lib/readerBitmap';
 import { ReadingActivity, ReadingHistoryList } from '../components/ReadingHistory';
 import { clearReadingHistory, readReadingHistory, recordReading, type ReadingHistoryEntry, type ReadingSnapshot, type ReadingSource } from '../lib/readingHistory';
 import { extractPdfTitle } from '../lib/pdfTitle';
@@ -643,7 +644,9 @@ function ReaderPage() {
   const readerSourceRef = useRef<URL | LocalPdfSourceKey | null>(null);
   const pendingSourcePageRef = useRef<number | null>(null);
   const sourcePageSyncTimerRef = useRef<number | null>(null);
-  const renderTaskRef = useRef<{ cancel: () => void } | null>(null);
+  const renderTaskRef = useRef<{ cancel: () => void; promise: Promise<void> } | null>(null);
+  const bitmapScheduleRef = useRef<() => void>(() => {});
+  const [readerVisible, setReaderVisible] = useState(document.visibilityState !== 'hidden');
   const textLayerTaskRef = useRef<TextLayer | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const translationAbortRef = useRef<AbortController | null>(null);
@@ -664,6 +667,7 @@ function ReaderPage() {
   const automaticArxivImportStartedRef = useRef(false);
   const renderIdRef = useRef(0);
   const thumbnailRequestIdRef = useRef(0);
+  const thumbnailRenderTasksRef = useRef(new Set<{ cancel(): void; promise: Promise<void> }>());
   const searchRequestIdRef = useRef(0);
   const extractionRequestIdRef = useRef(0);
   const viewSessionRef = useRef(0);
@@ -867,8 +871,7 @@ function ReaderPage() {
     searchRequestIdRef.current += 1;
     extractionRequestIdRef.current += 1;
     if (viewSaveTimerRef.current) clearTimeout(viewSaveTimerRef.current);
-    void loadingTaskRef.current?.destroy();
-    void documentRef.current?.cleanup();
+    void releaseDocumentResources();
   }, []);
 
   useEffect(() => {
@@ -996,16 +999,31 @@ function ReaderPage() {
     renderTaskRef.current = null;
     textLayerTaskRef.current?.cancel();
     textLayerTaskRef.current = null;
-    await Promise.allSettled([
-      loadingTaskRef.current?.destroy(),
-      documentRef.current?.cleanup(),
-    ]);
-    loadingTaskRef.current = null;
-    documentRef.current = null;
-    const canvas = canvasRef.current;
-    canvas?.getContext('2d')?.clearRect(0, 0, canvas.width, canvas.height);
+    await releaseDocumentResources();
     textLayerRef.current?.replaceChildren();
     setRenderedHighlightViewport(null);
+  }
+
+  async function releaseDocumentResources() {
+    renderIdRef.current += 1;
+    textLayerTaskRef.current?.cancel();
+    const loading = loadingTaskRef.current;
+    const pdf = documentRef.current;
+    loadingTaskRef.current = null;
+    documentRef.current = null;
+    thumbnailRequestIdRef.current += 1;
+    const canvases = [...passivePageCanvasesRef.current.values()];
+    await Promise.all([...thumbnailRenderTasksRef.current].map(settleBitmapTask));
+    thumbnailRenderTasksRef.current.clear();
+    const entries = [...pageRenderTasksRef.current.entries()];
+    await Promise.all(entries.map(async ([index, task]) => {
+      await settleBitmapTask(task);
+      if (pageRenderTasksRef.current.get(index) === task) pageRenderTasksRef.current.delete(index);
+    }));
+    for (const canvas of canvases) releaseReaderBitmap(canvas);
+    // LoadingTask.destroy owns its document/worker; cleanup must not race it.
+    if (loading) await loading.destroy().catch(() => undefined);
+    else if (pdf) await pdf.cleanup().catch(() => undefined);
   }
 
   function isCurrent(requestId: number) {
@@ -1976,7 +1994,7 @@ function ReaderPage() {
   }
 
   useEffect(() => {
-    if (state.kind !== 'ready' || !documentRef.current) return;
+    if (state.kind !== 'ready' || !documentRef.current || !readerVisible || !leftRailOpen || leftRailTab !== 'pages') return;
     const pdf = documentRef.current;
     const requestId = requestIdRef.current;
     const thumbnailRequestId = ++thumbnailRequestIdRef.current;
@@ -1993,27 +2011,34 @@ function ReaderPage() {
     ])));
 
     async function renderThumbnail(pageIndex: number) {
+      let canvas: HTMLCanvasElement | undefined;
       try {
         const page = await pdf.getPage(pageIndex + 1);
         if (cancelled || thumbnailRequestId !== thumbnailRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
         const fullSize = page.getViewport({ scale: 1 });
         const scale = Math.min(THUMBNAIL_SCALE, THUMBNAIL_MAX_WIDTH / fullSize.width, THUMBNAIL_MAX_HEIGHT / fullSize.height);
         const viewport = page.getViewport({ scale });
-        const canvas = document.createElement('canvas');
+        canvas = document.createElement('canvas');
         canvas.width = Math.ceil(viewport.width);
         canvas.height = Math.ceil(viewport.height);
         const context = canvas.getContext('2d');
         if (!context) throw new Error('Canvas context unavailable');
         const renderTask = page.render({ canvas, canvasContext: context, viewport });
         renderTasks.add(renderTask);
-        await renderTask.promise;
-        renderTasks.delete(renderTask);
+        thumbnailRenderTasksRef.current.add(renderTask);
+        try { await renderTask.promise; }
+        finally {
+          renderTasks.delete(renderTask);
+          thumbnailRenderTasksRef.current.delete(renderTask);
+        }
         if (cancelled || thumbnailRequestId !== thumbnailRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
         const src = canvas.toDataURL('image/png');
         setThumbnails((previous) => ({ ...previous, [pageIndex]: { kind: 'ready', src } }));
       } catch {
         if (cancelled || thumbnailRequestId !== thumbnailRequestIdRef.current || !isCurrent(requestId) || documentRef.current !== pdf) return;
         setThumbnails((previous) => ({ ...previous, [pageIndex]: { kind: 'error' } }));
+      } finally {
+        if (canvas) releaseReaderBitmap(canvas);
       }
     }
 
@@ -2028,56 +2053,164 @@ function ReaderPage() {
       renderTasks.forEach((task) => task.cancel());
     };
   // `thumbnailSession` changes after each successfully loaded document, even when its filename and first page match the prior document.
-  }, [state.kind, thumbnailSession]);
+  }, [state.kind, thumbnailSession, readerVisible, leftRailOpen, leftRailTab]);
 
-  // The active page retains the full PDF.js text layer and interaction overlays.
-  // Every other page is rendered into its own canvas as well, so the central
-  // reading surface is genuinely a continuous document rather than a thumbnail
-  // strip or a single-page visual approximation.
+  // Retain lightweight page geometry, but allocate bitmaps only near the viewport.
   useEffect(() => {
     if (state.kind !== 'ready' || !documentRef.current) return;
-    let cancelled = false;
-    const tasks = new Set<{ cancel: () => void }>();
+    const view = state;
+    const isHidden = () => document.visibilityState === 'hidden';
     const pdf = documentRef.current;
     const requestId = requestIdRef.current;
-    const renderPassivePages = async () => {
-      for (let pageIndex = 0; pageIndex < state.pageCount; pageIndex += 1) {
-        if (cancelled || !isCurrent(requestId)) return;
-        if (pageIndex === activePageIndexRef.current) continue;
-        const canvas = passivePageCanvasesRef.current.get(pageIndex);
-        if (!canvas || canvas.dataset.renderKey === `${state.scale}:${state.rotation}`) continue;
-        try {
-          const page = await pdf.getPage(pageIndex + 1);
-          if (cancelled || !isCurrent(requestId)) return;
-          const previousTask = pageRenderTasksRef.current.get(pageIndex);
-          if (previousTask) await previousTask.promise.catch(() => undefined);
-          if (cancelled || !isCurrent(requestId) || pageIndex === activePageIndexRef.current) continue;
-          const viewport = page.getViewport({ scale: state.scale, rotation: (page.rotate + state.rotation) % 360 });
-          const outputScale = window.devicePixelRatio || 1;
-          const context = canvas.getContext('2d');
-          if (!context) continue;
-          canvas.width = Math.floor(viewport.width * outputScale);
-          canvas.height = Math.floor(viewport.height * outputScale);
-          canvas.style.width = `${Math.floor(viewport.width)}px`;
-          canvas.style.height = `${Math.floor(viewport.height)}px`;
-          const task = page.render({ canvas, canvasContext: context, viewport, transform: outputScale === 1 ? undefined : [outputScale, 0, 0, outputScale, 0, 0] });
-          pageRenderTasksRef.current.set(pageIndex, task);
-          tasks.add(task);
-          await task.promise;
-          tasks.delete(task);
-          if (pageRenderTasksRef.current.get(pageIndex) === task) pageRenderTasksRef.current.delete(pageIndex);
-          canvas.dataset.renderKey = `${state.scale}:${state.rotation}`;
-        } catch {
-          // Individual passive-page rendering must never take down the active
-          // page or its selection/evidence workflow.
-        }
+    let disposed = false;
+    let revision = 0;
+    let running = false;
+    let frame = 0;
+    let hiddenTimer: ReturnType<typeof setTimeout> | undefined;
+    let wanted = new Set<number>();
+    async function release(index: number, force = false, pageExiting = false) {
+      const canvas = passivePageCanvasesRef.current.get(index);
+      if (!canvas) return;
+      const epoch = revision;
+      const task = pageRenderTasksRef.current.get(index);
+      const retired = await retireReaderBitmap(canvas, task, () => {
+        if (documentRef.current !== pdf || passivePageCanvasesRef.current.get(index) !== canvas) return false;
+        const currentTask = pageRenderTasksRef.current.get(index);
+        if (currentTask && currentTask !== task) return false;
+        if (force) return epoch === revision && (pageExiting || isHidden());
+        return !disposed && !wanted.has(index) && index !== activePageIndexRef.current;
+      });
+      if (pageRenderTasksRef.current.get(index) === task) pageRenderTasksRef.current.delete(index);
+      if (retired && !disposed && documentRef.current === pdf) void pdf.getPage(index + 1).then((page) => {
+        if (!pageRenderTasksRef.current.has(index) && !wanted.has(index) && documentRef.current === pdf) page.cleanup();
+      }).catch(() => undefined);
+    }
+    function candidates() {
+      // Zero-sized, not-yet-measured canvases must never make every collapsed
+      // page look visible during the initial React commit.
+      const geometries = [...pageElementsRef.current].filter(([index]) => {
+        const canvas = passivePageCanvasesRef.current.get(index);
+        return !!canvas && parseFloat(canvas.style.width) > 0 && parseFloat(canvas.style.height) > 0;
+      }).map(([index, element]) => {
+        const rect = element.getBoundingClientRect();
+        return { index, visible: rect.bottom > 0 && rect.top < window.innerHeight, distance: Math.max(0, -rect.bottom, rect.top - window.innerHeight) };
+      });
+      const visible = geometries.filter((page) => page.visible).map((page) => page.index);
+      return geometries.filter((page) => page.visible || visible.some((index) => Math.abs(index - page.index) <= 1)).map((page) => {
+        const canvas = passivePageCanvasesRef.current.get(page.index);
+        const ratio = window.devicePixelRatio || 1;
+        return { ...page, bytes: bitmapBytes(parseFloat(canvas?.style.width || '0') * ratio, parseFloat(canvas?.style.height || '0') * ratio) };
+      });
+    }
+    async function pump() {
+      if (running || disposed || isHidden()) return;
+      running = true;
+      try {
+        let observed: number;
+        do {
+          observed = revision;
+          const key = `${view.scale}:${view.rotation}:${window.devicePixelRatio || 1}`;
+          const order = selectReaderBitmaps(candidates());
+          wanted = new Set(order);
+          for (const index of passivePageCanvasesRef.current.keys()) {
+            if (!wanted.has(index)) await release(index);
+          }
+          for (const index of order) {
+            if (disposed || observed !== revision || isHidden() || !isCurrent(requestId) || documentRef.current !== pdf) break;
+            if (index === activePageIndexRef.current) continue;
+            const canvas = passivePageCanvasesRef.current.get(index);
+            if (!canvas || canvas.dataset.renderKey === key) continue;
+            const previous = pageRenderTasksRef.current.get(index);
+            if (previous) await previous.promise.catch(() => undefined);
+            if (disposed || observed !== revision || index === activePageIndexRef.current) continue;
+            const page = await pdf.getPage(index + 1);
+            if (disposed || observed !== revision || documentRef.current !== pdf || isHidden()) continue;
+            const viewport = page.getViewport({ scale: view.scale, rotation: (page.rotate + view.rotation) % 360 });
+            const outputScale = window.devicePixelRatio || 1;
+            const rect = pageElementsRef.current.get(index)?.getBoundingClientRect();
+            const visible = !!rect && rect.bottom > 0 && rect.top < window.innerHeight;
+            const cost = bitmapBytes(Math.floor(viewport.width * outputScale), Math.floor(viewport.height * outputScale));
+            const retained = [...passivePageCanvasesRef.current.entries()].reduce((sum, [other, item]) => sum + (other === index ? 0 : bitmapBytes(item.width, item.height)), 0);
+            if (!visible && retained + cost > READER_BITMAP_BUDGET) continue;
+            canvas.style.width = `${Math.floor(viewport.width)}px`;
+            canvas.style.height = `${Math.floor(viewport.height)}px`;
+            const context = canvas.getContext('2d');
+            if (!context) continue;
+            delete canvas.dataset.renderKey;
+            canvas.width = Math.floor(viewport.width * outputScale);
+            canvas.height = Math.floor(viewport.height * outputScale);
+            const task = page.render({ canvas, canvasContext: context, viewport, transform: outputScale === 1 ? undefined : [outputScale, 0, 0, outputScale, 0, 0] });
+            pageRenderTasksRef.current.set(index, task);
+            try {
+              await task.promise;
+              if (!disposed && observed === revision && wanted.has(index) && documentRef.current === pdf) canvas.dataset.renderKey = `${view.scale}:${view.rotation}:${outputScale}`;
+            } catch { /* Cancellation is normal during fast scrolling. */ }
+            finally { if (pageRenderTasksRef.current.get(index) === task) pageRenderTasksRef.current.delete(index); }
+          }
+        } while (!disposed && observed !== revision && !isHidden());
+      } catch { /* A passive page must not disrupt the active text/annotation layer. */ }
+      finally { running = false; }
+    }
+    function schedule() {
+      revision += 1;
+      // Invalidate work immediately; never resize its buffer until it settles.
+      for (const [index, task] of pageRenderTasksRef.current) if (index !== activePageIndexRef.current) task.cancel();
+      if (!frame) frame = window.requestAnimationFrame(() => { frame = 0; void pump(); });
+    }
+    function visibility() {
+      const visible = !isHidden();
+      setReaderVisible(visible);
+      if (hiddenTimer) clearTimeout(hiddenTimer);
+      if (!visible) {
+        revision += 1;
+        for (const task of pageRenderTasksRef.current.values()) task.cancel();
+        hiddenTimer = setTimeout(() => {
+          wanted.clear();
+          for (const index of passivePageCanvasesRef.current.keys()) void release(index, true);
+        }, 15_000);
+      } else {
+        schedule();
+        if (documentRef.current === pdf) void renderPage(pdf, { pageIndex: activePageIndexRef.current, scale: view.scale, rotation: view.rotation }, requestId);
       }
+    }
+    function pagehide(event: PageTransitionEvent) {
+      renderIdRef.current += 1;
+      textLayerTaskRef.current?.cancel();
+      revision += 1;
+      wanted.clear();
+      for (const index of passivePageCanvasesRef.current.keys()) void release(index, true, true);
+      if (!event.persisted) void releaseDocumentResources();
+    }
+    function pageshow(event: PageTransitionEvent) {
+      if (event.persisted) visibility();
+    }
+    bitmapScheduleRef.current = schedule;
+    window.addEventListener('scroll', schedule, { passive: true });
+    window.addEventListener('resize', schedule);
+    document.addEventListener('visibilitychange', visibility);
+    window.addEventListener('pagehide', pagehide);
+    window.addEventListener('pageshow', pageshow);
+    schedule();
+    if (isHidden()) visibility();
+    return () => {
+      disposed = true;
+      revision += 1;
+      if (frame) window.cancelAnimationFrame(frame);
+      if (hiddenTimer) clearTimeout(hiddenTimer);
+      window.removeEventListener('scroll', schedule);
+      window.removeEventListener('resize', schedule);
+      document.removeEventListener('visibilitychange', visibility);
+      window.removeEventListener('pagehide', pagehide);
+      window.removeEventListener('pageshow', pageshow);
+      for (const [index, task] of pageRenderTasksRef.current) if (index !== activePageIndexRef.current) task.cancel();
+      bitmapScheduleRef.current = () => {};
     };
-    void renderPassivePages();
-    return () => { cancelled = true; tasks.forEach((task) => task.cancel()); };
-  }, [state.kind, state.kind === 'ready' ? state.pageCount : 0, state.kind === 'ready' ? state.pageIndex : -1, state.kind === 'ready' ? state.scale : 0, state.kind === 'ready' ? state.rotation : 0]);
+  }, [state.kind, thumbnailSession, state.kind === 'ready' ? state.scale : 0, state.kind === 'ready' ? state.rotation : 0]);
 
   async function renderPage(pdf: PDFDocumentProxy, view: ViewState, requestId: number): Promise<boolean> {
+    // Indexing/restoration must continue for background imports without allocating a bitmap.
+    const isHidden = () => document.visibilityState === 'hidden';
+    if (isHidden()) return true;
     const renderId = ++renderIdRef.current;
     renderTaskRef.current?.cancel();
     renderTaskRef.current = null;
@@ -2111,13 +2244,19 @@ function ReaderPage() {
       }
       if (!isCurrentRender(requestId, renderId)) return false;
       if (!canvas || !textLayer) throw new Error('The reader surface is no longer available.');
+      if (isHidden()) return true;
 
       const outputScale = window.devicePixelRatio || 1;
       const context = canvas.getContext('2d');
       if (!context) throw new Error('This browser did not provide a canvas rendering context.');
 
-      canvas.width = Math.floor(viewport.width * outputScale);
-      canvas.height = Math.floor(viewport.height * outputScale);
+      const bitmapKey = `${view.scale}:${view.rotation}:${outputScale}`;
+      const reuseBitmap = canvas.dataset.renderKey === bitmapKey;
+      if (!reuseBitmap) {
+        delete canvas.dataset.renderKey;
+        canvas.width = Math.floor(viewport.width * outputScale);
+        canvas.height = Math.floor(viewport.height * outputScale);
+      }
       canvas.style.width = `${Math.floor(viewport.width)}px`;
       canvas.style.height = `${Math.floor(viewport.height)}px`;
       textLayer.style.width = `${Math.floor(viewport.width)}px`;
@@ -2131,26 +2270,30 @@ function ReaderPage() {
       textLayer.style.setProperty('--scale-round-y', '1px');
       textLayer.replaceChildren();
 
-      const renderTask = page.render({
-        canvas,
-        canvasContext: context,
-        viewport,
-        transform: outputScale === 1 ? undefined : [outputScale, 0, 0, outputScale, 0, 0],
-      });
-      renderTaskRef.current = renderTask;
-      pageRenderTasksRef.current.set(view.pageIndex, renderTask);
-      await renderTask.promise;
-      if (pageRenderTasksRef.current.get(view.pageIndex) === renderTask) pageRenderTasksRef.current.delete(view.pageIndex);
-      canvas.dataset.renderKey = `${view.scale}:${view.rotation}`;
+      if (!reuseBitmap) {
+        const renderTask = page.render({
+          canvas,
+          canvasContext: context,
+          viewport,
+          transform: outputScale === 1 ? undefined : [outputScale, 0, 0, outputScale, 0, 0],
+        });
+        renderTaskRef.current = renderTask;
+        pageRenderTasksRef.current.set(view.pageIndex, renderTask);
+        try { await renderTask.promise; }
+        finally { if (pageRenderTasksRef.current.get(view.pageIndex) === renderTask) pageRenderTasksRef.current.delete(view.pageIndex); }
+        if (!isCurrentRender(requestId, renderId) || documentRef.current !== pdf || isHidden()) return false;
+        canvas.dataset.renderKey = bitmapKey;
+      }
       if (!isCurrentRender(requestId, renderId)) return false;
       const textLayerTask = new TextLayer({ textContentSource: page.streamTextContent(), container: textLayer, viewport });
       textLayerTaskRef.current = textLayerTask;
       await textLayerTask.render();
       if (!isCurrentRender(requestId, renderId)) return false;
       setRenderedHighlightViewport({ pageIndex: view.pageIndex, viewport });
+      bitmapScheduleRef.current();
       return true;
     } catch (error) {
-      if (!isCurrentRender(requestId, renderId)) return false;
+      if (!isCurrentRender(requestId, renderId) || isHidden() || (error instanceof Error && error.name === 'RenderingCancelledException')) return false;
       setState({ kind: 'error', message: readerError(error, 'render') });
       return false;
     } finally {
@@ -2172,6 +2315,7 @@ function ReaderPage() {
       canvas.style.width = `${Math.floor(viewport.width)}px`;
       canvas.style.height = `${Math.floor(viewport.height)}px`;
     });
+    bitmapScheduleRef.current();
   }
 
   async function loadPdf(bytes: Uint8Array, fileName: string, requestId: number, requestedPageIndex?: number, localSource = false, onlineUrl?: string) {
@@ -2227,6 +2371,13 @@ function ReaderPage() {
       // leave Paper Insights waiting forever for extraction to start.
       const initialRenderId = renderIdRef.current + 1;
       const initialRenderPromise = initialZoomRevision === zoomInteractionRef.current ? renderPage(pdf, initialView, requestId) : Promise.resolve(true);
+      // Establish all CSS placeholders, including saved manual zoom. Let the
+      // active render finish first so whole-document metadata requests cannot
+      // queue ahead of its operator list in the PDF worker. Unsized pages are
+      // excluded from prefetch until this completes; no bitmaps are allocated.
+      const initialGeometryPromise = initialRenderPromise.then(() =>
+        sizeAllPageCanvases(pdf, initialView, () => isCurrent(requestId) && initialZoomRevision === zoomInteractionRef.current))
+        .catch(() => undefined);
       setThumbnailSession(requestId);
       const contentKey = await hashPromise;
       if (!isCurrent(requestId) || documentRef.current !== pdf) return;
@@ -2241,8 +2392,10 @@ function ReaderPage() {
       // A superseding render owns the active surface. A failure without a
       // successor is a real rendering error and must keep its error state.
       if (!initialRenderSucceeded && renderIdRef.current === initialRenderId) return;
+      await initialGeometryPromise;
+      if (!isCurrent(requestId) || documentRef.current !== pdf) return;
       if (requestedPageIndex !== undefined && initialView.pageIndex > 0 && initialZoomRevision === zoomInteractionRef.current) {
-        await sizeAllPageCanvases(pdf, initialView);
+        await initialGeometryPromise;
         if (!isCurrent(requestId) || documentRef.current !== pdf) return;
         pageElementsRef.current.get(initialView.pageIndex)?.scrollIntoView({ behavior: 'instant', block: 'start' });
       }
@@ -2822,9 +2975,16 @@ function ReaderPage() {
     if (state.kind !== 'ready') return;
     let frame = 0;
     const supportsScrollEnd = 'onscrollend' in document;
+    let deferredScroll: ReturnType<typeof setTimeout> | undefined;
     const onScroll = () => {
       if (!supportsScrollEnd && pendingSourcePageRef.current !== null) armSourcePageSyncFallback();
-      if (frame || performance.now() < navigationScrollUntilRef.current || selectionDraft) return;
+      if (frame || selectionDraft) return;
+      const navigationDelay = navigationScrollUntilRef.current - performance.now();
+      if (navigationDelay > 0) {
+        if (deferredScroll) clearTimeout(deferredScroll);
+        deferredScroll = setTimeout(onScroll, Math.ceil(navigationDelay) + 1);
+        return;
+      }
       frame = requestAnimationFrame(() => {
         frame = 0;
         const readingLine = Math.min(window.innerHeight * 0.35, 300);
@@ -2848,6 +3008,7 @@ function ReaderPage() {
     window.addEventListener('wheel', interruptNavigationScroll, { passive: true });
     window.addEventListener('touchstart', interruptNavigationScroll, { passive: true });
     return () => {
+      if (deferredScroll) clearTimeout(deferredScroll);
       window.removeEventListener('scroll', onScroll);
       if (supportsScrollEnd) document.removeEventListener('scrollend', onScrollEnd);
       window.removeEventListener('wheel', interruptNavigationScroll);
@@ -3471,8 +3632,8 @@ function ReaderPage() {
                     aria-current={pageIndex === state.pageIndex ? 'page' : undefined}
                     aria-label={t(pageIndex === state.pageIndex ? 'reader.page.goToCurrent' : 'reader.page.goTo', { page: pageIndex + 1 })}
                   >
-                    {thumbnail?.kind === 'ready'
-                      ? <img src={thumbnail.src} alt={t('reader.page.thumbnail', { page: pageIndex + 1 })} />
+                    {thumbnail?.kind === 'ready' && readerVisible
+                      ? <img loading="lazy" decoding="async" src={thumbnail.src} alt={t('reader.page.thumbnail', { page: pageIndex + 1 })} />
                       : <span className="thumbnail-placeholder">{t(thumbnail?.kind === 'error' ? 'reader.page.previewUnavailable' : 'reader.page.previewRendering')}</span>}
                     <span>{t('reader.page.label')} {pageIndex + 1}</span>
                   </button>;
@@ -3498,6 +3659,8 @@ function ReaderPage() {
             onClick={pageIndex === state.pageIndex ? onPdfPageClick : () => changeView({ pageIndex, scale: state.scale, rotation: state.rotation })}
           >
           <canvas
+            width={0}
+            height={0}
             ref={(canvas) => {
               if (canvas) passivePageCanvasesRef.current.set(pageIndex, canvas);
               else passivePageCanvasesRef.current.delete(pageIndex);
