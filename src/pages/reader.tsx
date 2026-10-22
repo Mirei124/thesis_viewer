@@ -192,6 +192,7 @@ type DetailedOverviewSectionDiagnostic = {
   formatRepairCount?: number;
   semanticReviewCount?: number;
   semanticReviewSkipped?: number;
+  failures?: Array<{ reason: keyof typeof DETAILED_FAILURE_LABEL_KEYS; detail: string }>;
   warnings?: string[];
   usage?: CompatibleUsage;
 };
@@ -290,6 +291,11 @@ function overviewErrorMessage(error: unknown, subject: 'overview' | 'detailedOve
   return uiText(readerModelErrorKey(error, 'overview'));
 }
 
+const DETAILED_FAILURE_LABEL_KEYS = {
+  no_context: 'reader.insights.failureNoContext', model_unavailable: 'reader.insights.failureModelUnavailable',
+  request: 'reader.insights.failureRequest', format: 'reader.insights.failureFormat',
+  source: 'reader.insights.failureSource', budget: 'reader.insights.failureBudget',
+} as const satisfies Record<string, MessageKey>;
 const DETAILED_SECTION_LABEL_KEYS: Record<DetailedSectionId, MessageKey> = {
   problem_motivation: 'reader.insights.section.problem_motivation',
   method: 'reader.insights.section.method',
@@ -3271,8 +3277,8 @@ function ReaderPage() {
                     <div className="detailed-overview-sections">
                       {(detailedOverview.result?.sections ?? detailedOverview.completedSections ?? []).map((section) => <section key={section.id} className="detailed-overview-section">
                         <h5>{t(DETAILED_SECTION_LABEL_KEYS[section.id])}</h5>
-                        {section.status !== 'available' && <p className="overview-unavailable">{t(section.status === 'not_applicable' ? 'reader.insights.notApplicable' : 'reader.insights.insufficient')}</p>}
-                        {section.blocks.map((block, index) => <div key={`${section.id}-${index}`} className="detailed-overview-block">
+                        {section.status !== 'available' && (section.failureReasons ?? (section.failureReason ? [section.failureReason] : [undefined])).map((reason, index) => <p key={index} className="overview-unavailable">{t(section.status === 'not_applicable' ? 'reader.insights.notApplicable' : reason ? DETAILED_FAILURE_LABEL_KEYS[reason] : 'reader.insights.insufficient')}</p>)}
+                        {section.blocks.filter(block => block.text.trim()).map((block, index) => <div key={`${section.id}-${index}`} className="detailed-overview-block">
                           <div className="insight-text">{renderInlineEvidence(section.status !== 'available' && block.text === UNGROUNDED_DETAILED_SECTION_FALLBACK ? t('reader.insights.ungroundedFallback') : block.text, block.evidenceRefs ?? [], true)}</div>
                         </div>)}
                       </section>)}
@@ -3340,6 +3346,7 @@ function ReaderPage() {
                   ].filter((part): part is string => Boolean(part));
                   return <li key={diagnostic.id}>
                     {diagnostic.id === 'method' && diagnostic.semanticReviewEnabled === false && <p>{t('reader.tools.methodReviewOff')}</p>}
+                    {diagnostic.failures?.map((failure, index) => <p key={index}>{t(DETAILED_FAILURE_LABEL_KEYS[failure.reason])} <small>{failure.detail}</small></p>)}
                     {!!diagnostic.formatRepairCount && <p>{t('reader.tools.formatRepair', { count: diagnostic.formatRepairCount })}</p>}
                     {diagnostic.id === 'method' && diagnostic.semanticReviewEnabled && diagnostic.semanticReviewCount !== undefined && <p>{t('reader.tools.methodReview', { count: diagnostic.semanticReviewCount, skipped: diagnostic.semanticReviewSkipped ?? 0 })}</p>}
                     {diagnostic.batchCount && diagnostic.batchCount > 1 && <p>{t('reader.tools.chapterBatches', { count: diagnostic.batchCount })}</p>}

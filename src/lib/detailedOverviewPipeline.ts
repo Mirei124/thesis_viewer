@@ -8,7 +8,7 @@ import { appendProgressiveEvidenceStage, createProgressiveEvidenceSession, type 
 import {
   DETAILED_SECTION_IDS, DetailedSectionFormatError, detailedSectionLengthGuidance, assembleDetailedOverview, parseDetailedSectionResponse, progressiveDetailedSectionMessages,
   unavailableDetailedSection, validateProgressiveDetailedSectionResponse,
-  type DetailedOverview, type DetailedOverviewSection, type DetailedSectionId,
+  type DetailedOverview, type DetailedOverviewSection, type DetailedSectionId, type DetailedSectionFailureReason,
 } from './detailedOverview';
 
 export type DetailedPipelineDiagnostic = {
@@ -20,6 +20,7 @@ export type DetailedPipelineDiagnostic = {
   outputLimit: number;
   usage?: CompatibleUsage;
   warnings: string[];
+  failures?: Array<{ reason: DetailedSectionFailureReason; detail: string }>;
   semanticReviewEnabled: boolean;
   formatRepairCount: number;
   semanticReviewCount?: number;
@@ -57,6 +58,25 @@ function addUsage(total: CompatibleUsage | undefined, next: CompatibleUsage | un
     if (typeof next[key] === 'number') result[key] = (result[key] ?? 0) + next[key]!;
   }
   return result;
+}
+
+/** Never copy provider errors, response text, arbitrary aliases or URLs into diagnostics. */
+function safeFailureDetail(error: unknown, reason: DetailedSectionFailureReason): string {
+  const known = new Set([
+    'The model response was not valid detailed-section JSON.',
+    'The model response did not match the detailed-section format.',
+    'Invalid detailed-section blocks.', 'Invalid detailed-section block.',
+    'The model response did not match the detailed-section evidence rules.',
+    'Duplicate source aliases.', 'Text contains an undeclared source alias.',
+    'Block aliases must be declared in section sources.', 'Section sources must match block sources.',
+    'A model source alias does not resolve to verifiable local evidence.',
+    'A model source alias resolves to a local quote that no longer matches this PDF.',
+  ]);
+  if (error instanceof Error && known.has(error.message)) return error.message;
+  if (error instanceof Error && /referenced.*source alias/.test(error.message)) return 'The response referenced an unknown or unsent source alias.';
+  return ({ no_context: 'No eligible body source paragraphs were selected.', model_unavailable: 'The model reported insufficient support in the supplied sources.',
+    request: 'A model request failed; provider error details are omitted.', format: 'No valid JSON/schema response was obtained after the single format repair.',
+    source: 'The response failed local source binding validation.', budget: 'The request cannot fit the configured context capacity.' })[reason];
 }
 
 function prepareBatch(
@@ -142,11 +162,21 @@ export async function generateDetailedOverview(options: DetailedOverviewPipeline
     };
     diagnostics.push(diagnostic);
     if (!selection.paragraphs.length) {
-      sections.push(unavailableDetailedSection(id));
+      diagnostic.failures = [{ reason: 'no_context', detail: 'No eligible body source paragraphs were selected.' }];
+      sections.push(unavailableDetailedSection(id, 'unavailable', '', 'no_context'));
       await publishCompleted();
       continue;
     }
-    const batches = await prepareBatches(id, selection, ledger, config, signal);
+    let batches: PreparedBatch[];
+    try { batches = await prepareBatches(id, selection, ledger, config, signal); }
+    catch (error) {
+      checkAbort(signal);
+      if (!(error instanceof DetailedContextBudgetError)) throw error;
+      diagnostic.failures = [{ reason: 'budget', detail: 'The anchored sources and instructions cannot fit the configured context capacity.' }];
+      sections.push(unavailableDetailedSection(id, 'unavailable', '', 'budget'));
+      await publishCompleted();
+      continue;
+    }
     diagnostic.batchCount = batches.length;
     if (batches.length > 1) diagnostic.warnings.push('The selected body paragraphs were read in consecutive independent batches; explanations are joined in source order and may contain repetition.');
     const pieces: DetailedOverviewSection[] = [];
@@ -158,10 +188,13 @@ export async function generateDetailedOverview(options: DetailedOverviewPipeline
       diagnostic.outputLimit += batch.budget.outputLimit;
       diagnostic.warnings.push(...batch.budget.warnings);
       let providerCompleted = false;
+      let failureReason: DetailedSectionFailureReason = 'request';
+      let recordedBatchFailure = false;
       try {
         const response = await request({ config: { ...config, outputLimit: batch.budget.outputLimit }, messages: batch.messages, signal });
         checkAbort(signal);
         providerCompleted = true;
+        failureReason = 'source';
         diagnostic.usage = addUsage(diagnostic.usage, response.usage);
         if (response.usage) onUsage?.(response.usage);
         let piece: DetailedOverviewSection | undefined;
@@ -174,6 +207,7 @@ export async function generateDetailedOverview(options: DetailedOverviewPipeline
           // failures, not formatting problems: never retry those as repair.
           if (!(error instanceof DetailedSectionFormatError)) throw error;
           formatFailure = true;
+          failureReason = 'format';
           diagnostic.warnings.push('The initial response had invalid JSON or schema and is withheld pending one format repair.');
         }
         const semantic = config.semanticReview === true && id === 'method' && (formatFailure || piece?.status === 'available');
@@ -189,6 +223,7 @@ export async function generateDetailedOverview(options: DetailedOverviewPipeline
           const followupBudget = requestBudget(followupMessages, config);
           const reserve = Math.min(config.outputLimit, semantic ? 12000 : 4000, Math.floor(config.contextLimit / 2));
           if (!followupBudget.canSend || followupBudget.outputLimit < reserve) {
+            if (!piece) failureReason = 'budget';
             if (semantic) diagnostic.semanticReviewSkipped = (diagnostic.semanticReviewSkipped ?? 0) + 1;
             diagnostic.warnings.push(semantic
               ? 'Method semantic review could not fit the output-reserving budget; any valid initial draft was retained without semantic review.'
@@ -197,11 +232,14 @@ export async function generateDetailedOverview(options: DetailedOverviewPipeline
             await yieldForCancellation(signal);
             diagnostic.inputTokens += followupBudget.inputTokens;
             diagnostic.outputLimit += followupBudget.outputLimit;
+            let repairCompleted = false;
             try {
               const repaired = await request({ config: { ...config, outputLimit: followupBudget.outputLimit }, messages: followupMessages, signal });
               checkAbort(signal);
+              repairCompleted = true;
               diagnostic.usage = addUsage(diagnostic.usage, repaired.usage);
               if (repaired.usage) onUsage?.(repaired.usage);
+              failureReason = 'source';
               const corrected = validateProgressiveDetailedSectionResponse(id, parseDetailedSectionResponse(repaired.content), batch.session, ledger, pages);
               if (semantic && corrected.status !== 'available') throw new Error('Semantic review did not return a supported method.');
               piece = corrected;
@@ -213,6 +251,13 @@ export async function generateDetailedOverview(options: DetailedOverviewPipeline
             } catch (error) {
               checkAbort(signal);
               if (error instanceof Error && error.name === 'AbortError') throw error;
+              if (!repairCompleted) failureReason = 'request';
+              else if (error instanceof DetailedSectionFormatError) failureReason = 'format';
+              if (!piece) {
+                diagnostic.failures ??= [];
+                diagnostic.failures.push({ reason: failureReason, detail: safeFailureDetail(error, failureReason) });
+                recordedBatchFailure = true;
+              }
               if (semantic) diagnostic.semanticReviewSkipped = (diagnostic.semanticReviewSkipped ?? 0) + 1;
               diagnostic.warnings.push(semantic
                 ? 'Method semantic review failed or returned invalid sources; any valid initial draft was retained without a successful semantic review.'
@@ -231,17 +276,25 @@ export async function generateDetailedOverview(options: DetailedOverviewPipeline
       } catch (error) {
         checkAbort(signal);
         if (error instanceof Error && error.name === 'AbortError') throw error;
-        pieces.push(unavailableDetailedSection(id, 'unavailable', providerCompleted
-          ? '本部分回答未通过来源绑定校验，无法安全展示；请重新生成或查阅原文。'
-          : '本部分模型请求失败，未生成解释；已完成的其他部分予以保留。'));
-        diagnostic.warnings.push(providerCompleted
-          ? 'A batch response failed format or source binding validation; its unsupported claims were discarded.'
-          : 'A provider request failed; this batch is unavailable and other completed sections were retained.');
+        const reason = providerCompleted ? failureReason : 'request';
+        pieces.push(unavailableDetailedSection(id, 'unavailable', '', reason));
+        if (!recordedBatchFailure) {
+          diagnostic.failures ??= [];
+          diagnostic.failures.push({ reason, detail: safeFailureDetail(error, reason) });
+        }
       }
       aliasOffset += batch.sourceCount;
     }
     diagnostic.warnings = [...new Set(diagnostic.warnings)];
-    sections.push({ id, status: pieces.every(piece => piece.status === 'available') ? 'available' : pieces.every(piece => piece.status === 'not_applicable') ? 'not_applicable' : 'unavailable', blocks: pieces.flatMap(piece => piece.blocks) });
+    const failureReasons = [...new Set(pieces.flatMap(piece => piece.failureReasons ?? (piece.failureReason ? [piece.failureReason] : [])))];
+    for (const reason of failureReasons) {
+      if (!diagnostic.failures?.some(failure => failure.reason === reason)) {
+        diagnostic.failures ??= [];
+        diagnostic.failures.push({ reason, detail: safeFailureDetail(undefined, reason) });
+      }
+    }
+    sections.push({ id, status: pieces.every(piece => piece.status === 'available') ? 'available' : pieces.every(piece => piece.status === 'not_applicable') ? 'not_applicable' : 'unavailable',
+      ...(failureReasons.length ? { failureReason: failureReasons[0], failureReasons } : {}), blocks: pieces.flatMap(piece => piece.blocks) });
     await publishCompleted();
   }
   return { result: assembleDetailedOverview(sections), diagnostics };

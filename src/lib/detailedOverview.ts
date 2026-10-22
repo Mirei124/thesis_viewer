@@ -13,13 +13,14 @@ import type { PageExtraction } from './pdfPageBlocks';
 import type { VerifiedEvidenceRef } from './inlineEvidence';
 
 export const DETAILED_OVERVIEW_PROMPT_VERSION = 'research-detailed-overview-zh-v4';
-export const PROGRESSIVE_DETAILED_OVERVIEW_PROMPT_VERSION = 'research-detailed-overview-zh-v19';
+export const PROGRESSIVE_DETAILED_OVERVIEW_PROMPT_VERSION = 'research-detailed-overview-zh-v20';
 
 export const DETAILED_SECTION_IDS = [
   'problem_motivation', 'method', 'contributions_novelty', 'experiments_ablations', 'limitations',
 ] as const;
 
 export type DetailedSectionId = typeof DETAILED_SECTION_IDS[number];
+export type DetailedSectionFailureReason = 'no_context' | 'model_unavailable' | 'request' | 'format' | 'source' | 'budget';
 export type DetailedSectionStatus = 'available' | 'unavailable' | 'not_applicable';
 export type DetailedBlockType = 'paragraph' | 'step' | 'bullet' | 'equation';
 export type DetailedClaimKind = 'author_claim' | 'source_fact' | 'observed_result' | 'inference' | 'missing_information';
@@ -35,6 +36,8 @@ export type DetailedOverviewBlock = {
 export type DetailedOverviewSection = {
   id: DetailedSectionId;
   status: DetailedSectionStatus;
+  failureReason?: DetailedSectionFailureReason;
+  failureReasons?: DetailedSectionFailureReason[];
   blocks: DetailedOverviewBlock[];
 };
 
@@ -189,11 +192,12 @@ export function unavailableDetailedSection(
   sectionId: DetailedSectionId,
   status: Exclude<DetailedSectionStatus, 'available'> = 'unavailable',
   text = 'The available PDF excerpts could not safely support this section.',
+  failureReason?: DetailedSectionFailureReason,
 ): DetailedOverviewSection {
   const block: DetailedOverviewBlock = {
     type: 'paragraph', text, evidenceIds: [], claimKind: 'missing_information',
   };
-  return { id: sectionId, status, blocks: [block] };
+  return { id: sectionId, status, ...(status === 'unavailable' ? { failureReason: failureReason ?? 'model_unavailable' } : {}), blocks: [block] };
 }
 
 export function assembleDetailedOverview(sections: readonly DetailedOverviewSection[]): DetailedOverview {

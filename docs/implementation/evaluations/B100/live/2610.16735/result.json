@@ -1,0 +1,323 @@
+{
+  "result": {
+    "kind": "detailed",
+    "sections": [
+      {
+        "id": "problem_motivation",
+        "status": "available",
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": "GRPO 单标量奖励使轨迹共享 advantage，掩盖 token 对视觉证据的依赖（E002）；偏好/过程监督或教师分布提供细粒度信号（E003, E004），本文以答案条件视觉 attention 作保均值 token 校正（E008）。",
+            "evidenceIds": [
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i92",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i93",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i94",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i95",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i96",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i98",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i99",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i100",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i101",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i102",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i103",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i104",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i105",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i106",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i107",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i108",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i1",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i2",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i3",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i4",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i5",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i6",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i7",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i9",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i10",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i29",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i31",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i32",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i33",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i34",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i35",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i36",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i37",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i39",
+              "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i40"
+            ],
+            "evidenceRefs": [
+              {
+                "alias": "E002",
+                "evidenceIds": [
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i92",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i93",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i94",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i95",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i96",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i98",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i99",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i100",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i101",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i102",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i103",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i104",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i105"
+                ]
+              },
+              {
+                "alias": "E003",
+                "evidenceIds": [
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i106",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i107",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p0:i108"
+                ]
+              },
+              {
+                "alias": "E004",
+                "evidenceIds": [
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i1",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i2",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i3",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i4",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i5",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i6",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i7",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i9",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i10"
+                ]
+              },
+              {
+                "alias": "E008",
+                "evidenceIds": [
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i29",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i31",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i32",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i33",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i34",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i35",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i36",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i37",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i39",
+                  "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:pdf-evidence-ledger-v1:p1:i40"
+                ]
+              }
+            ],
+            "claimKind": "source_fact"
+          }
+        ]
+      },
+      {
+        "id": "method",
+        "status": "unavailable",
+        "failureReason": "model_unavailable",
+        "failureReasons": [
+          "model_unavailable"
+        ],
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": "Diagnostic skips this section.",
+            "evidenceIds": [],
+            "claimKind": "missing_information"
+          }
+        ]
+      },
+      {
+        "id": "contributions_novelty",
+        "status": "unavailable",
+        "failureReason": "model_unavailable",
+        "failureReasons": [
+          "model_unavailable"
+        ],
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": "Diagnostic skips this section.",
+            "evidenceIds": [],
+            "claimKind": "missing_information"
+          }
+        ]
+      },
+      {
+        "id": "experiments_ablations",
+        "status": "unavailable",
+        "failureReason": "model_unavailable",
+        "failureReasons": [
+          "model_unavailable"
+        ],
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": "Diagnostic skips this section.",
+            "evidenceIds": [],
+            "claimKind": "missing_information"
+          }
+        ]
+      },
+      {
+        "id": "limitations",
+        "status": "unavailable",
+        "failureReason": "model_unavailable",
+        "failureReasons": [
+          "model_unavailable"
+        ],
+        "blocks": [
+          {
+            "type": "paragraph",
+            "text": "Diagnostic skips this section.",
+            "evidenceIds": [],
+            "claimKind": "missing_information"
+          }
+        ]
+      }
+    ],
+    "uncertainties": []
+  },
+  "diagnostics": [
+    {
+      "id": "problem_motivation",
+      "newSourceCount": 12,
+      "availableAliasCount": 12,
+      "batchCount": 1,
+      "inputTokens": 3656,
+      "outputLimit": 26744,
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body.",
+        "Token counts are conservative estimates; provider tokenization and reasoning usage may differ.",
+        "Actual output allowance was reduced to fit the configured total context window."
+      ],
+      "semanticReviewEnabled": false,
+      "formatRepairCount": 0,
+      "usage": {
+        "promptTokens": 2164,
+        "completionTokens": 4294,
+        "totalTokens": 6458,
+        "promptCacheHitTokens": 384,
+        "promptCacheMissTokens": 1780
+      }
+    },
+    {
+      "id": "method",
+      "newSourceCount": 94,
+      "availableAliasCount": 94,
+      "batchCount": 1,
+      "inputTokens": 12680,
+      "outputLimit": 17720,
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Adjacent context: added 2 paragraphs (approximately 102 tokens); 0 candidates exceeded the bounded growth allowance. The column-wide ceiling is 2400 tokens. Only original matches expand, within the same subsection and adjacent pages.",
+        "4 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body.",
+        "Token counts are conservative estimates; provider tokenization and reasoning usage may differ.",
+        "Actual output allowance was reduced to fit the configured total context window."
+      ],
+      "semanticReviewEnabled": false,
+      "formatRepairCount": 0,
+      "failures": [
+        {
+          "reason": "model_unavailable",
+          "detail": "The model reported insufficient support in the supplied sources."
+        }
+      ]
+    },
+    {
+      "id": "contributions_novelty",
+      "newSourceCount": 12,
+      "availableAliasCount": 12,
+      "batchCount": 1,
+      "inputTokens": 3668,
+      "outputLimit": 26732,
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Adjacent context: added 2 paragraphs (approximately 102 tokens); 0 candidates exceeded the bounded growth allowance. The column-wide ceiling is 2400 tokens. Only original matches expand, within the same subsection and adjacent pages.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body.",
+        "Token counts are conservative estimates; provider tokenization and reasoning usage may differ.",
+        "Actual output allowance was reduced to fit the configured total context window."
+      ],
+      "semanticReviewEnabled": false,
+      "formatRepairCount": 0,
+      "failures": [
+        {
+          "reason": "model_unavailable",
+          "detail": "The model reported insufficient support in the supplied sources."
+        }
+      ]
+    },
+    {
+      "id": "experiments_ablations",
+      "newSourceCount": 59,
+      "availableAliasCount": 59,
+      "batchCount": 1,
+      "inputTokens": 7913,
+      "outputLimit": 22487,
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "3 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body.",
+        "Token counts are conservative estimates; provider tokenization and reasoning usage may differ.",
+        "Actual output allowance was reduced to fit the configured total context window."
+      ],
+      "semanticReviewEnabled": false,
+      "formatRepairCount": 0,
+      "failures": [
+        {
+          "reason": "model_unavailable",
+          "detail": "The model reported insufficient support in the supplied sources."
+        }
+      ]
+    },
+    {
+      "id": "limitations",
+      "newSourceCount": 6,
+      "availableAliasCount": 6,
+      "batchCount": 1,
+      "inputTokens": 2353,
+      "outputLimit": 28047,
+      "warnings": [
+        "Automatic geometry and section roles are context heuristics, not semantic verification.",
+        "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+        "Appendices and all supplementary subsections are excluded, including when referenced by the body.",
+        "Token counts are conservative estimates; provider tokenization and reasoning usage may differ.",
+        "Actual output allowance was reduced to fit the configured total context window."
+      ],
+      "semanticReviewEnabled": false,
+      "formatRepairCount": 0,
+      "failures": [
+        {
+          "reason": "model_unavailable",
+          "detail": "The model reported insufficient support in the supplied sources."
+        }
+      ]
+    }
+  ],
+  "methodOnly": false,
+  "sourceHashes": {
+    "structuredPaper": "adc3b5ca10a931a53c8fd0164616156d6f9a5f3ee128721930f80371aa46a478",
+    "detailedContext": "06f2d6f07b8daee73cd58ba9736b7e9df857d5589678c4ea559b884a27d6ea6f",
+    "detailedOverview": "28343b0da33418636f0f446cd9f16f2c196e0b6f5dad6c986b9711fcd6629a88",
+    "detailedOverviewPipeline": "f9c10e3653105a21d14a03b4e7075af8a29432b707e8eb75cdd30f3fd9493614",
+    "evidencePacket": "e366af9665aa713f1b185cd91d8fff96be099017f3081d3772d0d957361b39a1"
+  },
+  "pricing": "Provider cost not returned; token usage retained without assuming a pricing schedule.",
+  "usageTotals": {
+    "promptTokens": 2164,
+    "completionTokens": 4294,
+    "totalTokens": 6458,
+    "promptCacheHitTokens": 384,
+    "promptCacheMissTokens": 1780
+  },
+  "anchorValidation": {
+    "refCount": 4,
+    "evidenceIdCount": 35,
+    "uniqueEvidenceIds": 35,
+    "invalidEvidenceIds": []
+  },
+  "elapsedMs": 20103,
+  "requestCount": 1
+}

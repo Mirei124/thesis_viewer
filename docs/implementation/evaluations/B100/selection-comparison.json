@@ -1,0 +1,926 @@
+[
+  {
+    "name": "2610.16735",
+    "id": "problem_motivation",
+    "beforeChars": 2087,
+    "afterChars": 4580,
+    "deltaChars": 2493,
+    "beforeEstimatedTokens": 707,
+    "afterEstimatedTokens": 1543,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": [
+      {
+        "id": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p0:10",
+        "page": 1,
+        "section": "1 INTRODUCTION",
+        "text": "Multimodal large language models are advancing rapidly, spanning tool-integrated reasoning, streaming perception, multi-image grounding, policy optimization, and large-scale evaluation (Chen et al., 2026b; Shen et al., 2026; Chen et al., 2026a; Zheng et al., 2026; Han et al., 2025; Xu et al., 2025). Reinforcement learning with verifiable rewards (RLVR) uses automatic feedback, such as answer correctness and format compliance, to improve reasoning. Methods such as GRPO esti- mate policy advantages from relative rewards among multiple responses to the same prompt, avoid training a separate value network, and have expanded from text reasoning to vision-language mod- els (Shao et al., 2024; Guo et al., 2025; Huang et al., 2025; Shen et al., 2025; Meng et al., 2025; Chen et al., 2025). Yet the environment usually returns only one scalar reward per response, and the resulting sequence advantage is applied to the entire generated trajectory. Every token in a response therefore receives the same advantage coefficient, leaving differences in credit within the trajectory implicit, even when individual tokens rely on different visual evidence."
+      },
+      {
+        "id": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:14",
+        "page": 2,
+        "section": "1 INTRODUCTION",
+        "text": "et al., 2024; Wang et al., 2025a), or read dense guidance from teacher- and privileged-context output- token distributions (Agarwal et al., 2024; Yang et al., 2026b; Pan et al., 2026). A vision-language model also produces attention over visual inputs at every generated token, providing an internal readout distinct from output behavior. We treat visual attention as a proxy to be evaluated through behavioral diagnostics and controlled training comparisons, rather than as a causal attribution or certificate of correctness (Liu et al., 2026; Zhao et al., 2026a; Lu et al., 2026; Yang et al., 2026a). This leads to our central question: Can token-varying internal visual statistics refine credit within a trajectory while preserving the verifier-derived trajectory-mean advantage?"
+      },
+      {
+        "id": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:16",
+        "page": 2,
+        "section": "1 INTRODUCTION",
+        "text": "old"
+      },
+      {
+        "id": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:19",
+        "page": 2,
+        "section": "1 INTRODUCTION",
+        "text": "To summarize, our contributions are as follows:"
+      },
+      {
+        "id": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:21",
+        "page": 2,
+        "section": "1 INTRODUCTION",
+        "text": "• Visual Attention-Guided Credit. VAttnPO derives a token-level correction from answer- conditioned visual attention through similarity centering, relative-position weighting, and sign-preserving balancing, varying credit within a response while preserving the trajectory- mean advantage."
+      },
+      {
+        "id": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:22",
+        "page": 2,
+        "section": "1 INTRODUCTION",
+        "text": "• Empirical Results. On Qwen3-VL-8B-Instruct, VAttnPO improves AVE over six image tasks by 2.53 points over GRPO and records higher scores on every reported metric for structured understanding, video understanding, and MME."
+      }
+    ]
+  },
+  {
+    "name": "2610.16735",
+    "id": "method",
+    "beforeChars": 12029,
+    "afterChars": 12283,
+    "deltaChars": 254,
+    "beforeEstimatedTokens": 4166,
+    "afterEstimatedTokens": 4249,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Adjacent context: added 2 paragraphs (approximately 102 tokens); 0 candidates exceeded the bounded growth allowance. The column-wide ceiling is 2400 tokens. Only original matches expand, within the same subsection and adjacent pages.",
+      "4 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": [
+      {
+        "id": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p0:11",
+        "page": 1,
+        "section": "1 INTRODUCTION",
+        "text": "This granularity gap is especially important in multimodal reasoning: a correct answer does not im- ply consistent use of relevant visual regions, and equally rewarded responses may follow different vi- sual reasoning paths. Existing fine-grained approaches rely on preference or process supervision (Yu"
+      },
+      {
+        "id": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:16",
+        "page": 2,
+        "section": "1 INTRODUCTION",
+        "text": "old"
+      }
+    ]
+  },
+  {
+    "name": "2610.16735",
+    "id": "contributions_novelty",
+    "beforeChars": 3466,
+    "afterChars": 3772,
+    "deltaChars": 306,
+    "beforeEstimatedTokens": 1165,
+    "afterEstimatedTokens": 1267,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Adjacent context: added 2 paragraphs (approximately 102 tokens); 0 candidates exceeded the bounded growth allowance. The column-wide ceiling is 2400 tokens. Only original matches expand, within the same subsection and adjacent pages.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": [
+      {
+        "id": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p0:11",
+        "page": 1,
+        "section": "1 INTRODUCTION",
+        "text": "This granularity gap is especially important in multimodal reasoning: a correct answer does not im- ply consistent use of relevant visual regions, and equally rewarded responses may follow different vi- sual reasoning paths. Existing fine-grained approaches rely on preference or process supervision (Yu"
+      },
+      {
+        "id": "sha256:12084565c27d162704a6452df96fe973c735c26eb1af8ba87dff2aefb609f29d:structured-paper-v1:p1:16",
+        "page": 2,
+        "section": "1 INTRODUCTION",
+        "text": "old"
+      }
+    ]
+  },
+  {
+    "name": "2610.16735",
+    "id": "experiments_ablations",
+    "beforeChars": 9555,
+    "afterChars": 9503,
+    "deltaChars": -52,
+    "beforeEstimatedTokens": 3217,
+    "afterEstimatedTokens": 3197,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "3 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": []
+  },
+  {
+    "name": "2610.16735",
+    "id": "limitations",
+    "beforeChars": 1712,
+    "afterChars": 1712,
+    "deltaChars": 0,
+    "beforeEstimatedTokens": 575,
+    "afterEstimatedTokens": 575,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": []
+  },
+  {
+    "name": "B100-3DGS",
+    "id": "problem_motivation",
+    "beforeChars": 2253,
+    "afterChars": 4861,
+    "deltaChars": 2608,
+    "beforeEstimatedTokens": 766,
+    "afterEstimatedTokens": 1655,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": [
+      {
+        "id": "sha256:f4c0c9f27e2d02b0265017f66049d471eb66cb50203bc918f51ba07d20cbbe11:structured-paper-v1:p0:23",
+        "page": 1,
+        "section": "1 INTRODUCTION",
+        "text": "Meshes and points are the most common 3D scene representations because they are explicit and are a good fit for fast GPU/CUDA-based rasterization. In contrast, recent Neural Radiance Field (NeRF) meth- ods build on continuous scene representations, typically optimizing a Multi-Layer Perceptron (MLP) using volumetric ray-marching for novel-view synthesis of captured scenes. Similarly, the most efficient radiance field solutions to date build on continuous representations by interpolating values stored in, e.g., voxel [Fridovich-Keil and Yu et al. 2022] or hash [Müller et al. 2022] grids or points [Xu et al. 2022]. While the continuous nature of these methods helps optimization, the stochastic sampling required for rendering is costly and can result in noise. We introduce a new approach that combines the best of both worlds: our 3D Gaussian representation allows optimization with state-of-the-art (SOTA) visual quality and competitive training times, while our tile-based splatting solution ensures real-time ren- dering at SOTA quality for 1080p resolution on several previously published datasets [Barron et al. 2022; Hedman et al. 2018; Knapitsch et al. 2017] (see Fig. 1)."
+      },
+      {
+        "id": "sha256:f4c0c9f27e2d02b0265017f66049d471eb66cb50203bc918f51ba07d20cbbe11:structured-paper-v1:p0:25",
+        "page": 1,
+        "section": "1 INTRODUCTION",
+        "text": "ACM Trans. Graph., Vol. 42, No. 4, Article 1. Publication date: August 2023."
+      },
+      {
+        "id": "sha256:f4c0c9f27e2d02b0265017f66049d471eb66cb50203bc918f51ba07d20cbbe11:structured-paper-v1:p1:26",
+        "page": 2,
+        "section": "1 INTRODUCTION",
+        "text": "1:2 • Bernhard Kerbl, Georgios Kopanas, Thomas Leimkühler, and George Drettakis"
+      },
+      {
+        "id": "sha256:f4c0c9f27e2d02b0265017f66049d471eb66cb50203bc918f51ba07d20cbbe11:structured-paper-v1:p1:27",
+        "page": 2,
+        "section": "1 INTRODUCTION",
+        "text": "and Yu et al. 2022; Müller et al. 2022], but struggle to achieve the visual quality obtained by the current SOTA NeRF methods, i.e., Mip-NeRF360 [Barron et al. 2022], which requires up to 48 hours of training time. The fast – but lower-quality – radiance field methods can achieve interactive rendering times depending on the scene (10-15 frames per second), but fall short of real-time rendering at high resolution."
+      },
+      {
+        "id": "sha256:f4c0c9f27e2d02b0265017f66049d471eb66cb50203bc918f51ba07d20cbbe11:structured-paper-v1:p1:29",
+        "page": 2,
+        "section": "1 INTRODUCTION",
+        "text": "• The introduction of anisotropic 3D Gaussians as a high-quality, unstructured representation of radiance fields."
+      },
+      {
+        "id": "sha256:f4c0c9f27e2d02b0265017f66049d471eb66cb50203bc918f51ba07d20cbbe11:structured-paper-v1:p1:30",
+        "page": 2,
+        "section": "1 INTRODUCTION",
+        "text": "• An optimization method of 3D Gaussian properties, inter- leaved with adaptive density control that creates high-quality representations for captured scenes."
+      },
+      {
+        "id": "sha256:f4c0c9f27e2d02b0265017f66049d471eb66cb50203bc918f51ba07d20cbbe11:structured-paper-v1:p1:31",
+        "page": 2,
+        "section": "1 INTRODUCTION",
+        "text": "• A fast, differentiable rendering approach for the GPU, which is visibility-aware, allows anisotropic splatting and fast back- propagation to achieve high-quality novel view synthesis."
+      },
+      {
+        "id": "sha256:f4c0c9f27e2d02b0265017f66049d471eb66cb50203bc918f51ba07d20cbbe11:structured-paper-v1:p1:32",
+        "page": 2,
+        "section": "1 INTRODUCTION",
+        "text": "Our results on previously published datasets show that we can opti- mize our 3D Gaussians from multi-view captures and achieve equal or better quality than the best quality previous implicit radiance field approaches. We also can achieve training speeds and quality similar to the fastest methods and importantly provide the first real-time rendering with high quality for novel-view synthesis."
+      }
+    ]
+  },
+  {
+    "name": "B100-3DGS",
+    "id": "method",
+    "beforeChars": 21683,
+    "afterChars": 21682,
+    "deltaChars": -1,
+    "beforeEstimatedTokens": 7405,
+    "afterEstimatedTokens": 7404,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "4 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": []
+  },
+  {
+    "name": "B100-3DGS",
+    "id": "contributions_novelty",
+    "beforeChars": 11014,
+    "afterChars": 11090,
+    "deltaChars": 76,
+    "beforeEstimatedTokens": 3704,
+    "afterEstimatedTokens": 3730,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Adjacent context: added 2 paragraphs (approximately 52 tokens); 0 candidates exceeded the bounded growth allowance. The column-wide ceiling is 2400 tokens. Only original matches expand, within the same subsection and adjacent pages.",
+      "1 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": [
+      {
+        "id": "sha256:f4c0c9f27e2d02b0265017f66049d471eb66cb50203bc918f51ba07d20cbbe11:structured-paper-v1:p0:25",
+        "page": 1,
+        "section": "1 INTRODUCTION",
+        "text": "ACM Trans. Graph., Vol. 42, No. 4, Article 1. Publication date: August 2023."
+      }
+    ]
+  },
+  {
+    "name": "B100-3DGS",
+    "id": "experiments_ablations",
+    "beforeChars": 17574,
+    "afterChars": 17573,
+    "deltaChars": -1,
+    "beforeEstimatedTokens": 5966,
+    "afterEstimatedTokens": 5965,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "4 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": []
+  },
+  {
+    "name": "B100-3DGS",
+    "id": "limitations",
+    "beforeChars": 5011,
+    "afterChars": 5011,
+    "deltaChars": 0,
+    "beforeEstimatedTokens": 1693,
+    "afterEstimatedTokens": 1693,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": []
+  },
+  {
+    "name": "B100-ResNet",
+    "id": "problem_motivation",
+    "beforeChars": 3230,
+    "afterChars": 5804,
+    "deltaChars": 2574,
+    "beforeEstimatedTokens": 1091,
+    "afterEstimatedTokens": 1961,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "1 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": [
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p0:15",
+        "page": 1,
+        "section": "1. Introduction",
+        "text": "20 20"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p0:16",
+        "page": 1,
+        "section": "1. Introduction",
+        "text": "56-layer 20-layer"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p0:17",
+        "page": 1,
+        "section": "1. Introduction",
+        "text": "10 10"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p0:19",
+        "page": 1,
+        "section": "1. Introduction",
+        "text": "0 0"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p0:20",
+        "page": 1,
+        "section": "1. Introduction",
+        "text": "0 1 2 3 4 5 6 0 1 2 3 4 5 6"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p0:21",
+        "page": 1,
+        "section": "1. Introduction",
+        "text": "iter. (1e4) iter. (1e4)"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p0:22",
+        "page": 1,
+        "section": "1. Introduction",
+        "text": "Figure 1. Training error (left) and test error (right) on CIFAR-10"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p0:23",
+        "page": 1,
+        "section": "1. Introduction",
+        "text": "with 20-layer and 56-layer “plain” networks. The deeper network has higher training error, and thus test error. Similar phenomena on ImageNet is presented in Fig. 4."
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p0:24",
+        "page": 1,
+        "section": "1. Introduction",
+        "text": "greatly benefited from very deep models."
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p0:27",
+        "page": 1,
+        "section": "1. Introduction",
+        "text": "The degradation (of training accuracy) indicates that not all systems are similarly easy to optimize. Let us consider a shallower architecture and its deeper counterpart that adds more layers onto it. There exists a solution by construction to the deeper model: the added layers are identity mapping, and the other layers are copied from the learned shallower model. The existence of this constructed solution indicates that a deeper model should produce no higher training error than its shallower counterpart. But experiments show that our current solvers on hand are unable to find solutions that"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p1:29",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "x"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p1:30",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "weight layer"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p1:31",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "F ( x ) relu x"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p1:32",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "weight layer identity"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p1:33",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "F ( x ) \u0001 + \u0001 x relu"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p1:34",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "Figure 2. Residual learning: a building block."
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p1:35",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "are comparably good or better than the constructed solution (or unable to do so in feasible time)."
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p1:37",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "The formulation of F ( x ) + x can be realized by feedfor- ward neural networks with “shortcut connections” (Fig. 2). Shortcut connections [2, 34, 49] are those skipping one or more layers. In our case, the shortcut connections simply perform identity mapping, and their outputs are added to the outputs of the stacked layers (Fig. 2). Identity short- cut connections add neither extra parameter nor computa- tional complexity. The entire network can still be trained end-to-end by SGD with backpropagation, and can be eas- ily implemented using common libraries ( e.g ., Caffe [19]) without modifying the solvers."
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p1:40",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "On the ImageNet classification dataset [36], we obtain excellent results by extremely deep residual nets. Our 152- layer residual net is the deepest network ever presented on ImageNet, while still having lower complexity than VGG nets [41]. Our ensemble has 3.57% top-5 error on the"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p1:41",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "ImageNet test set, and won the 1st place in the ILSVRC 2015 classification competition . The extremely deep rep- resentations also have excellent generalization performance on other recognition tasks, and lead us to further win the 1st places on: ImageNet detection, ImageNet localization, COCO detection, and COCO segmentation in ILSVRC & COCO 2015 competitions. This strong evidence shows that the residual learning principle is generic, and we expect that it is applicable in other vision and non-vision problems."
+      }
+    ]
+  },
+  {
+    "name": "B100-ResNet",
+    "id": "method",
+    "beforeChars": 10524,
+    "afterChars": 10521,
+    "deltaChars": -3,
+    "beforeEstimatedTokens": 3545,
+    "afterEstimatedTokens": 3542,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": []
+  },
+  {
+    "name": "B100-ResNet",
+    "id": "contributions_novelty",
+    "beforeChars": 5239,
+    "afterChars": 5347,
+    "deltaChars": 108,
+    "beforeEstimatedTokens": 1764,
+    "afterEstimatedTokens": 1801,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Adjacent context: added 2 paragraphs (approximately 37 tokens); 0 candidates exceeded the bounded growth allowance. The column-wide ceiling is 2400 tokens. Only original matches expand, within the same subsection and adjacent pages.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": [
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p1:29",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "x"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p2:48",
+        "page": 3,
+        "section": "2. Related Work",
+        "text": "way networks have not demonstrated accuracy gains with extremely increased depth ( e.g ., over 100 layers)."
+      }
+    ]
+  },
+  {
+    "name": "B100-ResNet",
+    "id": "experiments_ablations",
+    "beforeChars": 18428,
+    "afterChars": 18702,
+    "deltaChars": 274,
+    "beforeEstimatedTokens": 6457,
+    "afterEstimatedTokens": 6546,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Adjacent context: added 4 paragraphs (approximately 97 tokens); 0 candidates exceeded the bounded growth allowance. The column-wide ceiling is 2400 tokens. Only original matches expand, within the same subsection and adjacent pages.",
+      "6 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": [
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p2:57",
+        "page": 3,
+        "section": "3.2. Identity Mapping by Shortcuts",
+        "text": "We adopt residual learning to every few stacked layers. A building block is shown in Fig. 2. Formally, in this paper we consider a building block defined as:"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p2:58",
+        "page": 3,
+        "section": "3.2. Identity Mapping by Shortcuts",
+        "text": "y = F ( x , { W i } ) + x . (1)"
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p2:61",
+        "page": 3,
+        "section": "3.2. Identity Mapping by Shortcuts",
+        "text": "This hypothesis, however, is still an open question. See [28]."
+      },
+      {
+        "id": "sha256:1e0651b6810ecba34a3dbc5b5b0209226f889004607c1f203540a48d64e5a93a:structured-paper-v1:p2:65",
+        "page": 3,
+        "section": "3.2. Identity Mapping by Shortcuts",
+        "text": "y = F ( x , { W i } ) + W s x . (2)"
+      }
+    ]
+  },
+  {
+    "name": "B100-ResNet",
+    "id": "limitations",
+    "beforeChars": 0,
+    "afterChars": 0,
+    "deltaChars": 0,
+    "beforeEstimatedTokens": 0,
+    "afterEstimatedTokens": 0,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body.",
+      "No usable body paragraphs were found for this section; unavailable details must not be invented."
+    ],
+    "addedParagraphs": []
+  },
+  {
+    "name": "SAM",
+    "id": "problem_motivation",
+    "beforeChars": 5845,
+    "afterChars": 8696,
+    "deltaChars": 2851,
+    "beforeEstimatedTokens": 1977,
+    "afterEstimatedTokens": 2942,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": [
+      {
+        "id": "sha256:c6ca524e47200c3e542587ca76ac1dbc89cc67340f948c819250d16fdbd90cfb:structured-paper-v1:p0:36",
+        "page": 1,
+        "section": "1. Introduction",
+        "text": "matching in some cases) fine-tuned models [10, 21]. Empir- ical trends show this behavior improving with model scale, dataset size, and total training compute [56, 10, 21, 51]."
+      },
+      {
+        "id": "sha256:c6ca524e47200c3e542587ca76ac1dbc89cc67340f948c819250d16fdbd90cfb:structured-paper-v1:p0:37",
+        "page": 1,
+        "section": "1. Introduction",
+        "text": "Foundation models have also been explored in computer vision, albeit to a lesser extent. Perhaps the most promi- nent illustration aligns paired text and images from the web. For example, CLIP [82] and ALIGN [55] use contrastive learning to train text and image encoders that align the two modalities. Once trained, engineered text prompts enable zero-shot generalization to novel visual concepts and data distributions. Such encoders also compose effectively with other modules to enable downstream tasks, such as image generation ( e.g ., DALL·E [83]). While much progress has been made on vision and language encoders, computer vi- sion includes a wide range of problems beyond this scope, and for many of these, abundant training data does not exist."
+      },
+      {
+        "id": "sha256:c6ca524e47200c3e542587ca76ac1dbc89cc67340f948c819250d16fdbd90cfb:structured-paper-v1:p1:46",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "Responsible AI (§6). We study and report on potential fair- ness concerns and biases when using SA-1B and SAM. Im- ages in SA-1B span a geographically and economically di- verse set of countries and we found that SAM performs sim- ilarly across different groups of people. Together, we hope this will make our work more equitable for real-world use cases. We provide model and dataset cards in the appendix."
+      },
+      {
+        "id": "sha256:c6ca524e47200c3e542587ca76ac1dbc89cc67340f948c819250d16fdbd90cfb:structured-paper-v1:p1:47",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "Experiments (§7). We extensively evaluate SAM. First, us- ing a diverse new suite of 23 segmentation datasets, we find that SAM produces high-quality masks from a single fore- ground point, often only slightly below that of the manu- ally annotated ground truth. Second, we find consistently strong quantitative and qualitative results on a variety of downstream tasks under a zero-shot transfer protocol using prompt engineering, including edge detection, object pro- posal generation, instance segmentation, and a preliminary exploration of text-to-mask prediction. These results sug- gest that SAM can be used out-of-the-box with prompt en- gineering to solve a variety of tasks involving object and image distributions beyond SAM’s training data. Neverthe- less, room for improvement remains, as we discuss in §8."
+      },
+      {
+        "id": "sha256:c6ca524e47200c3e542587ca76ac1dbc89cc67340f948c819250d16fdbd90cfb:structured-paper-v1:p1:48",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "Release. We are releasing the SA-1B dataset for research purposes and making SAM available under a permissive open license (Apache 2.0) at https://segment-anything.com. We also showcase SAM’s capabilities with an online demo."
+      },
+      {
+        "id": "sha256:c6ca524e47200c3e542587ca76ac1dbc89cc67340f948c819250d16fdbd90cfb:structured-paper-v1:p2:50",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "Figure 2: Example images with overlaid masks from our newly introduced dataset, SA-1B . SA-1B contains 11M diverse,"
+      },
+      {
+        "id": "sha256:c6ca524e47200c3e542587ca76ac1dbc89cc67340f948c819250d16fdbd90cfb:structured-paper-v1:p2:51",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "high-resolution, licensed, and privacy protecting images and 1.1B high-quality segmentation masks. These masks were annotated fully automatically by SAM, and as we verify by human ratings and numerous experiments, are of high quality and diversity. We group images by number of masks per image for visualization (there are ∼ 100 masks per image on average)."
+      }
+    ]
+  },
+  {
+    "name": "SAM",
+    "id": "method",
+    "beforeChars": 17911,
+    "afterChars": 18085,
+    "deltaChars": 174,
+    "beforeEstimatedTokens": 6059,
+    "afterEstimatedTokens": 6116,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Adjacent context: added 1 paragraphs (approximately 59 tokens); 0 candidates exceeded the bounded growth allowance. The column-wide ceiling is 2400 tokens. Only original matches expand, within the same subsection and adjacent pages.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": [
+      {
+        "id": "sha256:c6ca524e47200c3e542587ca76ac1dbc89cc67340f948c819250d16fdbd90cfb:structured-paper-v1:p0:36",
+        "page": 1,
+        "section": "1. Introduction",
+        "text": "matching in some cases) fine-tuned models [10, 21]. Empir- ical trends show this behavior improving with model scale, dataset size, and total training compute [56, 10, 21, 51]."
+      }
+    ]
+  },
+  {
+    "name": "SAM",
+    "id": "contributions_novelty",
+    "beforeChars": 7942,
+    "afterChars": 7942,
+    "deltaChars": 0,
+    "beforeEstimatedTokens": 2685,
+    "afterEstimatedTokens": 2685,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": []
+  },
+  {
+    "name": "SAM",
+    "id": "experiments_ablations",
+    "beforeChars": 20621,
+    "afterChars": 21015,
+    "deltaChars": 394,
+    "beforeEstimatedTokens": 7032,
+    "afterEstimatedTokens": 7163,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Adjacent context: added 1 paragraphs (approximately 136 tokens); 0 candidates exceeded the bounded growth allowance. The column-wide ceiling is 2400 tokens. Only original matches expand, within the same subsection and adjacent pages.",
+      "1 whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": [
+      {
+        "id": "sha256:c6ca524e47200c3e542587ca76ac1dbc89cc67340f948c819250d16fdbd90cfb:structured-paper-v1:p4:75",
+        "page": 5,
+        "section": "3. Segment Anything Model",
+        "text": "loss [15, 45, 64] over masks. To rank masks, the model pre- dicts a confidence score ( i.e ., estimated IoU) for each mask. Efficiency. The overall model design is largely motivated by efficiency. Given a precomputed image embedding, the prompt encoder and mask decoder run in a web browser, on CPU, in ∼ 50ms. This runtime performance enables seam- less, real-time interactive prompting of our model."
+      }
+    ]
+  },
+  {
+    "name": "SAM",
+    "id": "limitations",
+    "beforeChars": 4235,
+    "afterChars": 4233,
+    "deltaChars": -2,
+    "beforeEstimatedTokens": 1429,
+    "afterEstimatedTokens": 1428,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": []
+  },
+  {
+    "name": "Video-MME",
+    "id": "problem_motivation",
+    "beforeChars": 1917,
+    "afterChars": 6631,
+    "deltaChars": 4714,
+    "beforeEstimatedTokens": 640,
+    "afterEstimatedTokens": 2308,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": [
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p0:38",
+        "page": 1,
+        "section": "1. Introduction",
+        "text": "To this end, we introduce Video-MME , the first-ever comprehensive M ulti- M odal E valuation benchmark crafted"
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p1:39",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "Figure 1. We introduce Video-MME to provide high-quality assessment of MLLMs’ performance, where all the videos and annotations"
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p1:40",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "are manually"
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p1:42",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "for MLLMs in Video analysis. As exemplified in Figure 1, we meticulously curate a dataset of 900 videos across var- ious scenarios, and annotate a set of 2,700 high-quality multiple-choice questions (3 per video) to foster a robust evaluation. As presented in Figure 2, for generalizabil- ity, our dataset widely spans 6 visual domains, includ- ing Knowledge, Film & Television, Sports Competition, Artistic Performance, Life Record, and Multilingual, with 30 fine-grained categories, e.g., technology, documentary, news report, esports, magic show, and fashion. Importantly, the videos vary significantly in length, ranging from 11 sec- onds to 1 hour, specifically evaluating the adaptability of MLLMs across varying temporal contexts. Furthermore, Video-MME enriches the assessment by incorporating the associated subtitles and audio tracks, thereby enhancing the analysis of multimodal inputs for video understanding."
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p1:43",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "Using Video-MME, we benchmark various state-of-the- art MLLMs, including GPT-4V [48], GPT-4o [49], and Gemini 1.5 Pro [55], alongside open-source image mod- els like InternVL-Chat-V1.5 [11] and video models like"
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p1:44",
+        "page": 2,
+        "section": "1. Introduction",
+        "text": "LLaVA-NeXT-Video [73]. Our experiments in Table 4 in- dicate that Gemini 1.5 Pro is the highest-performing com- mercial model, achieving an average accuracy of 75%. In comparison, open-source MLLMs exhibit substantial gaps compared to commercial models. For instance, the lead- ing open-source model, VILA-1.5 [34], attains an overall accuracy of 59%. These findings suggest there is consider- able room for improvement in the open-source community. Our benchmark is also available to advanced image-based models by extending their input to multi-frame images, e.g., Qwen-VL-Max [5] and InternVL-Chat-V1.5 [11]. The ac- curacies of both the models reach 50% , which is close to that of the video-specific model LLaVA-NeXT-Video, indi- cating that image understanding is the basis of video under- standing and the wide applicability of Video-MME in the field of MLLMs. Further observations in Table 5 indicate that integrating subtitles and audios significantly enhances video comprehension capabilities, e.g., boosting Gemini 1.5 Pro by 6.2% and 4.3% respectively, with the gains being more pronounced for longer videos. A fine-grained analy-"
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:45",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "Benchmarks #Videos #Clips Len.(s) #QA Pairs Anno."
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:46",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "MSRVTT-QA [64] 2,990 2,990 15.2 72,821 A MSVD-QA [64] 504 504 9.8 13,157 A TGIF-QA [21] 9,575 9,575 3.0 8,506 A&M ActivityNet-QA [68] 800 800 111.4 8,000 M TVQA [24] 2,179 15,253 11.2 15,253 M How2QA [28] 1,166 2,852 15.3 2,852 M STAR [61] 914 7,098 11.9 7,098 A NExT-QA [63] 1,000 1,000 39.5 8,564 A MVBench [27] 3,641 3,641 16.0 4,000 A Video-Bench [47] 5,917 5,917 56.0 17,036 A&M EgoSchema [45] 5,063 5,063 180.0 5,063 A&M AutoEval-Video [10] 327 327 14.6 327 M TempCompass [41] 410 500 11.4 7,540 A&M Video-MME-S 300 300 80.7 900 Video-MME-M 300 300 515.9 900"
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:47",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "M"
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:48",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "Video-MME-L 300 300 2466.7 900 Video-MME 900 900 1017.9 2,700"
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:49",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "Table 1. The comparison of various benchmarks"
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:50",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "QA Tokens Sub. Tokens Multi-level Open-domain Sub.&Aud."
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:51",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "8.4 ✗ ✗ ✓ ✗ 7.6 ✗ ✗ ✓ ✗ 20.5 ✗ ✗ ✓ ✗ 10.2 ✗ ✗ ✗ ✗ 27.8 159.8 ✗ ✗ ✗ 16.9 31.1 ✗ ✓ ✗ 19.5 ✗ ✗ ✓ ✗ 25.3 ✗ ✗ ✓ ✗ 27.3 ✗ ✗ ✓ ✗ 21.3 ✗ ✗ ✓ ✗ 126.8 ✗ ✗ ✗ ✗ 11.9 ✗ ✗ ✓ ✗ 49.2 ✗ ✗ ✓ ✗ 28.7 198.6 32.8 1425.6 ✓ ✓ ✓ 45.6 6515.6 35.7 3086.5"
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:52",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "#Videos ), the number"
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:53",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "encompasses several key aspects: the total number of videos ("
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:54",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "of clips ( #Clips ), the average duration of the videos ( Len."
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:55",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "#QA Pairs ), the method of annotation ( Anno. , M/A"
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:56",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "), the number of QA pairs ("
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:57",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "QA Tokens ), the average number of subtitle tokens ( Sub."
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:58",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "means the manually/automatic manner), the average number of QA pair tokens ("
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:59",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "Tokens ), whether the videos cover multiple duration levels ( Multi-level domains ( Open-domain"
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:60",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "), whether the videos are sourced from a broad range of open Sub.&Aud. ). Video-MME-S/M/L denotes the"
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:61",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "), and whether provide subtitle together with audio information ( short/medium/long part. It is important to note our comparison focuses solely on the multiple-choice subset of the datasets."
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:63",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "Finally, we discuss promising avenues for improving the capabilities of MLLMs in processing video content. Po- tential directions include architectural development for bet- ter handling long context inputs and constructing training data focused on complex temporal reasoning scenarios. We expect that our benchmarking, evaluation findings, detailed analysis, and outlined insights will inspire future progress toward more capable and robust MLLMs."
+      }
+    ]
+  },
+  {
+    "name": "Video-MME",
+    "id": "method",
+    "beforeChars": 7831,
+    "afterChars": 9050,
+    "deltaChars": 1219,
+    "beforeEstimatedTokens": 2628,
+    "afterEstimatedTokens": 3035,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Adjacent context: added 2 paragraphs (approximately 407 tokens); 0 candidates exceeded the bounded growth allowance. The column-wide ceiling is 2400 tokens. Only original matches expand, within the same subsection and adjacent pages.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": [
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p0:37",
+        "page": 1,
+        "section": "1. Introduction",
+        "text": "The rapid development of MLLMs in recent years [66] has highlighted their impressive perception and cognitive capa- bilities across various multimodal benchmarks [16, 43, 67]. These advancements show the great potential of MLLMs to serve as a foundation that can digest the multimodal real world and pave the way toward artificial general intelli- gence. However, current MLLMs and their evaluation pri- marily focus on static visual data understanding, which fails to capture the dynamic nature of the real world involving complex interactions between objects over time. To approx- imate real-world scenarios more accurately, it is crucial to explore and assess the capabilities of MLLMs on sequential visual data, such as videos. Many early efforts [18, 33, 55] have been made to inspire the video understanding poten- tials of MLLMs with promising results. However, existing video-based benchmarks [27, 32, 41, 45] are still limited to thoroughly reveal their performance, such as a lack of di- versity in video types, insufficient coverage of temporal dy- namics, and the narrow focus on a single modality. These inevitably hinder the all-around evaluation of MLLMs."
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:45",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "Benchmarks #Videos #Clips Len.(s) #QA Pairs Anno."
+      }
+    ]
+  },
+  {
+    "name": "Video-MME",
+    "id": "contributions_novelty",
+    "beforeChars": 6141,
+    "afterChars": 7360,
+    "deltaChars": 1219,
+    "beforeEstimatedTokens": 2052,
+    "afterEstimatedTokens": 2459,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Adjacent context: added 2 paragraphs (approximately 407 tokens); 0 candidates exceeded the bounded growth allowance. The column-wide ceiling is 2400 tokens. Only original matches expand, within the same subsection and adjacent pages.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": [
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p0:37",
+        "page": 1,
+        "section": "1. Introduction",
+        "text": "The rapid development of MLLMs in recent years [66] has highlighted their impressive perception and cognitive capa- bilities across various multimodal benchmarks [16, 43, 67]. These advancements show the great potential of MLLMs to serve as a foundation that can digest the multimodal real world and pave the way toward artificial general intelli- gence. However, current MLLMs and their evaluation pri- marily focus on static visual data understanding, which fails to capture the dynamic nature of the real world involving complex interactions between objects over time. To approx- imate real-world scenarios more accurately, it is crucial to explore and assess the capabilities of MLLMs on sequential visual data, such as videos. Many early efforts [18, 33, 55] have been made to inspire the video understanding poten- tials of MLLMs with promising results. However, existing video-based benchmarks [27, 32, 41, 45] are still limited to thoroughly reveal their performance, such as a lack of di- versity in video types, insufficient coverage of temporal dy- namics, and the narrow focus on a single modality. These inevitably hinder the all-around evaluation of MLLMs."
+      },
+      {
+        "id": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2:structured-paper-v1:p2:45",
+        "page": 3,
+        "section": "1. Introduction",
+        "text": "Benchmarks #Videos #Clips Len.(s) #QA Pairs Anno."
+      }
+    ]
+  },
+  {
+    "name": "Video-MME",
+    "id": "experiments_ablations",
+    "beforeChars": 9058,
+    "afterChars": 9058,
+    "deltaChars": 0,
+    "beforeEstimatedTokens": 3042,
+    "afterEstimatedTokens": 3042,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": []
+  },
+  {
+    "name": "Video-MME",
+    "id": "limitations",
+    "beforeChars": 2615,
+    "afterChars": 2615,
+    "deltaChars": 0,
+    "beforeEstimatedTokens": 874,
+    "afterEstimatedTokens": 874,
+    "invalidMembers": 0,
+    "warnings": [
+      "Automatic geometry and section roles are context heuristics, not semantic verification.",
+      "Uncertain cross-column and cross-page continuations remain separate paragraphs.",
+      "Appendices and all supplementary subsections are excluded, including when referenced by the body."
+    ],
+    "addedParagraphs": []
+  }
+]

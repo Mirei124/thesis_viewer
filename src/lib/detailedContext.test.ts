@@ -87,6 +87,71 @@ describe('focused body context', () => {
     expect(selectDetailedContext(p,'limitations').paragraphs.map(p=>p.paragraphId)).toEqual(['5']);
   });
 });
+// Consecutive paragraphs within one intro subsection, with stable original evidence members.
+function introPaper(texts: string[]): StructuredPaper {
+  const p = paper();
+  p.paragraphs = texts.map((text, i) => ({ ...paragraph(`p${i}`, text, 'intro'), sectionId: '1', readOrder: i }));
+  return p;
+}
+describe('complete motivation and bounded adjacent context', () => {
+  it('keeps the complete introduction, including premises and central questions without keyword matches', () => {
+    const p = introPaper(['Credit is broadcast across every token.', 'A central question is whether attention can distribute credit.', 'We propose a token-level objective.', '12', 'Under review at Some Conference 2026']);
+    const r = selectDetailedContext(p, 'problem_motivation');
+    expect(r.paragraphs).toEqual(p.paragraphs.slice(0, 3));
+    expect(r.paragraphs[0].members).toBe(p.paragraphs[0].members);
+  });
+  it.each(['This gap', 'These limitations', 'Such challenges', 'The above observation', 'To address this key issue', 'This central question', 'To this end', 'In this context', 'Therefore', 'However', '为解决上述关键问题', '这一局限', '这些挑战', '因此', '基于此'])('retains the preceding premise for %s', cue => {
+    const p = introPaper(['An otherwise unmatched premise.', `${cue}, our method assigns credit.`]);
+    expect(selectDetailedContext(p, 'method').paragraphs).toEqual(p.paragraphs);
+  });
+  it('keeps a following dependent paragraph but never expands the added paragraph again', () => {
+    const p = introPaper(['Our method uses visual credit.', 'This observation supports a bounded coefficient.', 'This gap receives an unrelated treatment.']);
+    const r = selectDetailedContext(p, 'method');
+    expect(r.paragraphs.map(p => p.paragraphId)).toEqual(['p0', 'p1']);
+    expect(r.warnings.join(' ')).toContain('added 1 paragraphs');
+  });
+  it('does not expand ordinary internal mentions, complete neighboring prose or lists', () => {
+    const p = introPaper(['A historical premise.', 'Our method discusses this gap in its proof.', 'An unrelated final remark.', 'This gap, our method explains.']);
+    p.paragraphs[3].kind = 'table';
+    expect(selectDetailedContext(p, 'method').paragraphs.map(p => p.paragraphId)).toEqual(['p1', 'p3']);
+    const list = introPaper(['- A numbered premise.', 'This gap motivates our method.']);
+    expect(selectDetailedContext(list, 'method').paragraphs.map(p => p.paragraphId)).toEqual(['p1']);
+  });
+  it('preserves cross-page continuation past an isolated page number, with original anchors', () => {
+    const p = introPaper(['Our method processes the visual', '42', 'features before computing credit.']);
+    p.paragraphs[2].pageIndex = 1;
+    const r = selectDetailedContext(p, 'method');
+    expect(r.paragraphs).toEqual([p.paragraphs[0], p.paragraphs[2]]);
+    expect(r.paragraphs[1].members).toBe(p.paragraphs[2].members);
+  });
+  it('keeps a short equation and its immediate symbol explanation as complete anchored paragraphs', () => {
+    const p = introPaper(['Our method defines the coefficient as:', 'a = b + c', 'where b represents visual credit.', 'An unrelated observation.']);
+    p.paragraphs[1].kind = 'equation';
+    const r = selectDetailedContext(p, 'method');
+    expect(r.paragraphs).toEqual(p.paragraphs.slice(0, 3));
+    r.paragraphs.forEach((x, i) => expect(x.members).toBe(p.paragraphs[i].members));
+  });
+  it('does not cross subsection headings, remote pages, appendix or reference boundaries', () => {
+    for (const boundary of ['heading', 'subsection', 'remote', 'appendix', 'references'] as const) {
+      const p = introPaper(['Our method defines a procedure:', 'This observation gives its implications.']);
+      if (boundary === 'heading') { p.paragraphs[1].kind = 'heading'; p.paragraphs.push({...paragraph('p2', 'This observation is after a heading.', 'intro'), sectionId:'1', readOrder:2}); }
+      if (boundary === 'remote') p.paragraphs[1].pageIndex = 3;
+      if (boundary === 'appendix' || boundary === 'references') p.paragraphs[1].role = boundary;
+      if (boundary === 'subsection') p.paragraphs[1].sectionId = '5';
+      expect(selectDetailedContext(p, 'method').paragraphs.map(x => x.paragraphId), boundary).toEqual(boundary === 'heading' ? ['p0', 'p1'] : ['p0']);
+    }
+  });
+  it('caps added input and reports skipped neighbors rather than truncating source text', () => {
+    const p = introPaper(Array.from({length: 30}, (_, i) => i % 2 ? `This observation connects ${'credit '.repeat(150)}.` : `Our method has stage ${i}.`));
+    const r = selectDetailedContext(p, 'method');
+    const added = r.paragraphs.filter(x => !x.text.startsWith('Our method'));
+    expect(added.length).toBeGreaterThan(0);
+    expect(added.reduce((n, x) => n + estimateTextTokens(x.text), 0)).toBeLessThanOrEqual(2400);
+    expect(added.length).toBeLessThan(15);
+    expect(r.warnings.join(' ')).toMatch(/[1-9]\d* candidates exceeded/);
+    added.forEach(x => expect(p.paragraphs).toContain(x));
+  });
+});
 describe('total window budget', () => {
   it('dynamically splits default 32k window/output and preserves requested output in larger windows', () => {
     const messages = [{ role: 'user', content: 'Method '.repeat(4000) }];

@@ -178,10 +178,11 @@ describe('complete chapter overview pipeline', () => {
     expect(output.result.sections[0].status).toBe('available');
     const method = output.result.sections.find(section => section.id === 'method')!;
     expect(method.status).toBe('unavailable');
+    expect(method.failureReason).toBe('request');
     expect(method.blocks.some(block => block.claimKind === 'missing_information')).toBe(true);
     expect(method.blocks.some(block => block.evidenceIds.length > 0)).toBe(true);
     expect(output.result.sections.find(section => section.id === 'contributions_novelty')?.status).toBe('available');
-    expect(output.diagnostics.find(item => item.id === 'method')?.warnings.join(' ')).toContain('provider request failed');
+    expect(output.diagnostics.find(item => item.id === 'method')?.failures).toContainEqual(expect.objectContaining({ reason: 'request' }));
   });
 
   it('uses original sources to correct a method draft and counts review usage', async () => {
@@ -236,6 +237,35 @@ describe('complete chapter overview pipeline', () => {
     }
   });
 
+  it('attributes an unsendable format repair to budget without discarding valid review drafts', async () => {
+    for (const valid of [false, true]) {
+      let methodCalls = 0;
+      const output = await generateDetailedOverview({ ...fixture(), config: { ...config, semanticReview: true }, request: async request => {
+        if (payload(request).section !== 'method') return completion(request);
+        methodCalls++;
+        if (!valid) return { content: '{broken' + 'x'.repeat(600000) };
+        const reply = JSON.parse(completion(request).content);
+        reply.text += 'x'.repeat(600000);
+        return { content: JSON.stringify(reply) };
+      } });
+      const method = output.result.sections.find(section => section.id === 'method')!;
+      expect(methodCalls).toBe(1);
+      expect(method.status).toBe(valid ? 'available' : 'unavailable');
+      expect(method.failureReason).toBe(valid ? undefined : 'budget');
+      const diagnostic = output.diagnostics.find(section => section.id === 'method')!;
+      if (valid) expect(diagnostic.semanticReviewSkipped).toBe(1);
+      else expect(diagnostic.failures).toEqual([{ reason: 'budget', detail: expect.any(String) }]);
+    }
+  });
+
+  it('records a failed format repair once with its specific local validation error', async () => {
+    const output = await generateDetailedOverview({ ...fixture(), config, request: async () => ({ content: '{broken' }) });
+    for (const diagnostic of output.diagnostics.filter(section => section.batchCount > 0)) {
+      expect(diagnostic.failures).toHaveLength(diagnostic.batchCount);
+      expect(diagnostic.failures?.every(failure => failure.reason === 'format' && failure.detail === 'The model response was not valid detailed-section JSON.')).toBe(true);
+    }
+  });
+
   it('defaults to one generation call per selected section without semantic review', async () => {
     const calls: CompatibleRequest[] = [];
     const output = await generateDetailedOverview({ ...fixture(), config, request: async request => { calls.push(request); return completion(request); } });
@@ -269,6 +299,7 @@ describe('complete chapter overview pipeline', () => {
       const output = await generateDetailedOverview({ ...fixture(), config: { ...config, semanticReview: true }, request: async request => { calls.push(request); return { content: JSON.stringify(response) }; } });
       expect(calls.every(request => request.messages.length === 2)).toBe(true);
       expect(output.result.sections.every(section => section.status === 'unavailable')).toBe(true);
+      expect(output.result.sections.every(section => section.failureReason === 'source' || section.failureReason === 'no_context')).toBe(true);
     }
   });
 
@@ -283,9 +314,23 @@ describe('complete chapter overview pipeline', () => {
     expect(count).toBe(2);
   });
 
+  it('distinguishes model refusal from invalid JSON and omits arbitrary provider errors', async () => {
+    for (const reason of ['model_unavailable', 'format', 'request'] as const) {
+      const output = await generateDetailedOverview({ ...fixture(), config, request: async () => {
+        if (reason === 'request') throw new Error('secret-key https://provider.test/private');
+        return { content: reason === 'format' ? '{broken' : JSON.stringify({ status: 'unavailable', text: 'Supplied context lacks the necessary explanation.', sources: [] }) };
+      } });
+      expect(output.result.sections.every(section => section.failureReason === reason || section.failureReason === 'no_context')).toBe(true);
+      expect(output.diagnostics.every(diagnostic => diagnostic.failures?.some(failure => failure.reason === reason || failure.reason === 'no_context'))).toBe(true);
+      expect(JSON.stringify(output.diagnostics)).not.toMatch(/secret-key|provider.test/);
+    }
+  });
+
   it('refuses a context too small for the instructions without sending any request', async () => {
     let calls = 0;
-    await expect(generateDetailedOverview({ ...fixture(), config: { ...config, contextLimit: 500, outputLimit: 100 }, request: async request => { calls++; return completion(request); } })).rejects.toThrow(/budget|capacity/);
+    const output = await generateDetailedOverview({ ...fixture(), config: { ...config, contextLimit: 500, outputLimit: 100 }, request: async request => { calls++; return completion(request); } });
+    expect(output.result.sections.every(section => section.failureReason === 'budget' || section.failureReason === 'no_context')).toBe(true);
+    expect(output.diagnostics.every(diagnostic => diagnostic.failures?.[0].reason === 'budget' || diagnostic.failures?.[0].reason === 'no_context')).toBe(true);
     expect(calls).toBe(0);
   });
 });

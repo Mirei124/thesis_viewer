@@ -62,7 +62,7 @@ describe('verified overview cache', () => {
     const disabled = overviewCacheKey(input);
     expect(overviewCacheKey({ ...input, config: { ...config, semanticReview: false } })).toBe(disabled);
     expect(overviewCacheKey({ ...input, config: { ...config, semanticReview: true } })).not.toBe(disabled);
-    expect(disabled).toContain('detailed-context-selection-v2');
+    expect(disabled).toContain('detailed-context-selection-v3');
     expect(overviewCacheKey({ ...input, kind: 'three-line', config: { ...config, semanticReview: true } }))
       .toBe(overviewCacheKey({ ...input, kind: 'three-line' }));
     expect(JSON.parse(overviewCacheKey({ ...input, kind: 'three-line' }))).toHaveLength(11);

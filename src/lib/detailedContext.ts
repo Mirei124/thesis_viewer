@@ -17,7 +17,7 @@ const METHOD_CHECKLIST = [
   'For datasets, benchmarks or scaling studies, explain construction, annotation, experimental design and scoring protocols.',
   'Check the explanation against source definitions; distinguish unspecified details from established facts.',
 ];
-export const DETAILED_CONTEXT_SELECTION_VERSION = 'detailed-context-selection-v2';
+export const DETAILED_CONTEXT_SELECTION_VERSION = 'detailed-context-selection-v3';
 const excluded = (p: StructuredParagraph) => p.role === 'references' || p.role === 'appendix' || p.kind === 'frontmatter' || p.kind === 'contents';
 const isSupplementaryTitle = (title: string) => /\b(?:appendi(?:x|ces)|supplement(?:ary|al)(?:\s+material)?)\b/i.test(title)
   || /^(?:[A-Z](?:\.\d+)+(?:\.|\s)|[A-Z]\.\s)/.test(title);
@@ -25,10 +25,16 @@ const resultTitle = /\b(?:results?|ablations?)\b/i;
 const analysisTitle = /\b(?:analysis|analyses|performance|comparisons?)\b/i;
 const detailTitle = /\b(?:training|implementation|setup|settings?|protocol|optimization|optimisation)\b/i;
 const introRules = {
-  problem_motivation: /\b(?:problem|challeng\w*|limitation\w*|however|difficult\w*|lack\w*|existing|motivat\w*|goal|aim|need\w*|task)\b/i,
   method: /\b(?:we (?:propose|introduce|present|develop)|our (?:method|model|approach|framework)|task|approach|framework|pipeline|contribut\w*|input|output|objective)\b/i,
   contributions_novelty: /\b(?:we|our|propos\w*|contribut\w*|unlike|contrast|prior|previous|novel\w*|first)\b/i,
 };
+
+// Start-of-paragraph discourse cues only: ordinary mentions inside a paragraph do not expand context.
+const backwardCue = /^(?:(?:to (?:address|overcome|resolve|answer|bridge|tackle)\s+)?(?:this|these|such|the above|the aforementioned)\s+(?:(?:central|key|fundamental|open|remaining|outstanding|critical|important)\s+)?(?:gap|question|limitation|challenge|issue|problem|observation|finding|result|constraint|bottleneck|shortcoming|drawback|difficulty|assumption|motivation|approach|method|design|objective|reason|insight|requirement|deficienc|ambiguity)\w*\b|(?:therefore|thus|hence|consequently|accordingly|nevertheless|however|in contrast|by contrast|as a result|for this reason|to (?:this|that) end|in this context|under (?:this|these) (?:setting|assumption)s?|this (?:raises|leads to|motivates)|building on|based on (?:this|these|the above))\b|(?:为(?:了解决|解决|克服|弥补|回答|应对))?(?:这一|这些|上述|该|此类|此)(?:核心|关键|主要|根本|剩余)?(?:缺口|问题|局限|限制|挑战|不足|观察|结果|发现|假设|方法|设计|目标|需求|原因|瓶颈)|因此|因而|由此|为此|然而|不过|相比之下|基于上述|基于此|鉴于此)/iu;
+const forwardCue = /^(?:where\b|here[,， ]|in (?:this|the above) (?:equation|expression|definition)\b|其中|这里|式中|上式|具体而言|具体来说)/iu;
+const paragraphNoise = (p: StructuredParagraph) => /^\s*(?:\d{1,4}|arxiv:\s*\S+|(?:preprint|under review|accepted (?:at|by)|published (?:at|in))\b.*)\s*$/iu.test(p.text);
+const prose = (p: StructuredParagraph) => p.kind === 'body' && !paragraphNoise(p) && !/^\s*(?:[-•*]|\(?\d+[.)])\s/u.test(p.text);
+const unfinished = (p: StructuredParagraph) => /[:：,，;；=+−-]\s*$/u.test(p.text) || !/[.!?。！？][”’"')\]]?\s*$/u.test(p.text);
 
 /** Role-based body selection. Appendix exclusion is unconditional, including references from retained prose. */
 export function selectDetailedContext(paper: StructuredPaper, sectionId: DetailedContextSectionId): DetailedContextSelection {
@@ -58,20 +64,53 @@ export function selectDetailedContext(paper: StructuredPaper, sectionId: Detaile
   const bySection = new Map<string, StructuredParagraph[]>();
   for (const p of paper.paragraphs) {
     const section = sectionMap.get(p.sectionId);
-    if (excluded(p) || !section || forbidden(section)) continue;
+    if (excluded(p) || paragraphNoise(p) || !section || forbidden(section)) continue;
     bySection.set(p.sectionId, [...(bySection.get(p.sectionId) ?? []), p]);
   }
   const chosen = new Set<string>();
+  let continuityAdded = 0, continuityTokens = 0, continuitySkipped = 0;
   const addSection = (s: StructuredSection) => (bySection.get(s.sectionId) ?? []).forEach(p => chosen.add(p.paragraphId));
   const selectMatching = (sections: StructuredSection[], rule: RegExp, fallback: boolean) => {
     const matches = sections.flatMap(s => (bySection.get(s.sectionId) ?? []).filter(p => p.kind !== 'heading' && rule.test(p.text)));
     if (!matches.length && fallback) { sections.forEach(addSection); return; }
     matches.forEach(p => chosen.add(p.paragraphId));
+    // Expand original matches only. The growth allowance is shared per call, never recursive.
+    const seeds = new Set(matches.map(p => p.paragraphId));
+    const allowance = Math.max(768, Math.min(2400, Math.ceil(matches.reduce((n, p) => n + estimateTextTokens(p.text), 0) / 2)));
+    let spent = 0;
+    const ordered = paper.paragraphs.filter(p => !paragraphNoise(p)).sort((a, b) => a.readOrder - b.readOrder);
+    const positions = new Map(ordered.map((p, i) => [p.paragraphId, i]));
+    const adjacent = (a: StructuredParagraph, b: StructuredParagraph | undefined) => Boolean(b && a.sectionId === b.sectionId && Math.abs(a.pageIndex - b.pageIndex) <= 1 && bySection.get(b.sectionId)?.includes(b));
+    const addNeighbor = (p: StructuredParagraph) => {
+      if (chosen.has(p.paragraphId) || seeds.has(p.paragraphId)) return;
+      const cost = estimateTextTokens(p.text);
+      if (cost > Math.min(allowance - spent, 2400 - continuityTokens)) { continuitySkipped++; return; }
+      chosen.add(p.paragraphId); spent += cost; continuityTokens += cost; continuityAdded++;
+    };
+    for (const match of matches) {
+      if (!prose(match)) continue;
+      const index = positions.get(match.paragraphId)!;
+      const prev = ordered[index - 1], next = ordered[index + 1];
+      if (adjacent(match, prev) && prose(prev) && (backwardCue.test(match.text.trim()) || match.pageIndex !== prev.pageIndex && unfinished(prev))) addNeighbor(prev);
+      if (adjacent(match, next) && prose(next) && (backwardCue.test(next.text.trim()) || forwardCue.test(next.text.trim()) || unfinished(match))) addNeighbor(next);
+      // A short displayed equation and its immediate definition form one anchored connection.
+      for (const direction of [-1, 1]) {
+        const equation = ordered[index + direction], definition = ordered[index + 2 * direction];
+        if (!adjacent(match, equation) || equation.kind !== 'equation' || estimateTextTokens(equation.text) > 120) continue;
+        if (!(unfinished(match) || direction === -1 && forwardCue.test(match.text.trim()))) continue;
+        const includeDefinition = adjacent(equation, definition) && prose(definition) && (direction === 1 ? forwardCue.test(definition.text.trim()) : unfinished(definition));
+        const group = [equation, ...(includeDefinition ? [definition] : [])];
+        const cost = group.filter(p => !chosen.has(p.paragraphId) && !seeds.has(p.paragraphId)).reduce((n, p) => n + estimateTextTokens(p.text), 0);
+        if (cost > Math.min(allowance - spent, 2400 - continuityTokens)) { continuitySkipped += group.length; continue; }
+        group.forEach(addNeighbor);
+      }
+    }
     const ids = new Set(matches.map(p => p.sectionId));
     sections.filter(s => ids.has(s.sectionId)).forEach(s => (bySection.get(s.sectionId) ?? []).filter(p => p.kind === 'heading').forEach(p => chosen.add(p.paragraphId)));
   };
   const warnings = [...paper.diagnostics];
   const intros = eligible.filter(isIntro);
+  if (sectionId === 'problem_motivation') intros.forEach(addSection);
   if (sectionId in introRules) selectMatching(intros, introRules[sectionId as keyof typeof introRules], true);
   if (sectionId === 'method') {
     const methods = eligible.filter(s => !isIntro(s) && isMethod(s));
@@ -97,6 +136,7 @@ export function selectDetailedContext(paper: StructuredPaper, sectionId: Detaile
     if (seen.has(normalized)) { duplicateCount++; return false; }
     seen.add(normalized); return true;
   });
+  if (continuityAdded || continuitySkipped) warnings.push(`Adjacent context: added ${continuityAdded} paragraphs (approximately ${continuityTokens} tokens); ${continuitySkipped} candidates exceeded the bounded growth allowance. The column-wide ceiling is 2400 tokens. Only original matches expand, within the same subsection and adjacent pages.`);
   const selectedIds = new Set(paragraphs.map(p => p.sectionId));
   if (duplicateCount) warnings.push(`${duplicateCount} whitespace-normalized exact duplicate paragraphs were omitted; similar definitions were retained.`);
   if (paper.sections.some(appendix)) warnings.push('Appendices and all supplementary subsections are excluded, including when referenced by the body.');

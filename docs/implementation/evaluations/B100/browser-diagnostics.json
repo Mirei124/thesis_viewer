@@ -1,0 +1,30 @@
+{
+  "diagnostics": "本地请求诊断\n\n这些已完成请求的计数仅包含来源／别名数量和服务商 token 用量；这里不保留 PDF 摘录、提示词、响应或 API 密钥。\n\n模型认为当前提供的原文不足以支持本部分。 The model reported insufficient support in the supplied sources.\n\n问题与动机：新增 28 个本地段落，可用别名 28 个；服务商用量不可用。\n\n方法语义复核已关闭；回答格式错误时仍会尝试一次修复。\n\n本部分回答未通过来源校验，无法安全展示。 The response referenced an unknown or unsent source alias.\n\n方法总览与具体步骤：新增 38 个本地段落，可用别名 38 个；服务商用量不可用。\n\n本部分回答格式不合要求，单次修复后仍未获得有效结果。 The model response was not valid detailed-section JSON.\n\n核心贡献与相对创新：新增 14 个本地段落，可用别名 14 个；服务商用量不可用。\n\n本部分模型请求失败，已完成的其他部分予以保留。 A model request failed; provider error details are omitted.\n\n实验与消融：新增 132 个本地段落，可用别名 132 个；服务商用量不可用。\n\n本部分未选到可用的原文片段。 No eligible body source paragraphs were selected.\n\n0局限与未覆盖问题：新增 0 个本地段落，可用别名 0 个；服务商用量不可用。",
+  "calls": [
+    {
+      "section": "problem_motivation",
+      "kind": "evidence_increment",
+      "sources": 28
+    },
+    {
+      "section": "method",
+      "kind": "evidence_increment",
+      "sources": 38
+    },
+    {
+      "section": "contributions_novelty",
+      "kind": "evidence_increment",
+      "sources": 14
+    },
+    {
+      "section": "contributions_novelty",
+      "kind": "detailed_format_repair",
+      "sources": 14
+    },
+    {
+      "section": "experiments_ablations",
+      "kind": "evidence_increment",
+      "sources": 132
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "sections": [
+    "问题与动机\n\n模型认为当前提供的原文不足以支持本部分。\n\nB100 model declined based on provided evidence.",
+    "方法总览与具体步骤\n\n本部分回答未通过来源校验，无法安全展示。",
+    "核心贡献与相对创新\n\n本部分回答格式不合要求，单次修复后仍未获得有效结果。",
+    "实验与消融\n\n本部分模型请求失败，已完成的其他部分予以保留。",
+    "局限与未覆盖问题\n\n本部分未选到可用的原文片段。"
+  ],
+  "calls": [
+    {
+      "section": "problem_motivation",
+      "kind": "evidence_increment",
+      "sources": 28
+    },
+    {
+      "section": "method",
+      "kind": "evidence_increment",
+      "sources": 38
+    },
+    {
+      "section": "contributions_novelty",
+      "kind": "evidence_increment",
+      "sources": 14
+    },
+    {
+      "section": "contributions_novelty",
+      "kind": "detailed_format_repair",
+      "sources": 14
+    },
+    {
+      "section": "experiments_ablations",
+      "kind": "evidence_increment",
+      "sources": 132
+    }
+  ]
+}

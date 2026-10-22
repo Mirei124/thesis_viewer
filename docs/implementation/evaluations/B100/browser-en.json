@@ -1,0 +1,44 @@
+{
+  "sections": [
+    "Problem and motivation\n\nThe model found insufficient support in the supplied excerpts.\n\nB100 model declined based on provided evidence.",
+    "Method overview and steps\n\nThe response failed source validation and cannot be displayed safely.",
+    "Contributions and relative novelty\n\nThe response format remained invalid after the single repair attempt.",
+    "Experiments and ablations\n\nThe model request failed. Other completed sections are retained.",
+    "Limitations and untested scope\n\nNot applicable to this paper type based on the available material.\n\nB100 not applicable."
+  ],
+  "calls": [
+    {
+      "section": "problem_motivation",
+      "kind": "evidence_increment",
+      "sources": 12
+    },
+    {
+      "section": "method",
+      "kind": "evidence_increment",
+      "sources": 94
+    },
+    {
+      "section": "contributions_novelty",
+      "kind": "evidence_increment",
+      "sources": 12
+    },
+    {
+      "section": "contributions_novelty",
+      "kind": "detailed_format_repair",
+      "sources": 12
+    },
+    {
+      "section": "experiments_ablations",
+      "kind": "evidence_increment",
+      "sources": 59
+    },
+    {
+      "section": "limitations",
+      "kind": "evidence_increment",
+      "sources": 6
+    }
+  ],
+  "scripts": [
+    "http://127.0.0.1:8766/chunks/reader-DEWMrvSh.js"
+  ]
+}
