@@ -1416,7 +1416,9 @@ function ReaderPage() {
       if (translation && (!target || !translationPopoverRef.current?.contains(target))) closeTranslation();
       if (target && (citationPopoverRef.current?.contains(target) || (target instanceof Element && target.closest('[data-citation-id]')))) return;
       if (activeCitation) dismissCitationPopover();
-      if (target && (pdfPageRef.current?.contains(target) || highlightToolbarRef.current?.contains(target) || translationPopoverRef.current?.contains(target))) return;
+      // The PDF page is outside the toolbar too. Clear the old selection before
+      // native pointer handling starts a new one; mouseup can capture that new selection.
+      if (target && (highlightToolbarRef.current?.contains(target) || translationPopoverRef.current?.contains(target))) return;
       if (selectionDraft || activeHighlightId) dismissHighlightControls();
     };
     const onKeyDown = (event: globalThis.KeyboardEvent) => {
