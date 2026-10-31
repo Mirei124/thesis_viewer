@@ -1,0 +1,21 @@
+{
+  "inputLimit": 128000,
+  "outputLimit": 64000,
+  "kMeans1000": true,
+  "model": "deepseek-flash",
+  "thinking": "disabled",
+  "temperature": 0,
+  "caseCount": 24,
+  "arms": [
+    "A_full",
+    "B_body",
+    "C_sections",
+    "D_retrieval"
+  ],
+  "plannerCharged": [
+    "B_body",
+    "C_sections",
+    "D_retrieval"
+  ],
+  "note": "one common planner output reused for three independent counterfactual arms, charge full planner usage to each arm; gold annotations not used for selection"
+}

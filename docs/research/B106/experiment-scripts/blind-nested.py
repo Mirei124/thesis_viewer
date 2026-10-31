@@ -1,0 +1,5 @@
+import json
+from pathlib import Path
+P=Path('.local-cache/research/B106');cases=json.load(open(P/'cases-frozen.json'))['cases'];(P/'blind-nested').mkdir(exist_ok=True)
+for c in cases:
+ r=json.load(open(P/'responses'/f"{c['id']}--G_nested.json"));m=json.load(open(P/'manifests'/f"{c['id']}--G_nested.json"));raw=json.load(open(P/'papers'/f"{c['paper_id']}.json"));ps={f'P{i+1:04d}':p for i,p in enumerate(raw['paper']['paragraphs'])};answer=r.get('parsed')or{};cited={s for b in answer.get('answer',[]) for s in b.get('sources',[])};pack={'case':{k:v for k,v in c.items() if k not in ['gold_section_ids','diagnostic_search_query']},'answers':[{'label':'R7','parsed':answer,'unknownOrUnsentSources':sorted(cited-set(m['sourceAliases']))}],'cited_original_sources':{s:{'page':ps[s]['pageIndex']+1,'text':ps[s]['text'],'section':ps[s]['sectionId']} for s in cited if s in ps},'fullpaper_local_path':str(P/'papers'/f"{c['paper_id']}.json")};(P/'blind-nested'/f"{c['id']}.json").write_text(json.dumps(pack,ensure_ascii=False,indent=2))

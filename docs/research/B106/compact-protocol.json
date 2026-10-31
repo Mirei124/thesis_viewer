@@ -1,0 +1,10 @@
+{
+  "arm": "F_compact",
+  "fixedBeforeAnswers": true,
+  "changes": "No paragraph removed, summarized, deduplicated or merged; identical P aliases and texts to A; section/page headings emitted once per transition, plain text instead of repeated JSON fields.",
+  "plannerCalls": 0,
+  "sameSystemPrompt": true,
+  "sameQuestionHistory": true,
+  "scope": "full inclappendix/references",
+  "stage": "exploratory source-format compression on same cases; no gold selection"
+}

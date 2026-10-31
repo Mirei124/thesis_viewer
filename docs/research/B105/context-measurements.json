@@ -1,0 +1,575 @@
+[
+  {
+    "mainBodyParagraphs": 257,
+    "mainBodyTextEstimate": 12974,
+    "mainBodySerializedEstimate": 17639,
+    "name": "ResNet",
+    "id": "1512.03385",
+    "pageCount": 12,
+    "rawExtractedEstimate": 20723,
+    "structuredEstimate": 20390,
+    "byRole": {
+      "unknown": 1790,
+      "intro": 1968,
+      "related": 842,
+      "method": 3044,
+      "experiments": 5330,
+      "references": 2175,
+      "appendix": 5241
+    },
+    "sectionTitles": [
+      {
+        "title": "Front matter",
+        "role": "unknown"
+      },
+      {
+        "title": "Abstract",
+        "role": "unknown"
+      },
+      {
+        "title": "1. Introduction",
+        "role": "intro"
+      },
+      {
+        "title": "2. Related Work",
+        "role": "related"
+      },
+      {
+        "title": "3. Deep Residual Learning",
+        "role": "method"
+      },
+      {
+        "title": "3.1. Residual Learning",
+        "role": "method"
+      },
+      {
+        "title": "3.2. Identity Mapping by Shortcuts",
+        "role": "method"
+      },
+      {
+        "title": "3.3. Network Architectures",
+        "role": "method"
+      },
+      {
+        "title": "3.4. Implementation",
+        "role": "method"
+      },
+      {
+        "title": "4. Experiments",
+        "role": "experiments"
+      },
+      {
+        "title": "4.1. ImageNet Classification",
+        "role": "experiments"
+      },
+      {
+        "title": "4.2. CIFAR-10 and Analysis",
+        "role": "experiments"
+      },
+      {
+        "title": "2 ResNet-56",
+        "role": "unknown"
+      },
+      {
+        "title": "2 ResNet-56",
+        "role": "unknown"
+      },
+      {
+        "title": "4.3. Object Detection on PASCAL and MS COCO",
+        "role": "unknown"
+      },
+      {
+        "title": "References",
+        "role": "references"
+      },
+      {
+        "title": "A. Object Detection Baselines",
+        "role": "appendix"
+      },
+      {
+        "title": "B. Object Detection Improvements",
+        "role": "appendix"
+      },
+      {
+        "title": "C. ImageNet Localization",
+        "role": "appendix"
+      }
+    ],
+    "unrepresentedBlocks": 0
+  },
+  {
+    "mainBodyParagraphs": 240,
+    "mainBodyTextEstimate": 18549,
+    "mainBodySerializedEstimate": 22978,
+    "name": "SAM",
+    "id": "2304.02643",
+    "pageCount": 30,
+    "rawExtractedEstimate": 57272,
+    "structuredEstimate": 56521,
+    "byRole": {
+      "unknown": 3851,
+      "intro": 2945,
+      "method": 4258,
+      "experiments": 6066,
+      "limitations": 1429,
+      "references": 7656,
+      "appendix": 30316
+    },
+    "sectionTitles": [
+      {
+        "title": "Front matter",
+        "role": "unknown"
+      },
+      {
+        "title": "Abstract",
+        "role": "unknown"
+      },
+      {
+        "title": "1. Introduction",
+        "role": "intro"
+      },
+      {
+        "title": "2. Segment Anything Task",
+        "role": "method"
+      },
+      {
+        "title": "3. Segment Anything Model",
+        "role": "method"
+      },
+      {
+        "title": "4. Segment Anything Data Engine",
+        "role": "method"
+      },
+      {
+        "title": "5. Segment Anything Dataset",
+        "role": "unknown"
+      },
+      {
+        "title": "6. Segment Anything RAI Analysis",
+        "role": "unknown"
+      },
+      {
+        "title": "7. Zero-Shot Transfer Experiments",
+        "role": "experiments"
+      },
+      {
+        "title": "7.1. Zero-Shot Single Point Valid Mask Evaluation",
+        "role": "experiments"
+      },
+      {
+        "title": "7.2. Zero-Shot Edge Detection",
+        "role": "experiments"
+      },
+      {
+        "title": "7.3. Zero-Shot Object Proposals",
+        "role": "experiments"
+      },
+      {
+        "title": "7.4. Zero-Shot Instance Segmentation",
+        "role": "experiments"
+      },
+      {
+        "title": "7.5. Zero-Shot Text-to-Mask",
+        "role": "experiments"
+      },
+      {
+        "title": "7.6. Ablations",
+        "role": "experiments"
+      },
+      {
+        "title": "8. Discussion",
+        "role": "limitations"
+      },
+      {
+        "title": "References",
+        "role": "references"
+      },
+      {
+        "title": "Appendix",
+        "role": "appendix"
+      },
+      {
+        "title": "A. Segment Anything Model and Task Details",
+        "role": "appendix"
+      },
+      {
+        "title": "B. Automatic Mask Generation Details",
+        "role": "appendix"
+      },
+      {
+        "title": "C. RAI Additional Details",
+        "role": "appendix"
+      },
+      {
+        "title": "D. Experiment Implementation Details",
+        "role": "appendix"
+      },
+      {
+        "title": "D.1. Zero-Shot Single Point Valid Mask Evaluation",
+        "role": "appendix"
+      },
+      {
+        "title": "D.2. Zero-Shot Edge Detection",
+        "role": "appendix"
+      },
+      {
+        "title": "D.3. Zero-Shot Object Proposals",
+        "role": "appendix"
+      },
+      {
+        "title": "D.4. Zero-Shot Instance Segmentation",
+        "role": "appendix"
+      },
+      {
+        "title": "D.5. Zero-Shot Text-to-Mask",
+        "role": "appendix"
+      },
+      {
+        "title": "D.6. Probing the Latent Space of SAM",
+        "role": "appendix"
+      },
+      {
+        "title": "E. Human Study Experimental Design",
+        "role": "appendix"
+      },
+      {
+        "title": "F. Dataset, Annotation, and Model Cards",
+        "role": "appendix"
+      },
+      {
+        "title": "F.2. Data Annotation Card",
+        "role": "appendix"
+      },
+      {
+        "title": "Task Judging Mask Quality (1 of 3)",
+        "role": "appendix"
+      },
+      {
+        "title": "G. Annotation Guidelines",
+        "role": "appendix"
+      }
+    ],
+    "unrepresentedBlocks": 0
+  },
+  {
+    "mainBodyParagraphs": 211,
+    "mainBodyTextEstimate": 10288,
+    "mainBodySerializedEstimate": 14120,
+    "name": "Attention",
+    "id": "1706.03762",
+    "pageCount": 15,
+    "rawExtractedEstimate": 13683,
+    "structuredEstimate": 13033,
+    "byRole": {
+      "unknown": 967,
+      "intro": 1252,
+      "method": 6269,
+      "experiments": 1390,
+      "conclusion": 410,
+      "references": 2385,
+      "appendix": 360
+    },
+    "sectionTitles": [
+      {
+        "title": "Front matter",
+        "role": "unknown"
+      },
+      {
+        "title": "Abstract",
+        "role": "unknown"
+      },
+      {
+        "title": "1 Introduction",
+        "role": "intro"
+      },
+      {
+        "title": "2 Background",
+        "role": "intro"
+      },
+      {
+        "title": "3 Model Architecture",
+        "role": "method"
+      },
+      {
+        "title": "3.1 Encoder and Decoder Stacks",
+        "role": "method"
+      },
+      {
+        "title": "3.2 Attention",
+        "role": "method"
+      },
+      {
+        "title": "3.2.1 Scaled Dot-Product Attention",
+        "role": "method"
+      },
+      {
+        "title": "3.2.2 Multi-Head Attention",
+        "role": "method"
+      },
+      {
+        "title": "3.2.3 Applications of Attention in our Model",
+        "role": "method"
+      },
+      {
+        "title": "3.3 Position-wise Feed-Forward Networks",
+        "role": "method"
+      },
+      {
+        "title": "3.4 Embeddings and Softmax",
+        "role": "method"
+      },
+      {
+        "title": "3.5 Positional Encoding",
+        "role": "method"
+      },
+      {
+        "title": "4 Why Self-Attention",
+        "role": "method"
+      },
+      {
+        "title": "5 Training",
+        "role": "method"
+      },
+      {
+        "title": "5.1 Training Data and Batching",
+        "role": "method"
+      },
+      {
+        "title": "5.2 Hardware and Schedule",
+        "role": "method"
+      },
+      {
+        "title": "5.3 Optimizer",
+        "role": "method"
+      },
+      {
+        "title": "5.4 Regularization",
+        "role": "method"
+      },
+      {
+        "title": "6 Results",
+        "role": "experiments"
+      },
+      {
+        "title": "6.1 Machine Translation",
+        "role": "experiments"
+      },
+      {
+        "title": "6.2 Model Variations",
+        "role": "method"
+      },
+      {
+        "title": "6.3 English Constituency Parsing",
+        "role": "experiments"
+      },
+      {
+        "title": "7 Conclusion",
+        "role": "conclusion"
+      },
+      {
+        "title": "References",
+        "role": "references"
+      },
+      {
+        "title": "Input-Input Layer5 Attention Visualizations",
+        "role": "appendix"
+      }
+    ],
+    "unrepresentedBlocks": 0
+  },
+  {
+    "mainBodyParagraphs": 136,
+    "mainBodyTextEstimate": 11254,
+    "mainBodySerializedEstimate": 13875,
+    "name": "2610.23751",
+    "id": "2610.23751",
+    "pageCount": 41,
+    "rawExtractedEstimate": 38758,
+    "structuredEstimate": 37946,
+    "byRole": {
+      "unknown": 4552,
+      "intro": 1591,
+      "related": 1211,
+      "method": 2501,
+      "experiments": 1100,
+      "conclusion": 299,
+      "references": 5170,
+      "appendix": 21522
+    },
+    "sectionTitles": [
+      {
+        "title": "Front matter",
+        "role": "unknown"
+      },
+      {
+        "title": "Abstract",
+        "role": "unknown"
+      },
+      {
+        "title": "1 Introduction",
+        "role": "intro"
+      },
+      {
+        "title": "2 Related Work",
+        "role": "related"
+      },
+      {
+        "title": "3 Technical Details",
+        "role": "unknown"
+      },
+      {
+        "title": "3.1 Task Definition",
+        "role": "method"
+      },
+      {
+        "title": "1 Bad-case Filtering 2 Generate turn prompts",
+        "role": "unknown"
+      },
+      {
+        "title": "3.2 Data Construction Pipeline",
+        "role": "method"
+      },
+      {
+        "title": "3.3 Dataset Statistics",
+        "role": "unknown"
+      },
+      {
+        "title": "3.4 MTEdit-Bench",
+        "role": "unknown"
+      },
+      {
+        "title": "3.5 Qwen-Image-MTEdit",
+        "role": "unknown"
+      },
+      {
+        "title": "4 Experiments",
+        "role": "experiments"
+      },
+      {
+        "title": "4.1 Experimental Setup",
+        "role": "method"
+      },
+      {
+        "title": "4.2 Experimental Results",
+        "role": "experiments"
+      },
+      {
+        "title": "4.3 Ablation Studies",
+        "role": "experiments"
+      },
+      {
+        "title": "5 Conclusion",
+        "role": "conclusion"
+      },
+      {
+        "title": "References",
+        "role": "references"
+      },
+      {
+        "title": "A Appendix",
+        "role": "appendix"
+      },
+      {
+        "title": "A.1 Qwen-Image-MTEdit Details",
+        "role": "appendix"
+      },
+      {
+        "title": "A.2 Additional Discussion on the Data Construction Pipeline",
+        "role": "appendix"
+      },
+      {
+        "title": "A.2.1 Comparison of Visual Quality Drift",
+        "role": "appendix"
+      },
+      {
+        "title": "A.2.2 PTC Layout Choice",
+        "role": "appendix"
+      },
+      {
+        "title": "A.2.3 Cost Efficiency of PTC-based Data Construction",
+        "role": "appendix"
+      },
+      {
+        "title": "A.2.4 Examples of PTC Generation",
+        "role": "appendix"
+      },
+      {
+        "title": "A.3 Additional Experimental Results",
+        "role": "appendix"
+      },
+      {
+        "title": "A.3.1 Persistent-constraint Results",
+        "role": "appendix"
+      },
+      {
+        "title": "A.3.2 Textual-reference Results",
+        "role": "appendix"
+      },
+      {
+        "title": "A.3.3 Short-instruction Results",
+        "role": "appendix"
+      },
+      {
+        "title": "A.3.4 Additional Qualitative Examples",
+        "role": "appendix"
+      },
+      {
+        "title": "A.4 Alignment Between Benchmark Evaluation and Human Judgments",
+        "role": "appendix"
+      },
+      {
+        "title": "A.5 Additional Examples from MTEdit",
+        "role": "appendix"
+      },
+      {
+        "title": "A.6 Data Distribution Statement",
+        "role": "appendix"
+      },
+      {
+        "title": "A.7 Limitations",
+        "role": "appendix"
+      },
+      {
+        "title": "A.8 System Prompt Collection",
+        "role": "appendix"
+      },
+      {
+        "title": "A.8.1 Seed Image Curation",
+        "role": "appendix"
+      },
+      {
+        "title": "A.8.2 Step-Wise Editing",
+        "role": "appendix"
+      },
+      {
+        "title": "A.8.3 Persistent-Constraint Editing",
+        "role": "appendix"
+      },
+      {
+        "title": "A.8.4 Textual-Reference Editing",
+        "role": "appendix"
+      },
+      {
+        "title": "A.8.5 Short-Instruction Editing",
+        "role": "appendix"
+      },
+      {
+        "title": "A.8.6 Instruction Following Evaluation ( IF )",
+        "role": "appendix"
+      },
+      {
+        "title": "A.8.7 Content-Consistency Evaluation ( CC )",
+        "role": "appendix"
+      },
+      {
+        "title": "A.8.8 Context-Aware Instruction Following Evaluation ( IF )",
+        "role": "appendix"
+      },
+      {
+        "title": "A.8.9 Context-Aware Content-Consistency Evaluation ( CC )",
+        "role": "appendix"
+      }
+    ],
+    "unrepresentedBlocks": 0
+  }
+]

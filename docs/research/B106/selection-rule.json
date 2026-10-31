@@ -1,0 +1,13 @@
+{
+  "createdBeforeGGrades": true,
+  "at": "2026-10-31T12:17:26Z",
+  "priority": "faithfulness/completeness first; choose minimum totaltokens among pass",
+  "reference": "A_full",
+  "conditions": {
+    "majorErrorAnswers": 0,
+    "positiveFactCoverageMaxDrop": 0.01,
+    "responsivenessMaxDrop": 0.1,
+    "citationSupportMaxDrop": 0.03
+  },
+  "limitations": "engineering screening rule on same24developmentcases, not statisticalequivalence or independentholdout; exactscore thresholds not validateduniversal"
+}

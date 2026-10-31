@@ -1,0 +1,8 @@
+{
+  "arm": "G_nested",
+  "fixedBeforeAnswers": true,
+  "change": "Same complete paragraph sequence and aliases asA; JSONsection+page containers sharemetadata; paragraphstill{id,text}. No text removed or summarized.",
+  "sameSystemPrompt": true,
+  "plannerCalls": 0,
+  "stage": "exploratory formatting followup, same24cases notholdout"
+}

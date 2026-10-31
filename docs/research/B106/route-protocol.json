@@ -1,0 +1,14 @@
+{
+  "arm": "E_route",
+  "frozenBeforeEAnswers": true,
+  "rules": [
+    "Useexistingquestion+outlineplanner;scopeglobal->Afull",
+    "scopelocal->Dretrieval",
+    "IfDanswerstatusnotansweredORmissingnonempty->Afullonce"
+  ],
+  "prompt": "identical tofourbaselines; no gold used",
+  "planner": "prioractualplanner reused; fullplannerusagechargedpercase",
+  "intermediateAnswer": "chargedtoE evenwhenfallback",
+  "maxExpansion": 1,
+  "tuningNote": "ruleproposed afterbaselineanalysis; exploratory same24questions, not independentholdout"
+}

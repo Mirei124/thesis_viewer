@@ -1,0 +1,4 @@
+{
+  "annotationCorrection": "Attention-global evidence and expected facts expanded to cover linear/softmax before any Attention answer was generated; no question/history/type/paper id changed; selector receives no annotations.",
+  "frozenSha256": "4366df3386565111075b38561ed8460eba339e93894767f49c7975ce036459e9"
+}
