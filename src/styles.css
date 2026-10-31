@@ -604,3 +604,7 @@ h1 { color: var(--text-strong); }
 .reading-history-list :is(button,input,a):focus-visible, .reading-activity summary:focus-visible { outline-color: var(--focus); }
 
 .reading-history-authors, .reading-history-institutions { overflow-wrap: anywhere; white-space: normal; }
+
+/* Keep Q&A mounted while another rail is open, preserving unsent drafts. */
+.reader-information.qa-reader-information[hidden] { display: none; }
+.reader-information.qa-reader-information { overflow: hidden; }

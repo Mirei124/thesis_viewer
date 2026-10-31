@@ -235,6 +235,7 @@ export const readerEn = {
   'reader.rail.closeSide': 'Close side panel',
   'reader.rail.outline': 'Outline',
   'reader.rail.pages': 'Pages',
+  'reader.rail.qa': 'Paper Q&A',
   'reader.rail.overview': 'Overview',
   'reader.rail.search': 'Search',
   'reader.rail.tools': 'Research tools',

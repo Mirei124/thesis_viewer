@@ -1,0 +1,59 @@
+[
+  {
+    "request": "1793451474046997121",
+    "messageCount": 3,
+    "maxTokens": 64000,
+    "usage": {
+      "prompt_tokens": 7016,
+      "completion_tokens": 1857,
+      "total_tokens": 8873,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 1309
+      },
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 7016
+    },
+    "previousRequestPrefixPreserved": true
+  },
+  {
+    "request": "1793451502853759720",
+    "messageCount": 6,
+    "maxTokens": 64000,
+    "usage": {
+      "prompt_tokens": 17536,
+      "completion_tokens": 787,
+      "total_tokens": 18323,
+      "prompt_tokens_details": {
+        "cached_tokens": 6912
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 339
+      },
+      "prompt_cache_hit_tokens": 6912,
+      "prompt_cache_miss_tokens": 10624
+    },
+    "previousRequestPrefixPreserved": true
+  },
+  {
+    "request": "1793451556166956467",
+    "messageCount": 9,
+    "maxTokens": 64000,
+    "usage": {
+      "prompt_tokens": 27000,
+      "completion_tokens": 1137,
+      "total_tokens": 28137,
+      "prompt_tokens_details": {
+        "cached_tokens": 17408
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 651
+      },
+      "prompt_cache_hit_tokens": 17408,
+      "prompt_cache_miss_tokens": 9592
+    },
+    "previousRequestPrefixPreserved": true
+  }
+]

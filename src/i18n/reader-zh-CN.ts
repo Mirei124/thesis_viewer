@@ -237,6 +237,7 @@ export const readerZhCN: Record<keyof typeof readerEn, string> = {
   'reader.rail.closeSide': '关闭侧栏',
   'reader.rail.outline': '目录',
   'reader.rail.pages': '页面',
+  'reader.rail.qa': '论文问答',
   'reader.rail.overview': '概览',
   'reader.rail.search': '搜索',
   'reader.rail.tools': '研究工具',

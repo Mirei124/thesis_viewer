@@ -186,4 +186,145 @@ export async function requestCompatibleCompletion(request: CompatibleRequest): P
   }
 }
 
+/** A separate streaming adapter for paper QA; overview/translation keep their
+ * existing non-streaming protocol. Never retries a paid generation implicitly. */
+export async function requestCompatibleCompletionStream(
+  request: CompatibleRequest,
+  onDelta: (delta: string) => void,
+): Promise<CompatibleResponse> {
+  if (request.signal?.aborted) throw new CompatibleProviderError('aborted');
+  const baseUrl = normalizeBaseUrl(request.config.baseUrl);
+  const outputLimit = validatedOutputLimit(request.config.outputLimit);
+  const headers: Record<string, string> = { 'content-type': 'application/json', accept: 'text/event-stream' };
+  if (request.apiKey) headers.authorization = `Bearer ${request.apiKey}`;
+  let response: Response;
+  try {
+    response = await (request.fetchImpl ?? globalThis.fetch)(completionUrl(baseUrl), {
+      method: 'POST', headers, signal: request.signal,
+      body: JSON.stringify({
+        model: request.config.model, messages: request.messages, stream: true,
+        stream_options: { include_usage: true }, max_tokens: outputLimit,
+        ...(request.config.structuredOutput ? { response_format: { type: 'json_object' } } : {}),
+      }),
+    });
+  } catch (error) {
+    if (request.signal?.aborted || (error instanceof DOMException && error.name === 'AbortError')) throw new CompatibleProviderError('aborted');
+    throw new CompatibleProviderError('network');
+  }
+  if (!response.ok) throw await errorForResponse(response);
+  if (request.signal?.aborted) {
+    await response.body?.cancel().catch(() => undefined);
+    throw new CompatibleProviderError('aborted');
+  }
+  // Some compatible services deliberately return one JSON response even when
+  // asked to stream. Consume that response once; do not send another request.
+  if (/application\/(?:[\w.+-]+\+)?json/i.test(response.headers.get('content-type') ?? '')) {
+    try {
+      const payload: unknown = await response.json();
+      if (request.signal?.aborted) throw new CompatibleProviderError('aborted');
+      const choices = (payload as { choices?: Array<{ finish_reason?: unknown }> } | null)?.choices;
+      const reason = Array.isArray(choices) ? choices[0]?.finish_reason : undefined;
+      if (reason !== undefined && reason !== null && reason !== 'stop') throw invalidResponse();
+      const content = contentFromNonStream(payload);
+      onDelta(content);
+      if (request.signal?.aborted) throw new CompatibleProviderError('aborted');
+      const usage = usageFromPayload(payload);
+      return { content, ...(usage ? { usage } : {}) };
+    } catch (error) {
+      if (error instanceof CompatibleProviderError) throw error;
+      if (request.signal?.aborted || (error instanceof DOMException && error.name === 'AbortError')) throw new CompatibleProviderError('aborted');
+      throw invalidResponse();
+    }
+  }
+  if (!response.body) throw invalidResponse();
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder('utf-8', { fatal: true });
+  let buffer = '', dataLines: string[] = [], content = '', done = false;
+  let usage: CompatibleUsage | undefined;
+  const abortReading = () => { void reader.cancel().catch(() => undefined); };
+  request.signal?.addEventListener('abort', abortReading, { once: true });
+  const dispatch = () => {
+    if (!dataLines.length) return;
+    const data = dataLines.join('\n');
+    dataLines = [];
+    if (!data.trim()) return;
+    if (data.trim() === '[DONE]') { done = true; return; }
+    let payload: unknown;
+    try { payload = JSON.parse(data); } catch { throw invalidResponse(); }
+    if (!payload || typeof payload !== 'object' || 'error' in payload) throw invalidResponse();
+    const nextUsage = usageFromPayload(payload);
+    if (nextUsage) {
+      usage ??= {};
+      for (const key of Object.keys(nextUsage) as Array<keyof CompatibleUsage>) {
+        if (nextUsage[key] !== undefined) usage[key] = nextUsage[key];
+      }
+    }
+    const choices = (payload as { choices?: unknown }).choices;
+    if (!Array.isArray(choices)) throw invalidResponse();
+    // An empty choices array is the normal final accounting event.
+    if (choices.length === 0) return;
+    const choice = choices.find((item: unknown) => Boolean(item && typeof item === 'object' && ((item as { index?: unknown }).index === 0 || (item as { index?: unknown }).index === undefined)));
+    if (!choice || typeof choice !== 'object') return;
+    const reason = (choice as { finish_reason?: unknown }).finish_reason;
+    if (reason !== undefined && reason !== null && reason !== 'stop') throw invalidResponse();
+    const delta = (choice as { delta?: unknown }).delta;
+    if (!delta || typeof delta !== 'object') throw invalidResponse();
+    const text = (delta as { content?: unknown }).content;
+    if (text !== undefined && text !== null && typeof text !== 'string') throw invalidResponse();
+    if (typeof text === 'string' && text) { content += text; onDelta(text); }
+  };
+  const line = (value: string) => {
+    if (!value) { dispatch(); return; }
+    if (value.startsWith(':')) return;
+    const colon = value.indexOf(':');
+    const field = colon < 0 ? value : value.slice(0, colon);
+    let valueText = colon < 0 ? '' : value.slice(colon + 1);
+    if (valueText.startsWith(' ')) valueText = valueText.slice(1);
+    if (field === 'data') dataLines.push(valueText);
+  };
+  const consume = (final = false) => {
+    let start = 0;
+    for (let index = 0; index < buffer.length && !done; index++) {
+      if (buffer[index] !== '\r' && buffer[index] !== '\n') continue;
+      // Keep a trailing CR until its possible LF arrives in the next chunk.
+      if (buffer[index] === '\r' && index === buffer.length - 1 && !final) break;
+      line(buffer.slice(start, index));
+      if (buffer[index] === '\r' && buffer[index + 1] === '\n') index++;
+      start = index + 1;
+    }
+    buffer = buffer.slice(start);
+    if (final && !done) {
+      if (buffer) line(buffer);
+      buffer = '';
+      dispatch();
+    }
+  };
+  try {
+    while (!done) {
+      if (request.signal?.aborted) throw new CompatibleProviderError('aborted');
+      let chunk: ReadableStreamReadResult<Uint8Array>;
+      try { chunk = await reader.read(); } catch (error) {
+        if (request.signal?.aborted || (error instanceof DOMException && error.name === 'AbortError')) throw new CompatibleProviderError('aborted');
+        throw new CompatibleProviderError('network');
+      }
+      if (request.signal?.aborted) throw new CompatibleProviderError('aborted');
+      buffer += chunk.done ? decoder.decode() : decoder.decode(chunk.value, { stream: true });
+      consume(chunk.done);
+      if (chunk.done) break;
+    }
+    if (request.signal?.aborted) throw new CompatibleProviderError('aborted');
+    // EOF is not completion: a dropped connection must not commit partial JSON.
+    if (!done) throw invalidResponse();
+    return { content, ...(usage ? { usage } : {}) };
+  } catch (error) {
+    if (error instanceof CompatibleProviderError) throw error;
+    if (request.signal?.aborted || (error instanceof DOMException && error.name === 'AbortError')) throw new CompatibleProviderError('aborted');
+    throw invalidResponse();
+  } finally {
+    request.signal?.removeEventListener('abort', abortReading);
+    await reader.cancel().catch(() => undefined);
+    reader.releaseLock();
+  }
+}
+
 export const __testOnly = { completionUrl, retryAfterSeconds, contentFromNonStream, usageFromPayload, validatedOutputLimit };

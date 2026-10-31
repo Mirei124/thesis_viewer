@@ -1,0 +1,34 @@
+[
+  {
+    "id": "1512.03385",
+    "pre": 87,
+    "body": 257,
+    "full": 373,
+    "lastPreSection": "3.4. Implementation",
+    "firstOmittedBody": "4. Experiments"
+  },
+  {
+    "id": "2304.02643",
+    "pre": 137,
+    "body": 240,
+    "full": 634,
+    "lastPreSection": "6. Segment Anything RAI Analysis",
+    "firstOmittedBody": "7. Zero-Shot Transfer Experiments"
+  },
+  {
+    "id": "1706.03762",
+    "pre": 163,
+    "body": 211,
+    "full": 271,
+    "lastPreSection": "5.4 Regularization",
+    "firstOmittedBody": "6 Results"
+  },
+  {
+    "id": "2610.23751",
+    "pre": 105,
+    "body": 136,
+    "full": 667,
+    "lastPreSection": "3.5 Qwen-Image-MTEdit",
+    "firstOmittedBody": "4 Experiments"
+  }
+]

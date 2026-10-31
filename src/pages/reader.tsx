@@ -1,3 +1,6 @@
+import { PaperQaPanel } from '../components/PaperQaPanel';
+import { usePaperQa } from '../components/usePaperQa';
+import { qaLabel } from '../lib/paperQaLabels';
 import { extractPdfBibliography } from '../lib/pdfBibliography';
 import { READER_BITMAP_BUDGET, bitmapBytes, selectReaderBitmaps, settleBitmapTask, releaseReaderBitmap, retireReaderBitmap } from '../lib/readerBitmap';
 import { ReadingActivity, ReadingHistoryList } from '../components/ReadingHistory';
@@ -542,10 +545,11 @@ function OutlineItems({ items, depth, onNavigate, label }: {
   );
 }
 
-type ReaderIconName = 'document' | 'search' | 'previous' | 'next' | 'minus' | 'plus' | 'generate' | 'rotate' | 'left' | 'right' | 'settings' | 'close' | 'more' | 'link' | 'outline' | 'pages' | 'insights' | 'tools' | 'historyBack' | 'historyForward' | 'reading';
+type ReaderIconName = 'document' | 'search' | 'previous' | 'next' | 'minus' | 'plus' | 'generate' | 'rotate' | 'left' | 'right' | 'settings' | 'close' | 'more' | 'link' | 'outline' | 'pages' | 'insights' | 'tools' | 'historyBack' | 'historyForward' | 'reading' | 'qa';
 
 function ReaderIcon({ name }: { name: ReaderIconName }) {
   const paths: Record<ReaderIconName, string> = {
+    qa: 'M4 4h16v12H9l-5 5V4z M8 8h8 M8 12h5',
     reading: 'M3 12a9 9 0 1 0 3-6.7M3 3v5h5M12 7v5l3 2',
     document: 'M6 3h8l4 4v14H6z M14 3v5h4 M9 12h6 M9 16h6',
     search: 'M20 20l-5-5 M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0',
@@ -743,7 +747,14 @@ function ReaderPage() {
   const [leftRailOpen, setLeftRailOpen] = useState(() => window.innerWidth > 1100);
   const [rightRailOpen, setRightRailOpen] = useState(() => window.innerWidth > 1100);
   const [leftRailTab, setLeftRailTab] = useState<'outline' | 'pages' | 'reading'>('outline');
-  const [rightRailTab, setRightRailTab] = useState<'overview' | 'search' | 'tools'>('overview');
+  const [rightRailTab, setRightRailTab] = useState<'overview' | 'qa' | 'search' | 'tools'>('overview');
+
+  const qa = usePaperQa({
+    documentKey: state.kind === 'ready' ? documentContentKey : null,
+    ledger: evidenceLedger.kind === 'ready' ? evidenceLedger.ledger : undefined,
+    pages: extraction.kind === 'ready' ? extraction.pages : undefined,
+    locale, getConfig: () => modelConfigRef.current, getApiKey: () => apiKeyRef.current,
+  });
 
   useEffect(() => {
     const clampForViewport = () => {
@@ -787,7 +798,7 @@ function ReaderPage() {
   }
 
   function onRailTabKeyDown(event: KeyboardEvent<HTMLElement>, side: 'left' | 'right') {
-    const tabs = side === 'left' ? ['outline', 'pages', 'reading'] : ['overview', 'search', 'tools'];
+    const tabs = side === 'left' ? ['outline', 'pages', 'reading'] : ['overview', 'qa', 'search', 'tools'];
     const current = side === 'left' ? leftRailTab : rightRailTab;
     if (event.key === 'Escape') { event.preventDefault(); closeRail(side); return; }
     if (!['ArrowUp', 'ArrowDown', 'Home', 'End'].includes(event.key)) return;
@@ -992,6 +1003,7 @@ function ReaderPage() {
   }, [documentContentKey, state, viewRestoreEpoch]);
 
   async function clearPreviousDocument() {
+    qa.cancel(); qa.setSelection(null);
     pendingEvidenceRef.current = null;
     clearEvidenceVisual();
     setEvidenceNavigationNotice('');
@@ -1732,6 +1744,7 @@ function ReaderPage() {
   }
 
   function beginImport() {
+    qa.cancel(); qa.setSelection(null);
     automaticOverviewAttemptRef.current = { threeLine: false, detailed: false };
     setInsightUsages([]);
     setCurrentZoomChoice('auto');
@@ -3255,6 +3268,35 @@ function ReaderPage() {
   const canGoForward = historyRevision >= 0 && locationHistoryRef.current.forward.length > 0;
   const panelStyle = { '--left-panel-width': `${panelWidths.left}px`, '--right-panel-width': `${panelWidths.right}px` } as CSSProperties;
 
+  function openQaSource(sourceId: string, trigger: HTMLElement) {
+    if (!qa.activeSession || qa.activeSession.sourceVersion !== qa.sourceVersion) return;
+    const source = qa.sources.find(item => item.id === sourceId);
+    if (!source || !qa.activeSession.sourceIds.includes(sourceId)) return;
+    const groups = buildInlineEvidenceExcerpts(source.evidenceIds, detailedLedger?.candidates ?? [], extraction.kind === 'ready' ? extraction.pages : []);
+    evidenceTriggerRef.current = trigger as HTMLButtonElement;
+    setActiveEvidence({ alias: source.id, category: qaLabel(locale, 'title'), count: source.evidenceIds.length, groups });
+  }
+
+  function renderQaAnswer(text: string, sourceIds: readonly string[], enabled: boolean) {
+    const canNavigate = enabled && qa.activeSession?.sourceVersion === qa.sourceVersion;
+    const allowed = new Set(sourceIds), mentioned = new Set<string>();
+    const prose = (value: string, key: string) => <span key={key}>{value.split(/(\*\*[^*\n]+\*\*)/g).map((part, index) => part.startsWith('**') && part.endsWith('**')
+      ? <strong key={index}><LimitedMath text={part.slice(2, -2)} /></strong> : <LimitedMath key={index} text={part} />)}</span>;
+    if (!canNavigate) return prose(text, 'plain');
+    const result = []; let cursor = 0;
+    const sourceButton = (id: string, key: string) => <button type="button" key={key} className="qa-source" aria-haspopup="dialog" aria-label={qaLabel(locale, 'source', { source: id })} onClick={event => openQaSource(id, event.currentTarget)}>[{Number(id.slice(1))}]</button>;
+    for (const match of text.matchAll(/\[(P\d{4,})\]|\b(P\d{4,})\b/g)) {
+      result.push(prose(text.slice(cursor, match.index), `text-${cursor}`));
+      const id = match[1] ?? match[2];
+      if (allowed.has(id)) { result.push(sourceButton(id, `source-${match.index}`)); mentioned.add(id); }
+      else result.push(prose(match[0], `unbound-${match.index}`));
+      cursor = match.index! + match[0].length;
+    }
+    result.push(prose(text.slice(cursor), 'last'));
+    for (const id of sourceIds) if (!mentioned.has(id)) result.push(sourceButton(id, `appended-${id}`));
+    return result;
+  }
+
   function renderInlineEvidence(text: string, refs: readonly VerifiedEvidenceRef[], renderMath = false) {
     return inlineEvidenceParts(text, refs).map((part, index) => {
       if (part.kind === 'text') return renderMath ? <LimitedMath key={`text-${index}`} text={part.value} /> : part.value;
@@ -3397,11 +3439,22 @@ function ReaderPage() {
           </nav>
           <nav className="edge-rail edge-rail-right" aria-label={t('reader.rail.researchPanels')} onKeyDown={(event) => onRailTabKeyDown(event, 'right')}>
             <div role="tablist" aria-label={t('reader.rail.researchPanels')} aria-orientation="vertical">
-              {([{ id: 'overview', label: 'reader.rail.overview', icon: 'insights' }, { id: 'search', label: 'reader.rail.search', icon: 'search' }, { id: 'tools', label: 'reader.rail.tools', icon: 'tools' }] as const).map((tab) => <button type="button" role="tab" id={`right-${tab.id}-tab`} key={tab.id} aria-label={t(tab.label)} title={t(tab.label)} aria-selected={rightRailOpen && rightRailTab === tab.id} aria-expanded={rightRailOpen && rightRailTab === tab.id} aria-controls={`right-${tab.id}-panel`} tabIndex={rightRailTab === tab.id ? 0 : -1} onClick={() => openRailTab('right', tab.id, true)}><ReaderIcon name={tab.icon} /></button>)}
+              {([{ id: 'overview', label: 'reader.rail.overview', icon: 'insights' }, { id: 'qa', label: 'reader.rail.qa', icon: 'qa' }, { id: 'search', label: 'reader.rail.search', icon: 'search' }, { id: 'tools', label: 'reader.rail.tools', icon: 'tools' }] as const).map((tab) => <button type="button" role="tab" id={`right-${tab.id}-tab`} key={tab.id} aria-label={t(tab.label)} title={t(tab.label)} aria-selected={rightRailOpen && rightRailTab === tab.id} aria-expanded={rightRailOpen && rightRailTab === tab.id} aria-controls={`right-${tab.id}-panel`} tabIndex={rightRailTab === tab.id ? 0 : -1} onClick={() => openRailTab('right', tab.id, true)}><ReaderIcon name={tab.icon} /></button>)}
             </div>
           </nav>
         </>}
-      {state.kind === 'ready' && rightRailOpen && <aside className="reader-information" aria-label={t('reader.rail.researchPanel')}>
+      {state.kind === 'ready' && <aside hidden={!rightRailOpen || rightRailTab !== 'qa'} className="reader-information qa-reader-information" aria-label={qaLabel(locale, 'title')}>
+        <div className="rail-resize-handle rail-resize-handle--right" role="separator" tabIndex={0} aria-label={t('reader.rail.resizeResearch')} aria-orientation="vertical" aria-valuemin={panelWidthLimits('right').min} aria-valuemax={panelWidthLimits('right').max} aria-valuenow={panelWidths.right} onPointerDown={(event) => startPanelResize('right', event)} onPointerMove={movePanelResize} onPointerUp={endPanelResize} onPointerCancel={endPanelResize} onKeyDown={(event) => onPanelResizeKeyDown('right', event)} />
+        <button type="button" className="rail-dismiss" aria-label={t('reader.rail.closeResearch')} onClick={() => closeRail('right')}><ReaderIcon name="close" /></button>
+        <section id="right-qa-panel" role="tabpanel" aria-labelledby="right-qa-tab">
+          <PaperQaPanel locale={locale} title={readingSnapshot.entries.find(entry => entry.hash === documentContentKey)?.title ?? state.fileName}
+            visible={rightRailOpen && rightRailTab === 'qa'} ready={qa.ready} sessions={qa.sessions} activeSession={qa.activeSession} busy={qa.busy} selection={qa.selection} error={qa.error}
+            onSelectSession={qa.selectSession} onNewSession={qa.newSession} onDeleteSession={(id) => { void qa.removeSession(id); }}
+            onScopeChange={qa.changeScope} onClearSelection={() => qa.setSelection(null)} onSend={qa.send} onCancel={qa.cancel} onRetry={qa.retry}
+            onSource={openQaSource} renderAnswer={renderQaAnswer} />
+        </section>
+      </aside>}
+      {state.kind === 'ready' && rightRailOpen && rightRailTab !== 'qa' && <aside className="reader-information" aria-label={t('reader.rail.researchPanel')}>
         <div className="rail-resize-handle rail-resize-handle--right" role="separator" tabIndex={0} aria-label={t('reader.rail.resizeResearch')} aria-orientation="vertical" aria-valuemin={panelWidthLimits('right').min} aria-valuemax={panelWidthLimits('right').max} aria-valuenow={panelWidths.right} onPointerDown={(event) => startPanelResize('right', event)} onPointerMove={movePanelResize} onPointerUp={endPanelResize} onPointerCancel={endPanelResize} onKeyDown={(event) => onPanelResizeKeyDown('right', event)} />
         <button type="button" className="rail-dismiss" aria-label={t('reader.rail.closeResearch')} onClick={() => closeRail('right')}><ReaderIcon name="close" /></button>
       {rightRailTab === 'overview' && <section className="extraction-diagnostics paper-insights" id="right-overview-panel" role="tabpanel" aria-labelledby="right-overview-tab">
@@ -3801,6 +3854,10 @@ function ReaderPage() {
               <option value="English">{t('reader.translation.english')}</option>
             </select>
           </label>
+          <button type="button" className="qa-selection-ask" disabled={!qa.ready || qa.busy} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+            qa.setSelection({ text: selectionDraft.quote, pageIndex: selectionDraft.pageIndex });
+            setSelectionDraft(null); clearBrowserSelection(); openRailTab('right', 'qa');
+          }}>{qaLabel(locale, 'askSelection')}</button>
           <button type="button" className="translate-button" onMouseDown={(event) => event.preventDefault()} onClick={startTranslation}>{t('reader.translation.action')}</button>
           <button type="button" className="highlight-create-button" onMouseDown={(event) => event.preventDefault()} onClick={() => createHighlight('yellow')}>{t('reader.highlight.action')}</button>
           {HIGHLIGHT_COLORS.filter((color) => color !== 'yellow').map((color) => <button
