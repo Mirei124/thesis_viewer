@@ -53,14 +53,15 @@ export function useUiLocale(): readonly [UiLocale, (locale: UiLocale) => void] {
 }
 
 type LocalePreferenceControlProps = {
+  disabled?: boolean;
   locale: UiLocale;
   onChange: (locale: UiLocale) => void;
   label: (key: 'language.legend' | 'language.help' | 'language.en' | 'language.zh-CN') => string;
 };
 
-export function LocalePreferenceControl({ locale, onChange, label }: LocalePreferenceControlProps) {
+export function LocalePreferenceControl({ locale, onChange, label, disabled = false }: LocalePreferenceControlProps) {
   return (
-    <fieldset className="locale-preferences">
+    <fieldset className="locale-preferences" disabled={disabled}>
       <legend>{label('language.legend')}</legend>
       <p className="field-help">{label('language.help')}</p>
       <div className="theme-choice-group" role="radiogroup" aria-label={label('language.legend')}>

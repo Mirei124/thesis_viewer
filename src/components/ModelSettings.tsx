@@ -11,6 +11,7 @@ import {
   type ModelConfig,
 } from '../lib/modelConfig';
 import { ThemePreferenceControl } from './ThemePreferenceControl';
+import { DataManagementSettings } from './DataManagementSettings';
 import { ArxivAutoOpenControl } from './ArxivAutoOpenControl';
 import { LocalePreferenceControl, useUiLocale } from './LocalePreferenceControl';
 import { message, type MessageKey } from '../lib/i18n';
@@ -29,6 +30,8 @@ export function ModelSettings() {
   const [rememberKey, setRememberKey] = useState(false);
   const [hasRememberedKey, setHasRememberedKey] = useState(false);
   const [state, setState] = useState<SettingsState>('loading');
+  const [dataBusy, setDataBusy] = useState(false);
+  const [settingsRevision, setSettingsRevision] = useState(0);
   const [statusMessage, setStatusMessage] = useState('Loading settings…');
 
   useEffect(() => {
@@ -50,7 +53,7 @@ export function ModelSettings() {
         setStatusMessage(t('settings.loadError'));
       });
     return () => { active = false; };
-  }, []);
+  }, [settingsRevision]);
 
   useEffect(() => {
     globalThis.document.title = t('settings.title');
@@ -110,7 +113,15 @@ export function ModelSettings() {
     }
   }
 
-  const busy = state === 'loading' || state === 'saving';
+  const settingsBusy = state === 'loading' || state === 'saving';
+  const busy = settingsBusy || dataBusy;
+  function reloadStoredSettings() {
+    setApiKey('');
+    setHasRememberedKey(false);
+    setRememberKey(false);
+    setState('loading');
+    setSettingsRevision((current) => current + 1);
+  }
   return (
     <main className="page-shell options-page" aria-labelledby="page-title">
       <section className="status-card options-card">
@@ -150,9 +161,9 @@ export function ModelSettings() {
             <p className="field-help">{t('settings.autoOverviewHelp')}</p>
           </fieldset>
 
-          <LocalePreferenceControl locale={locale} onChange={setLocale} label={t} />
-          <ThemePreferenceControl label={t} />
-          <ArxivAutoOpenControl disabled={busy} label={t} />
+          <LocalePreferenceControl disabled={busy} locale={locale} onChange={setLocale} label={t} />
+          <ThemePreferenceControl disabled={busy} key={`theme-${settingsRevision}`} label={t} />
+          <ArxivAutoOpenControl key={`arxiv-${settingsRevision}`} disabled={busy} label={t} />
 
           <div className="settings-actions">
             <button type="submit" disabled={busy}>{t('settings.save')}</button>
@@ -160,6 +171,7 @@ export function ModelSettings() {
           </div>
         </form>
         <p className={state === 'error' ? 'settings-message is-error' : 'settings-message'} role="status">{statusMessage}</p>
+        <DataManagementSettings locale={locale} disabled={settingsBusy} onBusyChange={setDataBusy} onSettingsChanged={reloadStoredSettings} />
       </section>
     </main>
   );

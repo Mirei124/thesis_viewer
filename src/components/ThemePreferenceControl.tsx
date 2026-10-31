@@ -43,14 +43,15 @@ export function useThemePreference(): readonly [ThemePreference, (preference: Th
 }
 
 type ThemePreferenceControlProps = {
+  disabled?: boolean;
   label: (key: 'appearance.legend' | 'appearance.help' | 'appearance.system' | 'appearance.light' | 'appearance.dark') => string;
 };
 
-export function ThemePreferenceControl({ label }: ThemePreferenceControlProps) {
+export function ThemePreferenceControl({ label, disabled = false }: ThemePreferenceControlProps) {
   const [preference, setPreference] = useThemePreference();
 
   return (
-    <fieldset className="theme-preferences">
+    <fieldset className="theme-preferences" disabled={disabled}>
       <legend>{label('appearance.legend')}</legend>
       <p className="field-help">{label('appearance.help')}</p>
       <div className="theme-choice-group" role="radiogroup" aria-label={label('appearance.legend')}>

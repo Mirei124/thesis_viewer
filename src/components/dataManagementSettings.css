@@ -1,0 +1,19 @@
+.data-management { border-top: 1px solid var(--border); margin-top: 1.75rem; padding-top: 1.35rem; }
+.data-management h2 { color: var(--text-strong); font-size: 1.2rem; margin: 0 0 0.7rem; }
+.data-management > p { line-height: 1.55; }
+.data-management .field-help { color: var(--text-muted); }
+.data-management-actions { margin-top: 1rem; }
+.data-management .data-danger-button { border-color: var(--status-error-border); background: var(--status-error-surface); color: var(--status-error-text); }
+.data-management button:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.data-management-dialog { color: var(--text); background: var(--surface); border: 1px solid var(--border-strong); border-radius: 0.75rem; width: min(33rem, calc(100% - 2rem)); max-height: calc(100dvh - 2rem); padding: 1.5rem; box-shadow: 0 1rem 3rem var(--shadow); overflow: auto; }
+.data-management-dialog:modal { overscroll-behavior: contain; }
+.data-management-dialog::backdrop { background: rgb(0 0 0 / 45%); overflow: hidden; overscroll-behavior: contain; }
+.data-management-dialog h2 { margin-top: 0; }
+.data-management-dialog p { line-height: 1.55; }
+.data-management-dialog .check-row { align-items: flex-start; color: var(--text); font-size: 1rem; }
+.data-management-dialog .check-row input { flex: 0 0 auto; margin-top: 0.3rem; }
+.data-dialog-actions { justify-content: flex-end; }
+.data-dialog-status { min-height: 1.55em; margin-top: 0.8rem; font-size: 0.95rem; color: var(--status-error-text); }
+.data-refresh-help { margin-top: 0.8rem !important; }
+.data-refresh-button { padding: 0; border: 0; background: transparent; color: var(--text-link); text-decoration: underline; cursor: pointer; font: inherit; }
+@media (max-width: 480px) { .data-management-dialog { padding: 1.1rem; } .data-management-actions button { flex: 1 1 auto; } }
