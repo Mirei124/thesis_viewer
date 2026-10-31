@@ -1,5 +1,6 @@
+import type { PdfBibliography } from './pdfBibliography';
 export type ReadingSource = { kind: 'local' } | { kind: 'online'; url: string };
-export type ReadingHistoryEntry = { id: string; hash: string; title: string; titleSource: 'metadata' | 'page' | 'filename'; source: ReadingSource; firstOpened: number; lastOpened: number; openCount: number };
+export type ReadingHistoryEntry = PdfBibliography & { id: string; hash: string; title: string; titleSource: 'metadata' | 'page' | 'filename'; source: ReadingSource; firstOpened: number; lastOpened: number; openCount: number };
 export type ReadingActivity = { id: string; day: string; hash: string };
 export type ReadingSnapshot = { entries: ReadingHistoryEntry[]; activities: ReadingActivity[] };
 export function civilDay(date: Date): string { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
@@ -16,7 +17,18 @@ export function normalizeHistoryUrl(value: string): string {
 export function historyIdentity(hash: string, source: ReadingSource): string { return source.kind === 'local' ? `local:${hash}` : `online:${normalizeHistoryUrl(source.url)}`; }
 export function updatedHistory(previous: ReadingHistoryEntry | undefined, input: Omit<ReadingHistoryEntry, 'id' | 'firstOpened' | 'lastOpened' | 'openCount'>, now: number): ReadingHistoryEntry {
   const source = input.source.kind === 'online' ? { kind: 'online' as const, url: normalizeHistoryUrl(input.source.url) } : input.source;
-  return { ...input, source, id: historyIdentity(input.hash, source), firstOpened: previous?.firstOpened ?? now, lastOpened: Math.max(previous?.lastOpened ?? now, now), openCount: (previous?.openCount ?? 0) + 1 };
+  const saved = previous?.hash === input.hash ? previous : undefined;
+  return { ...input,
+    authors: input.authors?.length ? input.authors : saved?.authors,
+    authorsSource: input.authors?.length ? input.authorsSource : saved?.authorsSource,
+    institutions: input.institutions?.length ? input.institutions : saved?.institutions,
+    institutionsSource: input.institutions?.length ? input.institutionsSource : saved?.institutionsSource,
+    source, id: historyIdentity(input.hash, source), firstOpened: previous?.firstOpened ?? now, lastOpened: Math.max(previous?.lastOpened ?? now, now), openCount: (previous?.openCount ?? 0) + 1 };
+}
+export function matchesReadingHistory(entry: ReadingHistoryEntry, query: string): boolean {
+  const normalize = (text: string) => text.normalize('NFKC').toLocaleLowerCase().replace(/\s+/g, ' ').trim();
+  const text = normalize([entry.title, ...(entry.authors ?? []), ...(entry.institutions ?? []), entry.source.kind === 'online' ? entry.source.url : ''].join(' '));
+  return text.includes(normalize(query));
 }
 const DB = 'thesis-viewer-reading-history';
 async function database(): Promise<IDBDatabase> {

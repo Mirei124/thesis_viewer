@@ -15,7 +15,7 @@ export function pageTitle(items: { str: string; transform: number[] }[], height:
   if (!large.length || large.length > 15 || large.some((item) => /@|\b(university|institute|department)\b/i.test(item.str))) return;
   if (large[0].transform[5] - large[large.length - 1].transform[5] > maxSize * 5) return;
   const title = large.map((item) => item.str.trim()).join(' ').replace(/\s+/g, ' ');
-  if (title.length < 15 || title.length > 350 || title.split(/\s+/).length < 3) return;
+  if (title.length < 10 || title.length > 350 || title.split(/\s+/).length < 2) return;
   return title;
 }
 export async function extractPdfTitle(pdf: PDFDocumentProxy, name: string): Promise<PdfTitle> {

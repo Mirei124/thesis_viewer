@@ -602,3 +602,5 @@ h1 { color: var(--text-strong); }
 .reader-loaded-header { display: contents; }
 .reading-history-url { color: var(--text-link); }
 .reading-history-list :is(button,input,a):focus-visible, .reading-activity summary:focus-visible { outline-color: var(--focus); }
+
+.reading-history-authors, .reading-history-institutions { overflow-wrap: anywhere; white-space: normal; }

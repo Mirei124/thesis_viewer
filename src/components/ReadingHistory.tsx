@@ -1,18 +1,18 @@
 import { useEffect, useId, useState } from 'react';
 import type { MessageKey } from '../lib/i18n';
-import { recentDays, type ReadingHistoryEntry, type ReadingSnapshot } from '../lib/readingHistory';
+import { matchesReadingHistory, recentDays, type ReadingHistoryEntry, type ReadingSnapshot } from '../lib/readingHistory';
 type Labels = (key: MessageKey, values?: Record<string, string | number>) => string;
 type Props = { snapshot: ReadingSnapshot; loading: boolean; error: boolean; t: Labels; locale: string; onOpen: (entry: ReadingHistoryEntry) => void; onClear: () => void };
 export function ReadingHistoryList({ snapshot, loading, error, t, locale, onOpen, onClear }: Props) {
   const searchId = useId();
   const [query, setQuery] = useState(''); const [limit, setLimit] = useState(20); const [confirm, setConfirm] = useState(false);
   useEffect(() => { setLimit(20); }, [query]);
-  const rows = snapshot.entries.filter((entry) => `${entry.title} ${entry.source.kind === 'online' ? entry.source.url : ''}`.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()));
+  const rows = snapshot.entries.filter((entry) => matchesReadingHistory(entry, query));
   return <div className="reading-history-list">
     <div className="reading-history-controls"><label htmlFor={searchId}><span className="visually-hidden">{t('reader.reading.search')}</span><input id={searchId} type="search" value={query} placeholder={t('reader.reading.search')} onChange={(event) => setQuery(event.target.value)} /></label><button type="button" disabled={!snapshot.entries.length} onClick={() => setConfirm(true)}>{t('reader.reading.clear')}</button></div>
     {confirm && <div className="reading-history-confirm" role="group" aria-label={t('reader.reading.clearConfirm')}><p>{t('reader.reading.clearConfirm')}</p><button type="button" onClick={() => { onClear(); setConfirm(false); }}>{t('reader.reading.clear')}</button><button type="button" onClick={() => setConfirm(false)}>{t('reader.cancel')}</button></div>}
     {error && <p role="status">{t('reader.reading.error')}</p>}
-    {loading ? <p role="status">{t('reader.reading.loading')}</p> : !rows.length ? <p>{t(snapshot.entries.length ? 'reader.reading.noResults' : 'reader.reading.empty')}</p> : <ul className="reading-history-entries">{rows.slice(0, limit).map((entry) => <li key={entry.id}><button type="button" className="reading-history-open" onClick={() => onOpen(entry)}><strong>{entry.title}</strong><span>{t(entry.source.kind === 'online' ? 'reader.reading.online' : 'reader.reading.local')} · <time dateTime={new Date(entry.lastOpened).toISOString()}>{new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(entry.lastOpened)}</time></span></button>{entry.source.kind === 'online' && <a className="reading-history-url" href={entry.source.url} target="_blank" rel="noopener noreferrer">{entry.source.url}</a>}</li>)}</ul>}
+    {loading ? <p role="status">{t('reader.reading.loading')}</p> : !rows.length ? <p>{t(snapshot.entries.length ? 'reader.reading.noResults' : 'reader.reading.empty')}</p> : <ul className="reading-history-entries">{rows.slice(0, limit).map((entry) => <li key={entry.id}><button type="button" className="reading-history-open" onClick={() => onOpen(entry)}><strong>{entry.title}</strong>{!!entry.authors?.length && <span className="reading-history-authors">{t('reader.reading.authors')}: {entry.authors.join(', ')}</span>}{!!entry.institutions?.length && <span className="reading-history-institutions">{t('reader.reading.institutions')}: {entry.institutions.join('; ')}</span>}<span>{t(entry.source.kind === 'online' ? 'reader.reading.online' : 'reader.reading.local')} · <time dateTime={new Date(entry.lastOpened).toISOString()}>{new Intl.DateTimeFormat(locale, { dateStyle: 'medium', timeStyle: 'short' }).format(entry.lastOpened)}</time></span></button>{entry.source.kind === 'online' && <a className="reading-history-url" href={entry.source.url} target="_blank" rel="noopener noreferrer">{entry.source.url}</a>}</li>)}</ul>}
     {rows.length > limit && <button type="button" className="reading-history-more" onClick={() => setLimit((value) => value + 20)}>{t('reader.reading.more')}</button>}
   </div>;
 }

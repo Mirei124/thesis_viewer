@@ -2,7 +2,9 @@ import type { readerEn } from './reader-en';
 
 export const readerZhCN: Record<keyof typeof readerEn, string> = {
   'reader.reading.title': '历史阅读',
-  'reader.reading.search': '搜索标题或网址',
+  'reader.reading.authors': '作者',
+  'reader.reading.institutions': '机构',
+  'reader.reading.search': '搜索标题、作者、机构或网址',
   'reader.reading.clear': '清空历史',
   'reader.reading.clearConfirm': '清空所有阅读历史及活动统计？高亮、翻译和概览将保留。',
   'reader.reading.error': '无法保存或读取阅读历史，可继续阅读。',

@@ -1,0 +1,58 @@
+[
+  {
+    "authors": [
+      "Kaiming He",
+      "Xiangyu Zhang",
+      "Shaoqing Ren",
+      "Jian Sun"
+    ],
+    "authorsSource": "page",
+    "institutions": [
+      "Microsoft Research"
+    ],
+    "institutionsSource": "page",
+    "title": "Deep Residual Learning for Image Recognition"
+  },
+  {
+    "authors": [
+      "Ashish Vaswani",
+      "Noam Shazeer",
+      "Niki Parmar",
+      "Jakob Uszkoreit",
+      "Llion Jones",
+      "Aidan N. Gomez",
+      "Łukasz Kaiser",
+      "Illia Polosukhin"
+    ],
+    "authorsSource": "page",
+    "institutions": [
+      "Google Brain",
+      "Google Research",
+      "University of Toronto"
+    ],
+    "institutionsSource": "page",
+    "title": "Attention Is All You Need"
+  },
+  {
+    "authors": [
+      "Alexander Kirillov",
+      "Eric Mintun",
+      "Nikhila Ravi",
+      "Hanzi Mao",
+      "Chloe Rolland",
+      "Laura Gustafson",
+      "Tete Xiao",
+      "Spencer Whitehead",
+      "Alexander C. Berg",
+      "Wan-Yen Lo",
+      "Piotr Dollár",
+      "Ross Girshick"
+    ],
+    "authorsSource": "page",
+    "institutions": [
+      "Meta AI Research, FAIR"
+    ],
+    "institutionsSource": "page",
+    "title": "Segment Anything"
+  }
+]

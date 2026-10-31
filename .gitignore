@@ -5,3 +5,6 @@ dist/
 .playwright-cli/
 .hypha/.drafts
 *.pdf
+
+# Reusable local papers and extraction artifacts
+.local-cache/

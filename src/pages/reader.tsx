@@ -1,3 +1,4 @@
+import { extractPdfBibliography } from '../lib/pdfBibliography';
 import { READER_BITMAP_BUDGET, bitmapBytes, selectReaderBitmaps, settleBitmapTask, releaseReaderBitmap, retireReaderBitmap } from '../lib/readerBitmap';
 import { ReadingActivity, ReadingHistoryList } from '../components/ReadingHistory';
 import { clearReadingHistory, readReadingHistory, recordReading, type ReadingHistoryEntry, type ReadingSnapshot, type ReadingSource } from '../lib/readingHistory';
@@ -615,9 +616,9 @@ function ReaderPage() {
   }
   async function saveSuccessfulReading(pdf: PDFDocumentProxy, name: string, hash: string, source: ReadingSource, openedAt: number) {
     const epoch = readingEpochRef.current;
-    const title = await extractPdfTitle(pdf, name);
+    const [title, bibliography] = await Promise.all([extractPdfTitle(pdf, name), extractPdfBibliography(pdf)]);
     if (epoch !== readingEpochRef.current) return;
-    try { await recordReading({ hash, source, ...title }, openedAt, () => epoch === readingEpochRef.current); readingChannelRef.current?.postMessage('record'); await refreshReadingHistory(); } catch { setReadingError(true); }
+    try { await recordReading({ hash, source, ...title, ...bibliography }, openedAt, () => epoch === readingEpochRef.current); readingChannelRef.current?.postMessage('record'); await refreshReadingHistory(); } catch { setReadingError(true); }
   }
   function openReadingEntry(entry: ReadingHistoryEntry) {
     if (entry.source.kind === 'local') { setReadingNotice(t('reader.reading.chooseAgain', { title: entry.title })); fileInputRef.current?.click(); return; }

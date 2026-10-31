@@ -1,7 +1,9 @@
 /** Reader-owned interface copy. PDF text, provider output and user input never enter this catalog. */
 export const readerEn = {
   'reader.reading.title': 'Reading history',
-  'reader.reading.search': 'Search title or URL',
+  'reader.reading.authors': 'Authors',
+  'reader.reading.institutions': 'Institutions',
+  'reader.reading.search': 'Search title, author, institution or URL',
   'reader.reading.clear': 'Clear history',
   'reader.reading.clearConfirm': 'Clear all reading history and activity? Highlights, translations and overviews are kept.',
   'reader.reading.error': 'Reading history could not be saved or loaded. Reading can continue.',
