@@ -3757,9 +3757,9 @@ function ReaderPage() {
             />)}
           </ol>
           : <p className="citation-unresolved">{t('reader.citation.unresolved')}</p>}
-        {citationIndex.kind === 'ready' && citationIndex.index.referenceHeading
+        {activeCitation.references.length === 0 && (citationIndex.kind === 'ready' && citationIndex.index.referenceHeading
           ? <button type="button" className="citation-references-button" onClick={goToCitationReferences}>{t('reader.citation.goToReferences', { page: citationIndex.index.referenceHeading.anchor.pageIndex + 1 })}</button>
-          : <p className="citation-unresolved">{t('reader.citation.noHeading')}</p>}
+          : <p className="citation-unresolved">{t('reader.citation.noHeading')}</p>)}
       </div>}
       {translation && <section
         ref={translationPopoverRef}
