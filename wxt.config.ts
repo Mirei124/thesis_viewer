@@ -30,7 +30,7 @@ export default defineConfig({
   manifest: {
     name: 'Thesis Viewer',
     description: 'A local-first paper reader extension.',
-    version: '0.1.0',
+    version: '0.2.0',
     icons: {
       16: 'icons/icon-16.png',
       32: 'icons/icon-32.png',
