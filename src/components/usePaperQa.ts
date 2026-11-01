@@ -5,7 +5,7 @@ import type { ModelConfig } from '../lib/modelConfig';
 import { requestApiHostPermission } from '../lib/apiPermissions';
 import { CompatibleProviderError, requestCompatibleCompletion, requestCompatibleCompletionStream, type ChatMessage, type CompatibleUsage } from '../lib/compatibleProvider';
 import { buildPaperQaSources, completePaperQaTurn, newPaperQaSession, PAPER_QA_OUTPUT_LIMIT, PaperQaError, paperQaRepairMessages, preparePaperQaTurn, setPaperQaScope, streamedPaperQaText } from '../lib/paperQa';
-import { deletePaperQaSession, listPaperQaSessionSummaries, loadPaperQaSession, summarizePaperQaSession, PaperQaSessionConflictError, putPaperQaSession } from '../lib/paperQaRepository';
+import { deletePaperQaSession, hasPaperQaQuestions, listPaperQaSessionSummaries, loadPaperQaSession, summarizePaperQaSession, PaperQaSessionConflictError, putPaperQaSession } from '../lib/paperQaRepository';
 import type { PaperQaScope, PaperQaSelection, PaperQaSession, PaperQaSessionSummary } from '../lib/paperQaTypes';
 
 type Options = { documentKey: string | null; ledger?: EvidenceLedger; pages?: PageExtraction[]; locale: string; getConfig: () => ModelConfig | null; getApiKey: () => string | undefined };
@@ -42,7 +42,7 @@ export function usePaperQa(options: Options) {
   function apply(next: PaperQaSession) {
     if (next.documentKey !== documentKeyRef.current || deletedRef.current.has(next.id)) return;
     activeRef.current = next; setActiveSession(next);
-    setSessions(current => [summarizePaperQaSession(next), ...current.filter(item => item.id !== next.id)].sort((a, b) => b.updatedAt - a.updatedAt));
+    setSessions(current => [...(hasPaperQaQuestions(next) ? [summarizePaperQaSession(next)] : []), ...current.filter(item => item.id !== next.id)].sort((a, b) => b.updatedAt - a.updatedAt));
   }
   function storageError(cause: unknown, key: string) {
     if (key !== documentKeyRef.current) return;
@@ -51,11 +51,12 @@ export function usePaperQa(options: Options) {
       : label('对话保存失败，当前内容暂留本页；请勿关闭页面。', 'Conversation storage failed. Current text is kept in this page; keep the page open.'));
   }
   function keepUnsaved(next: PaperQaSession) {
+    if (!hasPaperQaQuestions(next)) return;
     const previous = unsavedRef.current.get(next.id);
     if (!previous || previous.updatedAt <= next.updatedAt) unsavedRef.current.set(next.id, next);
   }
   function persist(next: PaperQaSession) {
-    if (deletedRef.current.has(next.id)) return Promise.resolve();
+    if (!hasPaperQaQuestions(next) || deletedRef.current.has(next.id)) return Promise.resolve();
     if (conflictRef.current.has(next.id)) { keepUnsaved(next); return Promise.resolve(); }
     const task = (queueRef.current.get(next.id) ?? Promise.resolve()).catch(() => undefined).then(async () => {
       if (deletedRef.current.has(next.id)) return;
@@ -99,7 +100,7 @@ export function usePaperQa(options: Options) {
     if (!documentKey || !registry) return;
     let alive = true;
     void listPaperQaSessionSummaries(documentKey).then(async savedSummaries => {
-      const summaries = [...new Map([...savedSummaries, ...[...unsavedRef.current.values()].filter(session => session.documentKey === documentKey).map(summarizePaperQaSession)].map(item => [item.id, item])).values()].sort((a, b) => b.updatedAt - a.updatedAt);
+      const summaries = [...new Map([...savedSummaries, ...[...unsavedRef.current.values()].filter(session => session.documentKey === documentKey && hasPaperQaQuestions(session)).map(summarizePaperQaSession)].map(item => [item.id, item])).values()].sort((a, b) => b.updatedAt - a.updatedAt);
       const selected = summaries.find(session => session.sourceVersion === registry.sourceVersion);
       const first = selected ? unsavedRef.current.get(selected.id) ?? await loadPaperQaSession(selected.id, documentKey) : undefined;
       if (!alive || loadEpochRef.current !== epoch || documentKeyRef.current !== documentKey) return;
@@ -107,12 +108,12 @@ export function usePaperQa(options: Options) {
       if (first) revisionsRef.current.set(first.id, first.revision);
       const next = first ?? newPaperQaSession(documentKey, registry.sourceVersion);
       activeRef.current = next; setActiveSession(next);
-      setSessions(summaries.some(session => session.id === next.id) ? summaries : [summarizePaperQaSession(next), ...summaries]);
+      setSessions(summaries);
     }).catch(cause => {
       if (!alive || loadEpochRef.current !== epoch) return;
-      const local = [...unsavedRef.current.values()].filter(session => session.documentKey === documentKey).sort((a, b) => b.updatedAt - a.updatedAt);
+      const local = [...unsavedRef.current.values()].filter(session => session.documentKey === documentKey && hasPaperQaQuestions(session)).sort((a, b) => b.updatedAt - a.updatedAt);
       const first = local[0] ?? newPaperQaSession(documentKey, registry.sourceVersion); apply(first);
-      setSessions(local.length ? local.map(summarizePaperQaSession) : [summarizePaperQaSession(first)]); storageError(cause, documentKey);
+      setSessions(local.map(summarizePaperQaSession)); storageError(cause, documentKey);
     }).finally(() => { if (alive && loadEpochRef.current === epoch) setLoadingSession(false); });
     return () => { alive = false; cancelRef.current(); };
   }, [documentKey, registry?.sourceVersion]);
@@ -128,7 +129,7 @@ export function usePaperQa(options: Options) {
   function newSession() {
     if (runningRef.current || !documentKey || !registry) return;
     loadEpochRef.current++; setLoadingSession(false);
-    const next = newPaperQaSession(documentKey, registry.sourceVersion); apply(next); setSelection(null); setError(undefined); void persist(next);
+    const next = newPaperQaSession(documentKey, registry.sourceVersion); apply(next); setSelection(null); setError(undefined);
   }
   async function selectSession(id: string) {
     if (runningRef.current || !documentKey) return;
@@ -164,14 +165,13 @@ export function usePaperQa(options: Options) {
         else {
           const next = registry ? newPaperQaSession(documentKey, registry.sourceVersion) : null;
           activeRef.current = next; setActiveSession(next);
-          if (next) setSessions([summarizePaperQaSession(next), ...rest]);
         }
       }
     } catch (cause) { deletedRef.current.delete(id); storageError(cause, documentKey); }
   }
   function changeScope(scope: PaperQaScope) {
     if (runningRef.current || loadingSession || !registry || !activeRef.current) return;
-    try { const next = setPaperQaScope(activeRef.current, registry.sources, scope); apply(next); setError(undefined); void persist(next); }
+    try { const next = setPaperQaScope(activeRef.current, registry.sources, scope); apply(next); setError(undefined); if (hasPaperQaQuestions(next)) void persist(next); }
     catch (cause) { setError(explain(cause)); }
   }
   function explain(cause: unknown): string {

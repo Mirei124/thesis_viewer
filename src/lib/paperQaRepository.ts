@@ -3,6 +3,10 @@ import { PAPER_QA_PROTOCOL_VERSION } from './paperQa';
 
 const DATABASE = 'thesis-viewer-paper-qa';
 const STORE = 'sessions';
+/** Source-context messages alone are not a conversation; retain actual questions even when answers fail. */
+export function hasPaperQaQuestions(session: Pick<PaperQaSession, 'turns'>): boolean {
+  return session.turns.some(turn => turn.question.trim().length > 0);
+}
 export class PaperQaSessionConflictError extends Error {
   constructor() { super('paper-qa-session-conflict'); this.name = 'PaperQaSessionConflictError'; }
 }
@@ -87,13 +91,17 @@ export async function listPaperQaSessionSummaries(documentKey: string): Promise<
   const db = await database();
   try {
     return await new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE, 'readonly');
+      // Read and prune in one transaction so another tab's first saved question cannot be deleted by a stale list.
+      const transaction = db.transaction(STORE, 'readwrite');
       const request = transaction.objectStore(STORE).index('documentKey').openCursor(documentKey);
       const summaries: PaperQaSessionSummary[] = [];
       request.onsuccess = () => {
         const cursor = request.result;
         if (!cursor) return;
-        if (validSession(cursor.value) && cursor.value.documentKey === documentKey) summaries.push(summarizePaperQaSession(cursor.value));
+        if (validSession(cursor.value) && cursor.value.documentKey === documentKey) {
+          if (hasPaperQaQuestions(cursor.value)) summaries.push(summarizePaperQaSession(cursor.value));
+          else cursor.delete();
+        }
         cursor.continue();
       };
       transaction.oncomplete = () => resolve(summaries.sort((a, b) => b.updatedAt - a.updatedAt));
@@ -107,7 +115,7 @@ export async function loadPaperQaSession(id: string, documentKey: string): Promi
     return await new Promise((resolve, reject) => {
       const transaction = db.transaction(STORE, 'readonly');
       const request = transaction.objectStore(STORE).get(id);
-      transaction.oncomplete = () => resolve(validSession(request.result) && request.result.documentKey === documentKey ? recoverPaperQaSession(request.result) : undefined);
+      transaction.oncomplete = () => resolve(validSession(request.result) && request.result.documentKey === documentKey && hasPaperQaQuestions(request.result) ? recoverPaperQaSession(request.result) : undefined);
       transaction.onabort = () => reject(transaction.error); transaction.onerror = () => reject(transaction.error);
     });
   } finally { db.close(); }
@@ -118,12 +126,14 @@ export async function listPaperQaSessions(documentKey: string): Promise<PaperQaS
     return await new Promise((resolve, reject) => {
       const transaction = db.transaction(STORE, 'readonly');
       const request = transaction.objectStore(STORE).index('documentKey').getAll(documentKey);
-      transaction.oncomplete = () => resolve(request.result.filter(validSession).filter(session => session.documentKey === documentKey).map(recoverPaperQaSession).sort((a, b) => b.updatedAt - a.updatedAt));
+      transaction.oncomplete = () => resolve(request.result.filter(validSession).filter(session => session.documentKey === documentKey && hasPaperQaQuestions(session)).map(recoverPaperQaSession).sort((a, b) => b.updatedAt - a.updatedAt));
       transaction.onabort = () => reject(transaction.error); transaction.onerror = () => reject(transaction.error);
     });
   } finally { db.close(); }
 }
 export async function putPaperQaSession(session: PaperQaSession): Promise<PaperQaSession> {
+  if (!validSession(session)) throw new Error('Invalid paper QA session');
+  if (!hasPaperQaQuestions(session)) return sessionData(session);
   const db = await database();
   try {
     return await new Promise((resolve, reject) => {

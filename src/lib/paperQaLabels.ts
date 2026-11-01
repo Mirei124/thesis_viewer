@@ -1,7 +1,7 @@
 const en = {
   title: 'Paper Q&A', askSelection: 'Ask about selection', history: 'Conversations', newSession: 'New conversation',
   back: 'Back to conversation', currentPaper: 'Current paper', onlyPaper: 'Only this paper', scope: 'Reading scope',
-  pre_experiments: 'Before experiments', body: 'Full main text', full: 'Full text with appendices',
+  pre_experiments: 'Methods without experiments', body: 'Main text without contents', full: 'Complete paper',
   scopeNote: 'Text already added stays in this conversation. Start a new conversation to use a smaller scope.',
   preparing: 'Preparing the paper text…', empty: 'What would you like to understand about this paper?',
   emptyHint: 'Ask about a method, an equation or an experiment. You can also select text in the PDF.',
@@ -21,7 +21,7 @@ const en = {
 const zh: Record<keyof typeof en, string> = {
   title: '论文问答', askSelection: '选区提问', history: '本篇对话', newSession: '新对话',
   back: '返回对话', currentPaper: '当前论文', onlyPaper: '仅当前论文', scope: '输入范围',
-  pre_experiments: '实验之前', body: '正文全文', full: '全文含附录',
+  pre_experiments: '仅方法不含实验', body: '仅正文不含目录', full: '完整文章',
   scopeNote: '本会话已加入的原文不会移除；新建对话可使用更小的范围。',
   preparing: '正在准备论文原文…', empty: '这篇论文有哪些地方想进一步理解？',
   emptyHint: '可以询问方法、公式或实验，也可以在 PDF 中选中文字后提问。',

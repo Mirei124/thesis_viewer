@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { newPaperQaSession } from './paperQa';
-import { nextStoredPaperQaSession, PaperQaSessionConflictError, recoverPaperQaSession, summarizePaperQaSession } from './paperQaRepository';
+import { hasPaperQaQuestions, putPaperQaSession, nextStoredPaperQaSession, PaperQaSessionConflictError, recoverPaperQaSession, summarizePaperQaSession } from './paperQaRepository';
 import type { PaperQaSession } from './paperQaTypes';
 
 describe('paper QA repository lifecycle and compare-and-swap', () => {
@@ -72,5 +72,39 @@ describe('paper QA repository lifecycle and compare-and-swap', () => {
     const session = { ...newPaperQaSession('doc', 'version'), apiKey: 'never persist', pdf: { bytes: [1, 2] } } as PaperQaSession;
     const stored = nextStoredPaperQaSession(session) as PaperQaSession & { apiKey?: string; pdf?: unknown };
     expect(stored.apiKey).toBeUndefined(); expect(stored.pdf).toBeUndefined();
+  });
+});
+
+
+describe('paper QA empty conversation drafts', () => {
+  it('does not treat prepared paper context or a chosen scope as a user question', () => {
+    const session = newPaperQaSession('doc', 'version', 'full');
+    session.sourceIds = ['P0001'];
+    session.messages = [{ role: 'system', content: 'System prompt' }, { role: 'user', content: 'Original paper sources' }];
+    expect(hasPaperQaQuestions(session)).toBe(false);
+  });
+  it('keeps user questions even when their answer is absent, failed, or cancelled', () => {
+    for (const status of ['generating', 'error', 'cancelled', 'completed'] as const) {
+      const session = newPaperQaSession('doc', 'version');
+      session.turns = [{ id: 'turn', question: 'Explain this method', createdAt: 1, status, text: '', sourceIds: [] }];
+      expect(hasPaperQaQuestions(session)).toBe(true);
+    }
+  });
+  it('ignores whitespace-only questions', () => {
+    const session = newPaperQaSession('doc', 'version');
+    session.turns = [{ id: 'turn', question: '  \n ', createdAt: 1, status: 'cancelled', text: '', sourceIds: [] }];
+    expect(hasPaperQaQuestions(session)).toBe(false);
+  });
+  it('never opens IndexedDB or increments revisions when asked to persist an empty draft', async () => {
+    const open = vi.fn(() => { throw new Error('Empty drafts must not touch storage'); });
+    vi.stubGlobal('indexedDB', { open });
+    try {
+      const session = newPaperQaSession('doc', 'version', 'body');
+      session.sourceIds = ['P0001'];
+      session.messages = [{ role: 'user', content: 'Source-only context' }];
+      expect(await putPaperQaSession(session)).toEqual(session);
+      expect(open).not.toHaveBeenCalled();
+      expect(session.revision).toBe(0);
+    } finally { vi.unstubAllGlobals(); }
   });
 });

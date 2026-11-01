@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useId, useRef, useState, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
+import { Fragment, useEffect, useId, useRef, useState, type CSSProperties, type FormEvent, type KeyboardEvent, type ReactNode } from 'react';
 import type { PaperQaScope, PaperQaSelection, PaperQaSession, PaperQaSessionSummary, PaperQaTurn } from '../lib/paperQaTypes';
 import type { CompatibleUsage } from '../lib/compatibleProvider';
 import { qaLabel, type QaLabelKey } from '../lib/paperQaLabels';
@@ -28,6 +28,7 @@ export type PaperQaPanelProps = {
 };
 
 type UsageProps = { usage?: CompatibleUsage; locale: string; label: (key: QaLabelKey) => string; title?: string; incomplete?: boolean };
+const QA_SCOPES = ['pre_experiments', 'body', 'full'] as const;
 function RecordedUsage({ usage, locale, label, title, incomplete }: UsageProps) {
   const fields = [
     ['promptTokens', 'inputTokens'], ['completionTokens', 'outputTokens'],
@@ -54,6 +55,8 @@ export function PaperQaPanel(props: PaperQaPanelProps) {
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputId = useId();
   const scopeId = useId();
+  const scope = activeSession?.scope ?? 'pre_experiments';
+  const scopeIndex = QA_SCOPES.indexOf(scope);
   const draftKey = activeSession?.id ?? 'new';
   const draft = drafts[draftKey] ?? '';
   const turns = activeSession?.turns ?? [];
@@ -158,11 +161,13 @@ export function PaperQaPanel(props: PaperQaPanelProps) {
       </li>)}</ul>
     </div> : <>
       <div className="qa-scope-control">
-        <label htmlFor={scopeId}>{l('scope')}</label>
-        <select id={scopeId} value={activeSession?.scope ?? 'pre_experiments'} disabled={busy || !ready} onChange={event => props.onScopeChange(event.target.value as PaperQaScope)}>
-          {(['pre_experiments', 'body', 'full'] as const).map(scope => <option key={scope} value={scope}>{l(scope)}</option>)}
-        </select>
-        {hasSources && <p className="qa-scope-note">{l('scopeNote')}</p>}
+        <div className="qa-scope-heading"><label htmlFor={scopeId}>{l('scope')}</label><output htmlFor={scopeId}>{l(scope)}</output></div>
+        <input id={scopeId} className="qa-scope-slider" type="range" min={0} max={2} step={1} value={scopeIndex}
+          style={{ '--qa-scope-progress': `${scopeIndex * 50}%` } as CSSProperties}
+          aria-valuetext={l(scope)} aria-describedby={hasSources ? `${scopeId}-note` : undefined}
+          disabled={busy || !ready} onChange={event => props.onScopeChange(QA_SCOPES[Number(event.currentTarget.value)])} />
+        <div className="qa-scope-steps" aria-hidden="true">{QA_SCOPES.map(item => <span key={item} className={scope === item ? 'is-current' : undefined}>{l(item)}</span>)}</div>
+        {hasSources && <p id={`${scopeId}-note`} className="qa-scope-note">{l('scopeNote')}</p>}
       </div>
       <div className="qa-messages" ref={messagesRef} onScroll={() => { if (!visible) return; const element = messagesRef.current; if (element) keepAtEnd.current = element.scrollHeight - element.scrollTop - element.clientHeight < 64; }}>
         {!ready && <p className="qa-empty-note" role="status">{l('preparing')}</p>}

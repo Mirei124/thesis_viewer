@@ -1,16 +1,31 @@
 .qa-panel { display: flex; flex-direction: column; block-size: calc(100dvh - var(--reader-header-height, 48px) - 2.3rem); min-block-size: 300px; min-inline-size: 0; color: var(--text); }
-.qa-panel button, .qa-panel textarea, .qa-panel select { font: inherit; }
+.qa-panel button, .qa-panel textarea, .qa-panel input { font: inherit; }
 :where(.qa-panel) button { cursor: pointer; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: .4rem; padding: .35rem .55rem; }
 .qa-panel button:disabled { cursor: default; opacity: .55; }
-.qa-panel button:focus-visible, .qa-panel textarea:focus-visible, .qa-panel select:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.qa-panel button:focus-visible, .qa-panel textarea:focus-visible, .qa-panel input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .qa-header { flex: 0 0 auto; min-inline-size: 0; padding-block-end: .8rem; border-block-end: 1px solid var(--border); }
 .qa-header h2 { margin: 0 1.8rem .6rem 0; font-size: 1.1rem; font-weight: 600; letter-spacing: -.025em; }
 .qa-header-actions { display: flex; justify-content: space-between; gap: .5rem; flex-wrap: wrap; }
 .qa-header-actions button { padding: .35rem .55rem; font-size: .8rem; line-height: 1.4; }
 .qa-paper-title { margin: .7rem 0 0; font-size: .82rem; line-height: 1.5; overflow-wrap: anywhere; color: var(--text-muted); }
-.qa-scope-control { flex: 0 0 auto; display: flex; align-items: center; flex-wrap: wrap; gap: .45rem; padding-block: .8rem; font-size: .8rem; }
+.qa-scope-control { flex: 0 0 auto; display: grid; gap: .3rem; min-inline-size: 0; padding-block: .8rem; font-size: .8rem; }
 .qa-scope-control label { color: var(--text-muted); }
-.qa-scope-control select { min-inline-size: 0; max-inline-size: 100%; flex: 1; color: var(--text); background: var(--surface); border: 1px solid var(--border-strong); border-radius: .35rem; padding: .35rem; }
+.qa-scope-heading { display: flex; justify-content: space-between; align-items: baseline; gap: .5rem; flex-wrap: wrap; }
+.qa-scope-heading output { color: var(--text); font-weight: 600; }
+/* Keep the native range interaction, but replace browser-specific track borders. */
+.qa-scope-slider { --qa-scope-thumb-color: var(--accent); appearance: none; -webkit-appearance: none; inline-size: 100%; min-inline-size: 0; block-size: 2rem; box-sizing: border-box; margin: 0; padding: 0; border: 0; border-radius: .25rem; background: transparent; cursor: pointer; }
+.qa-scope-slider::-webkit-slider-runnable-track { block-size: 4px; border: 0; border-radius: 999px; background: linear-gradient(to right, var(--accent) var(--qa-scope-progress, 0%), var(--border) var(--qa-scope-progress, 0%)); }
+.qa-scope-slider::-webkit-slider-thumb { appearance: none; -webkit-appearance: none; inline-size: 14px; block-size: 14px; box-sizing: border-box; margin-block-start: -5px; border: 2px solid var(--surface); border-radius: 50%; background: var(--qa-scope-thumb-color); box-shadow: 0 1px 3px var(--shadow); }
+.qa-scope-slider::-moz-range-track { block-size: 4px; border: 0; border-radius: 999px; background: var(--border); }
+.qa-scope-slider::-moz-range-progress { block-size: 4px; border: 0; border-radius: 999px; background: var(--accent); }
+.qa-scope-slider::-moz-range-thumb { inline-size: 14px; block-size: 14px; box-sizing: border-box; border: 2px solid var(--surface); border-radius: 50%; background: var(--qa-scope-thumb-color); box-shadow: 0 1px 3px var(--shadow); }
+.qa-scope-slider:hover:not(:disabled) { --qa-scope-thumb-color: var(--accent-strong); }
+.qa-scope-slider:disabled { cursor: default; opacity: .55; }
+.qa-scope-steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .4rem; color: var(--text-muted); font-size: .73rem; line-height: 1.4; }
+.qa-scope-steps span { min-inline-size: 0; overflow-wrap: anywhere; text-align: center; }
+.qa-scope-steps span:first-child { text-align: start; }
+.qa-scope-steps span:last-child { text-align: end; }
+.qa-scope-steps .is-current { color: var(--text); font-weight: 650; text-decoration: underline; text-underline-offset: .2em; }
 .qa-scope-note { inline-size: 100%; font-size: .73rem; line-height: 1.5; color: var(--text-muted); margin: 0; }
 .qa-messages { flex: 1 1 auto; min-block-size: 0; min-inline-size: 0; overflow: auto; padding-inline: 1px; scrollbar-width: thin; overflow-anchor: none; }
 .qa-empty { padding-block: 1.4rem; line-height: 1.7; }
@@ -62,7 +77,7 @@
 .qa-session-open strong { font-weight: 550; font-size: .9rem; overflow-wrap: anywhere; white-space: normal; line-height: 1.5; }
 .qa-session-open time { color: var(--text-muted); font-size: .72rem; }
 .qa-history-current .qa-session-open { background: var(--surface-info); }
-.qa-session-delete { align-self: start; font-size: .72rem !important; padding: .3rem !important; }
+.qa-session-delete { align-self: center; font-size: .72rem !important; padding: .3rem !important; }
 .qa-delete-confirm { grid-column: 1 / -1; padding: .6rem; background: var(--surface-muted); }
 .qa-delete-confirm p { margin: 0 0 .5rem; font-size: .8rem; line-height: 1.5; }
 .qa-delete-confirm button { font-size: .78rem; margin-inline-end: .4rem; padding: .3rem .5rem; }
