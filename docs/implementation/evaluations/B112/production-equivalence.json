@@ -1,0 +1,66 @@
+[
+  {
+    "name": "SAM",
+    "threeEquivalent": true,
+    "threeCacheValid": true,
+    "detailedEquivalent": true,
+    "differences": [],
+    "requestCount": 5,
+    "statuses": [
+      "available",
+      "available",
+      "available",
+      "available",
+      "available"
+    ],
+    "detailedCacheValid": true
+  },
+  {
+    "name": "Attention",
+    "threeEquivalent": true,
+    "threeCacheValid": true,
+    "detailedEquivalent": true,
+    "differences": [],
+    "requestCount": 5,
+    "statuses": [
+      "available",
+      "available",
+      "available",
+      "available",
+      "available"
+    ],
+    "detailedCacheValid": true
+  },
+  {
+    "name": "VideoMME",
+    "threeEquivalent": true,
+    "threeCacheValid": true,
+    "detailedEquivalent": true,
+    "differences": [],
+    "requestCount": 5,
+    "statuses": [
+      "available",
+      "available",
+      "available",
+      "available",
+      "available"
+    ],
+    "detailedCacheValid": true
+  },
+  {
+    "name": "Chinchilla",
+    "threeEquivalent": true,
+    "threeCacheValid": true,
+    "detailedEquivalent": true,
+    "differences": [],
+    "requestCount": 5,
+    "statuses": [
+      "available",
+      "available",
+      "available",
+      "available",
+      "available"
+    ],
+    "detailedCacheValid": true
+  }
+]

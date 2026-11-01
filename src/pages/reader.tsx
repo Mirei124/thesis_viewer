@@ -941,7 +941,7 @@ function ReaderPage() {
     const requestToken = overviewRequestRef.current;
     let cancelled = false;
     void (async () => {
-      const restored = config ? await loadCachedOverview({ documentContentKey, kind: 'three-line', config }, evidenceLedger.ledger, extraction.pages).catch(() => undefined) : undefined;
+      const restored = config ? await loadCachedOverview({ documentContentKey, kind: 'three-line', config }, detailedLedger ?? evidenceLedger.ledger, extraction.pages).catch(() => undefined) : undefined;
       if (cancelled || documentToken !== requestIdRef.current || requestToken !== overviewRequestRef.current) return;
       if (restored?.kind === 'three_line') {
         setOverview({ status: 'success', result: restored });
@@ -952,7 +952,7 @@ function ReaderPage() {
       startThreeLineOverview('automatic');
     })();
     return () => { cancelled = true; };
-  }, [documentContentKey, extraction, evidenceLedger, modelConfigEpoch, overviewPreferences, overview]);
+  }, [documentContentKey, extraction, evidenceLedger, modelConfigEpoch, overviewPreferences, overview, detailedLedger]);
 
   useEffect(() => {
     const config = modelConfigRef.current;
@@ -1631,7 +1631,7 @@ function ReaderPage() {
     overviewAbortRef.current?.abort();
     const controller = new AbortController();
     overviewAbortRef.current = controller;
-    const ledger = evidenceLedger.ledger;
+    const ledger = detailedLedger ?? evidenceLedger.ledger;
     const pages = extraction.pages;
     const contentKey = documentContentKey;
     const documentRequestId = requestIdRef.current;

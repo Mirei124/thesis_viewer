@@ -1,11 +1,12 @@
 import { OVERVIEW_LANGUAGE_POLICY } from './overviewLanguagePolicy';
 import type { ChatMessage } from './compatibleProvider';
-import { createEvidencePacket, resolveEvidencePacketAliases, type EvidencePacket } from './evidencePacket';
+import { createEvidencePacket, createParagraphEvidencePacket, resolveEvidencePacketAliases, type EvidencePacket } from './evidencePacket';
 import type { EvidenceLedger } from './evidenceLedger';
 import type { PageExtraction } from './pdfPageBlocks';
 import type { VerifiedEvidenceRef } from './inlineEvidence';
+import { selectThreeLineContext, threeLineFallbackLedger } from './threeLineContext';
 
-export const THREE_LINE_OVERVIEW_PROMPT_VERSION = 'research-overview-zh-v8';
+export const THREE_LINE_OVERVIEW_PROMPT_VERSION = 'research-overview-zh-v9';
 
 export type ThreeLineOverviewItem = {
   role: 'contribution';
@@ -88,9 +89,23 @@ export function validateThreeLineOverview(
   return { kind: 'three_line', items: [items[0], items[1], items[2]], uncertainties: [] };
 }
 
+const packetReadingNotes = new WeakMap<EvidencePacket, readonly string[]>();
+
 /** Creates a fresh, request-local packet. Packets must never be reused across requests. */
 export function threeLineEvidencePacket(ledger: EvidenceLedger, pages?: readonly PageExtraction[]): EvidencePacket {
-  return createEvidencePacket(ledger, { purpose: 'three_line', maxExcerptChars: 600, pages });
+  if (pages) {
+    const selection = selectThreeLineContext(ledger, pages);
+    if (selection.paragraphs.length) {
+      const packet = createParagraphEvidencePacket(ledger, selection.paragraphs);
+      packetReadingNotes.set(packet, selection.readingNotes);
+      return packet;
+    }
+  }
+  // Short/non-Latin sources and legacy callers still receive anchored excerpts instead of an empty packet.
+  const fallbackLedger = pages ? threeLineFallbackLedger(ledger, pages) : ledger;
+  const packet = createEvidencePacket(fallbackLedger, { purpose: 'three_line', maxExcerptChars: 600, pages });
+  packetReadingNotes.set(packet, ['Complete paragraph selection was unavailable. These are bounded source excerpts and may end mid-sentence; do not treat them as complete paragraphs or invent missing definitions.']);
+  return packet;
 }
 
 /** Sends a bounded packet with short aliases, never the ledger's opaque anchors. */
@@ -105,8 +120,8 @@ export function threeLineOverviewMessages(packet: EvidencePacket): ChatMessage[]
       content: JSON.stringify({
         promptVersion: THREE_LINE_OVERVIEW_PROMPT_VERSION,
         coverage: packet.coverage,
-        coverageHints: packet.coverageHints,
-        sources: packet.sources,
+        readingNotes: packetReadingNotes.get(packet) ?? ['These are source excerpts; preserve the stated conditions and do not invent omitted context.'],
+        sources: packet.sources.map(({ alias, section, excerpt }) => ({ alias, section, excerpt })),
       }),
     },
   ];

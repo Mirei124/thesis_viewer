@@ -1,0 +1,110 @@
+[
+  {
+    "name": "SAM",
+    "fallbackCandidate": null,
+    "fallbackProduction": null,
+    "comparisons": [
+      {
+        "section": "problem_motivation",
+        "equal": true
+      },
+      {
+        "section": "method",
+        "equal": true
+      },
+      {
+        "section": "contributions_novelty",
+        "equal": true
+      },
+      {
+        "section": "experiments_ablations",
+        "equal": true
+      },
+      {
+        "section": "limitations",
+        "equal": true
+      }
+    ]
+  },
+  {
+    "name": "Attention",
+    "fallbackCandidate": null,
+    "fallbackProduction": null,
+    "comparisons": [
+      {
+        "section": "problem_motivation",
+        "equal": true
+      },
+      {
+        "section": "method",
+        "equal": true
+      },
+      {
+        "section": "contributions_novelty",
+        "equal": true
+      },
+      {
+        "section": "experiments_ablations",
+        "equal": true
+      },
+      {
+        "section": "limitations",
+        "equal": true
+      }
+    ]
+  },
+  {
+    "name": "VideoMME",
+    "fallbackCandidate": null,
+    "fallbackProduction": null,
+    "comparisons": [
+      {
+        "section": "problem_motivation",
+        "equal": true
+      },
+      {
+        "section": "method",
+        "equal": true
+      },
+      {
+        "section": "contributions_novelty",
+        "equal": true
+      },
+      {
+        "section": "experiments_ablations",
+        "equal": true
+      },
+      {
+        "section": "limitations",
+        "equal": true
+      }
+    ]
+  },
+  {
+    "name": "Chinchilla",
+    "fallbackCandidate": null,
+    "fallbackProduction": null,
+    "comparisons": [
+      {
+        "section": "problem_motivation",
+        "equal": true
+      },
+      {
+        "section": "method",
+        "equal": true
+      },
+      {
+        "section": "contributions_novelty",
+        "equal": true
+      },
+      {
+        "section": "experiments_ablations",
+        "equal": true
+      },
+      {
+        "section": "limitations",
+        "equal": true
+      }
+    ]
+  }
+]

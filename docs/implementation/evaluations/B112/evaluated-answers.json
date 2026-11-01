@@ -1,0 +1,1860 @@
+{
+  "SAM": {
+    "baseline": {
+      "three": {
+        "items": [
+          {
+            "text": "论文提出 Segment Anything (SA) 这一图像分割新任务，并给出对应模型 SAM：由 image encoder、prompt encoder 与轻量 mask decoder 组成，可组合图像嵌入与提示信息预测 mask。",
+            "sources": [
+              "S01",
+              "S04"
+            ]
+          },
+          {
+            "text": "通过模型辅助的数据收集循环，专业标注者在浏览器中用 SAM 交互式标注并配合 brush/eraser 修正，随后以全自动 mask 生成覆盖 11M 图像，构建含 1.1B masks 的 SA-1B。",
+            "sources": [
+              "S03",
+              "S05",
+              "S06"
+            ]
+          },
+          {
+            "text": "零样本迁移中，SAM 经 prompt engineering 处理多类分割任务；在 23 个数据集上以 mIoU 评测，16 个高于 RITM；消融表明约 1M 图像（全量 10%）可取得与完整 SA-1B 可比的结果。",
+            "sources": [
+              "S10",
+              "S11",
+              "S12"
+            ]
+          }
+        ]
+      },
+      "detailed": {
+        "kind": "detailed",
+        "sections": [
+          {
+            "id": "problem_motivation",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "现有 vision foundation model 多聚焦图文对齐，分割缺乏 web-scale 数据；作者遂提出可提示分割任务，并用 data engine 扩充模型与数据（E004, E007）。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E004",
+                  "E007"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "method",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "输入一张图像与一个分割提示，SAM 输出一个或多个分割 mask 及其置信度分数（E040）。prompt 可以是前景/背景点、粗略 box 或 mask、自由文本等任何指示“要分割什么”的信息；promptable segmentation task 要求给定任意 prompt 返回一个 valid mask，即使 prompt 有歧义（点落在衬衫上，既可能指衬衫也可能指穿衣的人），也须对其中至少一个对象给出合理 mask（E023, E028）。\n\n模型沿一条数据流分三步。image encoder 用 MAE 预训练的 ViT（对高分辨率输入做最小改动），每张图只运行一次得到 image embedding，可在提示之前预先算好（E043）。prompt encoder 分稀疏、稠密两路：点与 box 用位置编码表示，并与各 prompt 类型的学习 embedding 相加；自由文本交给现成的 CLIP text encoder 编码；mask 这类稠密 prompt 经卷积嵌入后与 image embedding 逐元素相加（E044）。mask decoder 用改造的 Transformer decoder block，先做 prompt 自注意力，再做 prompt 与 image embedding 双向 cross-attention 来更新全部 embedding；两个 block 后将 image embedding 上采样，由 MLP 把 output token 变成 dynamic linear classifier，在每个图像位置计算前景概率从而得到 mask（E045）。\n\n为处理歧义，单个 prompt 同时预测多个 mask（3 个足以覆盖整体、部分、子部分的嵌套情形），训练时只对 loss 最小的那个反传，并额外预测每个 mask 的估计 IoU 作为排序分数（E046, E047）。训练目标是 focal loss 与 dice loss 的线性组合，每 11 轮随机采样几何 prompt 以模拟交互式提示序列（E048）。推理时 image embedding 复用，prompt encoder 与 mask decoder 在浏览器 CPU 上约 50ms，可实时交互；下游任务靠 prompt engineering 组合，例如把目标检测器输出的 box 当作 prompt 完成实例分割（E047, E030）。\n\n由于网上没有现成的分割 mask，作者构建 data engine 让模型与标注互为循环，分三阶段：assisted-manual 阶段由标注者在浏览器里用 SAM 做点击式交互标注，并以 brush/eraser 修正；semi-automatic 阶段先用第一阶段 mask 训练的 box detector 自动检出置信 mask 预填图像，标注者再补标未标注对象以增加 mask 多样性；fully automatic 阶段以 32×32 规则点网格提示模型，借助 ambiguity-aware 的多 mask 输出返回子部分、部分与整体，再按 IoU 预测筛出置信 mask、按阈值扰动下 mask 是否相似筛出稳定 mask，并用 non-maximal suppression 去重（E051, E052, E054）。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E023",
+                  "E028",
+                  "E030",
+                  "E040",
+                  "E043",
+                  "E044",
+                  "E045",
+                  "E046",
+                  "E047",
+                  "E048",
+                  "E051",
+                  "E052",
+                  "E054"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "contributions_novelty",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "提出promptable segmentation，任意提示返回合理mask，兼作预训练与下游prompting（E061）。",
+                "claimKind": "author_claim",
+                "sources": [
+                  "E061"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "SAM含image encoder、prompt encoder和轻量mask decoder，复用embedding并输出多mask处理歧义（E062）。",
+                "claimKind": "author_claim",
+                "sources": [
+                  "E062"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "三阶段data engine产出SA-1B，mask量为既有分割数据集400倍（E063,E064）。数据集按研究用途发布（E067）。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E063",
+                  "E064",
+                  "E067"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "23个分割数据集单点提示近人工GT，并零样本迁移多任务（E066）。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E066"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "experiments_ablations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "SAM（ViT-H，SA-1B）在23数据集单中心点zero-shot下，mIoU有16/23高于RITM，最大约+47；oracle掩码则全面领先。LVIS AR@1000为59.3，低于ViTDet-H 63.0，单输出消融54.9。仅1M图像训练与11M全量相当，ViT-H较ViT-L增益有限。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E104",
+                  "E125",
+                  "E129",
+                  "E159",
+                  "E169"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "limitations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "SAM 易漏细小结构、边界不够锐利；text-to-mask 任务仍属探索性，鲁棒性不足。",
+                "claimKind": "inference",
+                "sources": [
+                  "E172"
+                ]
+              }
+            ]
+          }
+        ],
+        "uncertainties": []
+      }
+    },
+    "candidate": {
+      "three": {
+        "items": [
+          {
+            "text": "论文提出 promptable segmentation task：给定任意分割 prompt 返回有效 mask，即使 prompt 有歧义也应为至少一个合理对象输出 mask，并将其同时用作预训练目标和下游 prompt engineering 的任务接口。",
+            "sources": [
+              "S03",
+              "S02"
+            ]
+          },
+          {
+            "text": "SAM 由 image encoder、prompt encoder 与轻量 mask decoder 组成，分离图像嵌入与 prompt 解码以摊销计算、支持交互式实时使用，并通过单 prompt 预测多 mask 来处理歧义。",
+            "sources": [
+              "S04",
+              "S07"
+            ]
+          },
+          {
+            "text": "通过 assisted-manual、semi-automatic、fully automatic 三阶段 data engine 与模型协同标注，构建 11M images、1B masks 的 SA-1B，并在 23 个分割数据集上发现单前景点 prompt 可产生接近人工标注的高质量 mask。",
+            "sources": [
+              "S05",
+              "S01",
+              "S06"
+            ]
+          }
+        ]
+      },
+      "detailed": {
+        "kind": "detailed",
+        "sections": [
+          {
+            "id": "problem_motivation",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "分割缺 web-scale 数据 [E007]。作者提出 promptable segmentation task [E008]，以 data engine 构建 SA-1B 训练 SAM [E010][E011]。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E007",
+                  "E008",
+                  "E010",
+                  "E011"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "method",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "任务定义：模型接收一张图像和一个分割提示——前景/背景点、粗略 box 或 mask、自由文本等任何指明图像中要分割什么的信息——并输出有效的分割 mask；即使提示有歧义（例如衣服上的点既可指衣服也可指穿衣服的人），也必须给出其中至少一个对象的合理 mask（E019）。这一 promptable segmentation task 既用作预训练目标，也用作下游任务的提示接口（E008）。\n\n模型沿一条数据流组织。image encoder 使用 MAE 预训练的 ViT 并做高分辨率适配，每张图只运行一次，产出 image embedding，因此可在收到提示之前预先计算（E034）。prompt encoder 处理两类提示：点与 box 等稀疏提示以 positional encoding 叠加各提示类型的学习 embedding 表示，自由文本交给 CLIP 的现成 text encoder 编码；mask 等 dense 提示用卷积嵌入，再与 image embedding 逐元素相加（E035）。mask decoder 把 image embedding、prompt embeddings 与一个 output token 映射成 mask：改进的 Transformer decoder block 用 prompt self-attention 与 prompt↔image embedding 双向 cross-attention 更新全部 embedding，两个 block 后上采样 image embedding，再由 MLP 把 output token 变成一个动态线性分类器，在每个图像位置给出 mask 前景概率（E036）。\n\n歧义处理：若只输出一个 mask，模型会对多个有效 mask 取平均，因此改为对单个提示预测多个 mask（3 个足以覆盖整体、部分、子部分这类嵌套），训练时只回传这些 mask 中 minimum loss 的那一个（E037）；同时为每个 mask 预测 confidence score（估计 IoU）用于排序（E038）。效率上，给定预计算的 image embedding，prompt encoder 与 mask decoder 在浏览器 CPU 上约 50ms 即可完成，支撑实时交互式提示（E038）。\n\n训练：以 focal loss 与 dice loss 的线性组合监督 mask 预测，并按交互设置对每个 mask 随机采样 11 轮几何提示（E039）。\n\n数据侧由 data engine 分三阶段构建 SA-1B（E041）：assisted-manual 阶段由标注员在 SAM 驱动的浏览器工具中点前景/背景点，并用 brush 与 eraser 修 mask（E042）；semi-automatic 阶段先用第一阶段 mask 训练的 bounding box detector 检出 confident masks 预填图像，让标注员专注补标其余对象以提高多样性（E043）；fully automatic 阶段用 32×32 前景点网格提示，借助 ambiguity-aware 模型对每点返回子部分、部分、整体，再用 IoU 预测筛出 confident masks，以概率图在 0.5±δ 阈值下是否给出相似 mask 判定 stable，并用 NMS 去重（E043）（E045）。\n\n使用：下游任务在推理时靠 prompt engineering 组合解决，例如把已有 box detector 的输出作为提示完成实例分割，这与在固定任务集上训练的多任务系统不同（E021）（E025）。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E008",
+                  "E019",
+                  "E021",
+                  "E025",
+                  "E034",
+                  "E035",
+                  "E036",
+                  "E037",
+                  "E038",
+                  "E039",
+                  "E041",
+                  "E042",
+                  "E043",
+                  "E045"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "contributions_novelty",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "借鉴 foundation models，作者提出 promptable segmentation，并设计 SAM 以 prompt encoder 与轻量 mask decoder 支持歧义多 mask [E008][E009]。",
+                "claimKind": "author_claim",
+                "sources": [
+                  "E008",
+                  "E009"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "三阶段 data engine 产出 SA-1B：11M 图像、1.1B mask [E010][E011]。mask 数超既有分割数据集 400×，并经人工评分验证质量 [E011][E016]。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E010",
+                  "E011",
+                  "E016"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "23 个分割数据集上，单 foreground point 常接近人工标注；零样本迁移覆盖 edge detection 等任务，但仍有改进空间 [E013]。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E013"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "experiments_ablations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "设置：SAM（MAE 预训练 ViT-H）在 SA-1B 自动掩码上训练，单中心点在 23 个数据集对比 RITM（E051、E054）。主结果：16/23 数据集 mIoU 更高，最高约 +47 IoU；oracle 选掩码后全面胜出（E072）。消融：仅自动掩码较三阶段全数据低约 0.5 mIoU；1M 图像接近完整 11M（E126、E127）。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E051",
+                  "E054",
+                  "E072",
+                  "E126",
+                  "E127"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "limitations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "SAM 会漏细小结构、偶发孤立小分量伪影，边界不及 zoom-in 方法锐利；text-to-mask 仍属探索、不够稳健（E140）。其范围亦限于图像分割这一有限子集（E139）。",
+                "claimKind": "inference",
+                "sources": [
+                  "E139",
+                  "E140"
+                ]
+              }
+            ]
+          }
+        ],
+        "uncertainties": []
+      }
+    },
+    "candidate-final": {
+      "three": {
+        "items": [
+          {
+            "text": "提出 promptable segmentation 任务：给定任意 segmentation prompt，模型需返回至少对其中一个合理对象的有效 mask，并将其同时用作预训练目标和下游任务的 prompt engineering 接口。",
+            "sources": [
+              "S03"
+            ]
+          },
+          {
+            "text": "构建 Segment Anything Model (SAM)，由 image encoder、prompt encoder 和轻量 mask decoder 组成，通过复用 image embedding 实现约 50ms 的交互式 mask 预测，并输出多个 mask 以处理歧义。",
+            "sources": [
+              "S04",
+              "S07"
+            ]
+          },
+          {
+            "text": "设计三阶段 data engine（assisted-manual、semi-automatic、fully automatic）进行 model-in-the-loop 标注，并据此构建含 11M 图像、超过 1 billion masks 的 SA-1B 数据集。",
+            "sources": [
+              "S05",
+              "S01"
+            ]
+          }
+        ]
+      },
+      "detailed": {
+        "kind": "detailed",
+        "sections": [
+          {
+            "id": "problem_motivation",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "分割缺乏 web-scale 数据源，现有 foundation models 多限于图文编码器（E004，E007）。作者因此构建 promptable segmentation task，并用 data engine 迭代采集数据以支撑分割 foundation model（E005，E010）。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E004",
+                  "E005",
+                  "E007",
+                  "E010"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "method",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "该方法以一张图像和一个 segmentation prompt 为输入，输出一个有效的分割 mask；prompt 可以是前景/背景点、粗略 box 或 mask、自由文本等，即使 prompt 有歧义（例如点落在衬衫上既可指衬衫也可指穿衣人），也要求给出至少一个合理对象的 mask，这称为 promptable segmentation task（E019）。预训练时，模型对每个样本模拟点、box、mask 等 prompt 序列，并将预测 mask 与真值比较（E020）；推理时则通过设计合适 prompt 把下游任务转成提示，例如把猫检测器输出的 box 作为 prompt 做猫实例分割（E021）。\n\n模型 SAM 由 image encoder、prompt encoder 和 mask decoder 三部分组成（E033）。image encoder 是较重部分，对每张图只运行一次：它用 MAE 预训练的 ViT 处理高分辨率输入，产生 image embedding（E034）。prompt encoder 把稀疏与稠密 prompt 变成嵌入：点和 box 用 positional encoding 加对应 prompt 类型的学习嵌入，自由文本用 CLIP 的文本编码器；mask 这类稠密 prompt 经卷积嵌入后与 image embedding 逐元素相加（E035）。\n\nmask decoder 接收 image embedding、prompt embeddings 和一个 output token，先用改进的 Transformer decoder block 做 prompt 自注意力及 prompt 与 image embedding 的双向 cross-attention，更新全部 embedding；两个 block 后上采样 image embedding，并由 MLP 将 output token 变为动态线性分类器，在图像各位置计算前景概率，从而得到 mask（E036）。为处理歧义，模型对单个 prompt 预测多个 mask（采用 3 个输出），训练时只对损失最小的 mask 反传梯度（E037）。同时为每个 mask 预测估计 IoU 的 confidence score，用于排序候选（E038）。\n\n训练目标为 focal loss 与 dice loss 的线性组合；训练中还按 11 轮随机采样 prompt 来模拟交互式使用（E039）。训练 mask 由 data engine 收集：第一阶段用 SAM 辅助人工标注，第二阶段自动生成一部分 mask 并让标注员补剩余对象，第三阶段用 32×32 点网格全自动生成候选（E041）（E043）。自动阶段再用 IoU 预测选高置信 mask、筛选稳定 mask，并用 NMS 去重（E045）。\n\n实际使用时，先对图像算一次 image embedding，随后不同 prompt 复用该 embedding，由轻量的 prompt encoder 与 mask decoder 在浏览器 CPU 上约 50ms 内产生 mask，从而支持实时交互查询（E038）。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E019",
+                  "E020",
+                  "E021",
+                  "E033",
+                  "E034",
+                  "E035",
+                  "E036",
+                  "E037",
+                  "E038",
+                  "E039",
+                  "E041",
+                  "E043",
+                  "E045"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "contributions_novelty",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "相较于 CLIP、ALIGN 的文本-图像对齐 [E004]，作者提出 promptable segmentation task 与 SAM [E008][E009]。SAM 支持灵活提示、实时掩码与歧义感知 [E009]。",
+                "claimKind": "author_claim",
+                "sources": [
+                  "E004",
+                  "E008",
+                  "E009"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "SA-1B 含 11M 图像、逾 1B 掩码，掩码数达既有分割数据集 400 倍，由 data engine 全自动生成 [E010][E011]。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E010",
+                  "E011"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "23 个数据集上，单点提示常近人工 GT；零样本 prompt engineering 覆盖 edge detection、instance segmentation 等 [E013]。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E013"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "experiments_ablations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "SAM 以 MAE 预训练 ViT-H、SA-1B 自动掩码训练，在 23 数据集用单中心点与 RITM 比较（E051, E054）。其 mIoU 在 16/23 数据集更高、最大约 +47，3 掩码 oracle 下全胜（E072）。消融中，单掩码版人工评分与 AR 更差；仅自动掩码较全阶段低约 0.5 mIoU，1M 图像与 11M 全量相当，ViT-H 胜过 ViT-B、较 ViT-L 增益有限（E097, E126, E127, E137）。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E051",
+                  "E054",
+                  "E072",
+                  "E097",
+                  "E126",
+                  "E127",
+                  "E137"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "limitations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "SAM 会漏掉细微结构、偶尔虚构小的不连通分量，边界也不如放大式方法清晰；其文本到掩码任务仍属探索性且不够稳健。E140",
+                "claimKind": "inference",
+                "sources": [
+                  "E140"
+                ]
+              }
+            ]
+          }
+        ],
+        "uncertainties": []
+      }
+    }
+  },
+  "Attention": {
+    "baseline": {
+      "three": {
+        "items": [
+          {
+            "text": "提出 Transformer，一种完全基于 attention 的序列转换架构，摒弃 recurrence 与 convolution，并用 multi-headed self-attention 替换 encoder-decoder 中常用的 recurrent layers，以建模输入输出间的全局依赖。",
+            "sources": [
+              "S01",
+              "S03",
+              "S11"
+            ]
+          },
+          {
+            "text": "Transformer 去除 recurrence 的顺序计算以支持训练并行化；base model 在 8 NVIDIA P100 GPUs 上以约 0.4 秒/step 训练 100,000 steps（12 小时），big model 以 1.0 秒/step 训练 300,000 steps（3.5 天）。",
+            "sources": [
+              "S05",
+              "S04",
+              "S11"
+            ]
+          },
+          {
+            "text": "在 WMT 2014 English-to-German 上取得 28.4 BLEU，较此前最佳结果（含 ensembles）提升超过 2 BLEU；在 WMT 2014 English-to-French 上以单模型达到 41.8 BLEU，均取得新的 state of the art。",
+            "sources": [
+              "S10",
+              "S08"
+            ]
+          }
+        ]
+      },
+      "detailed": {
+        "kind": "detailed",
+        "sections": [
+          {
+            "id": "problem_motivation",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "序列逐步计算限制样本内并行，长序列尤甚 E003；作者遂摒弃 recurrence、纯用 attention 构造 Transformer 以提升并行化 E005。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E003",
+                  "E005"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "method",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "模型接收源语言符号序列，经编码器映射为连续表示，再由自回归解码器逐位生成目标符号序列。[E020]\n编码器与解码器各由堆叠的相同层组成，每层以 multi-head self-attention 与 position-wise feed-forward network 两个子层为核心，并以残差连接和 layer normalization 串联。[E024][E025] 解码器另加一层对编码器输出做 multi-head attention 的子层；其 self-attention 子层通过掩码阻止当前位置看到后续位置。[E025][E068]\nattention 将 query 与一组 key-value 对映射为输出：以 query 与各 key 的相容度经 softmax 得到权重，再对 value 加权求和。[E027][E031] Scaled Dot-Product Attention 把 query、key 组成矩阵 Q、K，计算 softmax(QK^T/√d_k)V。[E033][E037] 点积衡量相容度；除以 √d_k 防止 d_k 较大时点积过大使 softmax 梯度极小。[E043][E045]\nMulti-Head Attention 先将 Q、K、V 分别做 h 组不同的线性投影，在每组投影上并行执行 attention，再把各头输出拼接并线性投影回 d_model。[E047][E052] 多个头使模型能同时关注不同位置的不同表示子空间。[E053] 编码器 self-attention 的 Q、K、V 均来自上一层。[E067] 解码器 self-attention 的 Q、K、V 也来自上一层，但掩码把可见范围限制为当前位置及之前。[E068] encoder-decoder attention 的 query 来自解码器上一层，key 与 value 来自编码器输出，使解码每个位置都能读取整个输入序列。[E066]\n除 attention 子层外，每个编码器与解码器层还含 position-wise feed-forward network：对每个位置独立且相同地做两层线性变换，中间用 ReLU。[E070] 即 FFN(x)=max(0,xW1+b1)W2+b2；不同层参数不同。[E071][E072] 输入与输出 token 经学习的 embedding 变为 d_model 维向量；解码器输出经线性变换与 softmax 得到下一 token 概率，两个 embedding 层与 pre-softmax 线性层共享权重。[E074] 由于没有 recurrence 和 convolution，模型在 embedding 上加同维的 positional encoding 以注入位置信息。[E082] 采用不同频率的 sine/cosine 函数，使任意固定偏移 k 下 PE_{pos+k} 可表示为 PE_pos 的线性函数，便于学习相对位置。[E083][E089]\n训练以真实前缀为条件预测下一 token 概率，并用 label smoothing 正则；优化采用 Adam，学习率先线性 warmup 后按步数平方根倒数衰减。[E074][E135][E110][E114] 推理时把已生成符号作为下一步输入，逐位生成。[E020]",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E020",
+                  "E024",
+                  "E025",
+                  "E068",
+                  "E027",
+                  "E031",
+                  "E033",
+                  "E037",
+                  "E043",
+                  "E045",
+                  "E047",
+                  "E052",
+                  "E053",
+                  "E067",
+                  "E066",
+                  "E070",
+                  "E071",
+                  "E072",
+                  "E074",
+                  "E082",
+                  "E083",
+                  "E089",
+                  "E135",
+                  "E110",
+                  "E114"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "contributions_novelty",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "提出 Transformer：摒弃 recurrence，完全用 attention 建立输入输出全局依赖，且据作者所知是首个不靠序列对齐 RNN 或 convolution 的 transduction 模型。",
+                "claimKind": "author_claim",
+                "sources": [
+                  "E138",
+                  "E141"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "相对 ConvS2S 的线性、ByteNet 的对数关联开销，将任意位置关联降为常数操作；代价是 attention 加权平均削弱有效分辨率，文中以 Multi-Head Attention 对冲。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E140"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "在八个 P100 上训练十二小时，翻译质量达到当时新 state of the art，且并行化显著提升。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E138"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "experiments_ablations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "WMT 2014 En-De 上，Transformer (big) 达 28.4 BLEU，较此前最佳（含 ensemble）高逾 2.0 BLEU（E176）。En-Fr 达 41.0 BLEU，优于所有已发表单模型且训练成本低于此前 SOTA 的 1/4（E178, E179）。在 En-De dev newstest2013 的 Table 3 变体中，single-head attention 较最佳低 0.9 BLEU，learned positional embeddings 与 sinusoidal positional encoding 几乎相同（E191, E201）。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E176",
+                  "E178",
+                  "E179",
+                  "E191",
+                  "E201"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "limitations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "仅在 WMT 2014 翻译任务上验证（E214），图像、音频、视频等模态及 local attention 尚属未来工作（E215）。",
+                "claimKind": "inference",
+                "sources": [
+                  "E214",
+                  "E215"
+                ]
+              }
+            ]
+          }
+        ],
+        "uncertainties": []
+      }
+    },
+    "candidate": {
+      "three": {
+        "items": [
+          {
+            "text": "论文提出 Transformer，一种完全基于 attention mechanism 的序列转导架构，摒弃 recurrence 与 convolution 来建模输入输出的全局依赖，并因此显著提升并行性。",
+            "sources": [
+              "S01",
+              "S02"
+            ]
+          },
+          {
+            "text": "该架构沿用 encoder-decoder 结构：encoder 由 6 层 multi-head self-attention 和 position-wise feed-forward 子层堆叠，每子层配 residual connection 与 layer normalization；decoder 额外对 encoder 输出做 attention，并用 masking 维持自回归因果性。",
+            "sources": [
+              "S03",
+              "S04",
+              "S05"
+            ]
+          },
+          {
+            "text": "在 WMT 2014 English-to-German 翻译任务上，模型取得 28.4 BLEU，较包含 ensembles 的既有最佳结果高逾 2 BLEU；在 English-to-French 上以八块 GPU 训练 3.5 天达到 41.8 的单模型 SOTA，并成功用于 English constituency parsing。",
+            "sources": [
+              "S01"
+            ]
+          }
+        ]
+      },
+      "detailed": {
+        "kind": "detailed",
+        "sections": [
+          {
+            "id": "problem_motivation",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "既有 recurrent 模型因逐步计算难以并行，attention 也多依附 recurrent（E003, E004）；作者因此提出完全依赖 attention 的 Transformer，以提升并行化与翻译质量（E005）。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E003",
+                  "E004",
+                  "E005"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "method",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "任务是把输入符号序列 (x1,…,xn) 映射为输出符号序列 (y1,…,ym)：encoder 将输入编码为连续表示 z，decoder 再自回归地逐元素生成输出，生成下一符号时以已生成符号为额外输入 (E012)。\n\nencoder 与 decoder 均由 N=6 个相同层堆叠 (E016, E017)。每层含 multi-head self-attention 与 position-wise feed-forward 两个子层，子层外加 residual connection 后再做 layer normalization，所有子层和 embedding 的输出维度均为 d_model=512 (E016)。decoder 另加第三子层，对 encoder 输出做 multi-head attention；其 self-attention 用 mask 使位置 i 只能依赖小于 i 的已知输出，保持自回归性 (E017)。\n\nattention 函数将 query 与一组 key-value 对映射为输出向量：输出为 value 的加权和，权重由 query 与对应 key 的兼容函数给出 (E019, E023)。Scaled Dot-Product Attention 先算 query 与所有 key 的点积并除以 sqrt(d_k)，softmax 得权重后加权求和 value；矩阵形式为 Attention(Q,K,V)=softmax(QK^T/sqrt(d_k))V，Q/K/V 分别打包 query、key、value，d_k 为 key 维度 (E025, E029)。缩放是因为 d_k 大时点积幅值大，会把 softmax 推入梯度极小的区域 (E035, E037)。\n\nMulti-Head Attention 用 h 组不同学习线性投影把 query、key、value 分别投到 d_k、d_k、d_v 维，并行做 attention，拼接各头输出后再投影回 d_model (E039, E044)。这使模型能在不同位置联合关注不同表示子空间，而单头平均会抑制该能力 (E045)。本文取 h=8、d_k=d_v=d_model/h=64 (E055)。\n\n模型有三处 attention：encoder-decoder attention 的 query 来自上一层 decoder，key/value 来自 encoder 输出，使每个 decoder 位置可关注整个输入；encoder self-attention 的 Q/K/V 均来自上一层 encoder 输出；decoder self-attention 关注当前位置及之前位置，并通过把 softmax 输入的非法连接设为 −∞ 阻止向左信息流 (E058, E059, E060)。\n\n每层还有 position-wise feed-forward network，对每个位置独立且相同地做两层线性变换，中间为 ReLU：FFN(x)=max(0,xW1+b1)W2+b2；输入输出为 d_model=512，内层 d_ff=2048 (E062, E063, E064)。embedding 把 token 变为 d_model 维向量，decoder 输出经线性变换与 softmax 得下一 token 概率；两个 embedding 层与 pre-softmax 线性层共享权重矩阵 (E066)。\n\n由于没有 recurrence 和 convolution，模型在 encoder/decoder 底部的 input embeddings 上加 positional encoding 注入位置信息；本文用不同频率的 sine 和 cosine：PE(pos,2i)=sin(pos/10000^{2i/d_model})，PE(pos,2i+1)=cos(pos/10000^{2i/d_model})，使固定偏移 k 下 PE_{pos+k} 可表示为 PE_pos 的线性函数，便于学习相对位置 (E074, E077, E078, E081)。\n\n训练在 WMT 2014 English-German 与 English-French 上进行 (E097)；优化器用 Adam，学习率前 4000 步线性 warmup 后按步数平方根倒数衰减 (E102, E106)；还使用 residual dropout 与 label smoothing ε_ls=0.1 (E125, E127)。实际使用时 decoder 从已生成前缀逐步自回归生成 (E012)。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E012",
+                  "E016",
+                  "E017",
+                  "E019",
+                  "E023",
+                  "E025",
+                  "E029",
+                  "E035",
+                  "E037",
+                  "E039",
+                  "E044",
+                  "E045",
+                  "E055",
+                  "E058",
+                  "E059",
+                  "E060",
+                  "E062",
+                  "E063",
+                  "E064",
+                  "E066",
+                  "E074",
+                  "E077",
+                  "E078",
+                  "E081",
+                  "E097",
+                  "E102",
+                  "E106",
+                  "E125",
+                  "E127"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "contributions_novelty",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "提出 Transformer，据作者所知为首个完全依赖 attention、不用序列对齐 RNN 或 convolution 的 transduction 模型，较 recurrent 模型提升并行化 [E005][E010]。",
+                "claimKind": "author_claim",
+                "sources": [
+                  "E005",
+                  "E010"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "在 8 张 P100 GPU 上训练 12 小时即达翻译质量新 SOTA [E005]。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E005"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "相较 ConvS2S、ByteNet 等卷积模型，将任意两位置关联的操作数从随距离线性/对数增长降为常数，并用 Multi-Head Attention 抵消有效分辨率损失 [E007]。",
+                "claimKind": "author_claim",
+                "sources": [
+                  "E007"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "experiments_ablations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "WMT 2014 En–De big 28.4 BLEU，超此前最佳逾 2.0（E131）。En–Fr big 41.0，训练成本<前 state-of-the-art 的 1/4（E133,E134）。En–De newstest2013 消融：单头低 0.9 BLEU，学习式 positional embedding 与 sinusoidal 近同，dropout 抑制过拟合（E155,E156）。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E131",
+                  "E133",
+                  "E134",
+                  "E155",
+                  "E156"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "limitations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "已验证范围仅限 WMT 2014 英德、英法翻译任务（E169）；作者指出尚未涉及图像、音频、视频等非文本模态，且生成仍具顺序性（E170）。",
+                "claimKind": "inference",
+                "sources": [
+                  "E169",
+                  "E170"
+                ]
+              }
+            ]
+          }
+        ],
+        "uncertainties": []
+      }
+    },
+    "candidate-final": {
+      "three": {
+        "items": [
+          {
+            "text": "论文提出 Transformer，一种完全依赖 attention 机制、舍弃 recurrence 与 convolution 的序列转导架构，从而支持更强并行化并在翻译质量上取得新的 state of the art。",
+            "sources": [
+              "S01",
+              "S02"
+            ]
+          },
+          {
+            "text": "encoder 与 decoder 均堆叠 6 个相同层，encoder 每层含 multi-head self-attention 和 position-wise feed-forward 子层，并配合 residual connection 与 layer normalization；decoder 另加对 encoder 输出的 attention 并用 masking 阻止关注后续位置。",
+            "sources": [
+              "S03",
+              "S04",
+              "S05"
+            ]
+          },
+          {
+            "text": "实验显示，在 WMT 2014 English-to-German 上取得 28.4 BLEU，较包含 ensembles 的现有最佳结果提升逾 2 BLEU；在 English-to-French 上以 8 个 GPU 训练 3.5 天取得 41.8 的单模型 state-of-the-art BLEU，并成功应用于 English constituency parsing。",
+            "sources": [
+              "S01"
+            ]
+          }
+        ]
+      },
+      "detailed": {
+        "kind": "detailed",
+        "sections": [
+          {
+            "id": "problem_motivation",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "recurrence 阻碍 parallelization，attention 仍依附 recurrence；故用仅靠 attention 的 Transformer 取而代之。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E003",
+                  "E004",
+                  "E005"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "method",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "任务：编码器把输入符号序列 (x1,…,xn) 映射为连续表示 z，解码器在给定 z 时自回归地逐元素生成输出符号序列 (y1,…,ym)，每步把已生成符号作为额外输入。E012 编码器与解码器均由堆叠的 self-attention 和逐位置全连接层构成。E014\n\n编码器为 N=6 个相同层，每层先做 multi-head self-attention，再做 position-wise feed-forward network；两个子层外各接 residual connection 与 layer normalization，所有子层及 embedding 输出维度为 d_model=512。E016 解码器同样 6 层，每层另有一个对编码器输出做 multi-head attention 的子层；其 self-attention 被掩码，禁止关注后续位置，配合输出 embedding 偏移一位，使位置 i 的预测只依赖小于 i 的已知输出。E017\n\nAttention 函数把 query 与一组 key-value 对映射为输出：输出是 value 的加权和，权重由 query 与对应 key 的兼容性函数给出。E019 E023 Scaled Dot-Product Attention 对维度 d_k 的 query/key 与维度 d_v 的 value 计算 query 与所有 key 的点积，除以 sqrt(d_k) 后 softmax 得权重，再对 value 加权求和，矩阵形式为 softmax(QK^T/sqrt(d_k))V。E025 E029 缩放是因为 d_k 大时点积幅值变大，会把 softmax 推入梯度极小区域。E035 E037\n\nMulti-Head Attention 将 Q、K、V 分别经不同的可学习线性投影做 h 次，投影到 d_k、d_k、d_v 后并行做 attention，拼接各 head 输出再投影；这样可在不同位置联合关注不同表示子空间，而单 head 的平均会抑制这一点。E039 E044 E045 本文取 h=8、d_k=d_v=d_model/h=64，总计算成本与全维单 head 相近。E055 它有三处用法：encoder-decoder attention 的 query 来自上一解码层，key/value 来自编码器输出，使解码位置可关注全部输入位置；编码器 self-attention 的 Q/K/V 均来自上一层输出；解码器 self-attention 只允许关注到当前位置，并在 softmax 输入中将非法连接置为 −∞。E058 E059 E060\n\n每个编码/解码层还含逐位置且各位置同构的前馈网络：两层线性变换，中间为 ReLU，即 max(0,xW1+b1)W2+b2；输入输出 512 维，内层 2048 维。E062 E063 E064 输入与输出 token 经学习到的 embedding 变为 d_model 维；解码器输出经线性变换和 softmax 得到下一 token 概率，两个 embedding 层与 pre-softmax 线性层共享权重矩阵，embedding 权重乘以 sqrt(d_model)。E066 因无 recurrence 与 convolution，模型把同维的 positional encoding 加到编码器和解码器底部的输入 embedding 上；本文用不同频率的正弦、余弦函数，使固定偏移 k 的 PE_{pos+k} 可表示为 PE_pos 的线性函数，便于学习相对位置关注并可能外推到更长序列。E074 E081 E082\n\n训练使用 WMT 2014 English-German 与 English-French，模型以解码器输出的下一 token 概率为预测目标，按近似句长组批；优化器为 Adam，学习率先线性 warmup 4000 步、再按步数平方根倒数衰减，并对子层输出及 embedding 与 positional encoding 之和施加 dropout（base 模型 0.1），同时用 ε_ls=0.1 的 label smoothing。E097 E102 E106 E125 E126 E127 实际使用时按自回归方式逐步生成，解码器每步只利用已生成符号并靠掩码保持因果性。E012 E017",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E012",
+                  "E014",
+                  "E016",
+                  "E017",
+                  "E019",
+                  "E023",
+                  "E025",
+                  "E029",
+                  "E035",
+                  "E037",
+                  "E039",
+                  "E044",
+                  "E045",
+                  "E055",
+                  "E058",
+                  "E059",
+                  "E060",
+                  "E062",
+                  "E063",
+                  "E064",
+                  "E066",
+                  "E074",
+                  "E081",
+                  "E082",
+                  "E097",
+                  "E102",
+                  "E106",
+                  "E125",
+                  "E126",
+                  "E127"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "contributions_novelty",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "作者提出仅靠 attention、舍弃 recurrence 的 Transformer，称其提升并行化，并称据其所知这是首个不用序列对齐 RNN 或 convolution 的 transduction 模型（E005, E010）。",
+                "claimKind": "author_claim",
+                "sources": [
+                  "E005",
+                  "E010"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "相较 ConvS2S、ByteNet 的线性或对数级位置关联，Transformer 降为常数，但有效分辨率下降，以 Multi-Head Attention 抵消（E007）。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E007"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "8 块 P100 GPU 训练 12 小时，翻译质量达新 state of the art；证据限于翻译（E005）。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E005"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "experiments_ablations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "WMT 2014 英德：Transformer (big) 取得 28.4 BLEU，比此前最佳结果（含 ensemble）高 2.0 以上，使用 8 块 P100 训练 3.5 天（E131）；英法任务 41.0 BLEU，训练成本不足此前 single model SOTA 的 1/4（E133, E134）。在 newstest2013 开发集上，消融实验不做 checkpoint averaging：与最佳设置相比，单头注意力低 0.9 BLEU，减小 d_k 会损害模型质量，dropout 有助于抑制过拟合（E155, E156）。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E131",
+                  "E133",
+                  "E134",
+                  "E155",
+                  "E156"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "limitations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "实验结果为 WMT 2014 English-to-German 与 English-to-French 翻译；其他输入输出模态、local, restricted attention mechanisms 和降低生成序列性列为后续工作（E169, E170）。",
+                "claimKind": "inference",
+                "sources": [
+                  "E169",
+                  "E170"
+                ]
+              }
+            ]
+          }
+        ],
+        "uncertainties": []
+      }
+    }
+  },
+  "VideoMME": {
+    "baseline": {
+      "three": {
+        "items": [
+          {
+            "text": "本文构建了包含900个视频和2700个高质量multiple-choice questions的数据集，每个视频配3题，用于对MLLMs开展稳健评估。",
+            "sources": [
+              "S01"
+            ]
+          },
+          {
+            "text": "该数据集覆盖6个视觉领域和30个细粒度类别，视频时长从11秒到1小时，并包含744个带字幕视频及全部900个带音频视频，以检验MLLMs跨时长与多模态输入的能力。",
+            "sources": [
+              "S02",
+              "S03",
+              "S05"
+            ]
+          },
+          {
+            "text": "评估显示，仅以video frames为输入时Gemini 1.5 Pro在Video-MME上达到75%准确率，分别高出GPT-4V 15.1%和GPT-4o 3.1%；加入subtitles使长视频提升10.1%。",
+            "sources": [
+              "S09",
+              "S10"
+            ]
+          }
+        ]
+      },
+      "detailed": {
+        "kind": "detailed",
+        "sections": [
+          {
+            "id": "problem_motivation",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "已有面向 MLLMs 的 video benchmarks 类型、时序动态与模态覆盖不足 (E002)；作者构建多时长、跨域且含 subtitles/audio 的 Video-MME (E003, E007)。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E002",
+                  "E003",
+                  "E007"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "method",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "Video-MME 以从 YouTube 收集的多领域视频为输入，经问答标注与质量审查形成多选题评测集，并配套统一的输入模态与准确率评测协议，最终输出用于比较 MLLM 视频理解能力的 benchmark（E031, E037）。作为 benchmark 论文，其方法主线是数据构建与评测协议，而非提出新的模型架构或训练目标。\n\n数据构建按视频收集、问答标注、质量审查三步推进（E037）。视频收集先建立领域—标签层级，从 YouTube 按 6 个关键领域和 30 个细粒度类别取样，并在每个类别内覆盖 short、medium、long 三种时长，同时保留字幕与音频等元信息（E038）。领域层级控制视频类型多样性，时长分层则把长视频作为独立测试条件，供后续按领域、长度与模态分析（E038）。\n\n问答标注采用 multiple-choice QA：标注者完整观看视频后迭代撰写三题，每题四个候选选项；该格式把开放视频理解转为可直接判分的离散选择（E039）。这些题覆盖 12 种任务类型，横跨 perception、reasoning 与 information synthesis，且要求必须直接引用视频内容才能作答（E040, E041）。\n\n质量审查先由另一名标注者复核语言表述、可答性、选项逻辑与正确答案；再把纯文本问题交给 Gemini 1.5 Pro，筛除仅凭题面即可作答的 QA，不合格者退回原标注者修改（E042, E043）。这一 text-only 过滤把“必须看视频”从设计意图变成可操作筛选条件（E043）。\n\n评测阶段将同一批 QA 分别置于 frames only、frames with subtitles、frames with audio 三种输入模态设置下，以 frames 为基础输入，字幕与音频作为增量条件（E056）。模型按各自官方配置并尽量采用更多帧处理视频（E048）；输出选项与 ground-truth answer 直接比对得到 accuracy，不借助外部模型评分（E048, E057）。\n\n由此，评测协议由固定 QA、三种模态输入和直接答案比对构成（E056, E057）。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E031",
+                  "E037",
+                  "E038",
+                  "E039",
+                  "E040",
+                  "E041",
+                  "E042",
+                  "E043",
+                  "E048",
+                  "E056",
+                  "E057"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "contributions_novelty",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "作者自述既有视频基准受限于类型、时序与单模态，Video-MME 为首个综合 multimodal 评测基准 [E059][E060]。",
+                "claimKind": "author_claim",
+                "sources": [
+                  "E059",
+                  "E060"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "其含 900 个视频、2,700 道多选题，覆盖 6 个视觉域、11 秒至 1 小时；比较限多选题子集 [E062][E066]。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E062",
+                  "E066"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "实测 Gemini 1.5 Pro 平均 75%、VILA-1.5 59%，图像模型多帧约 50% 接近 LLaVA-NeXT-Video [E063][E064]。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E063",
+                  "E064"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "加 subtitles/audios 分别提升 6.2%/4.3%，长视频增益更大且性能随视频变长普遍下降 [E064][E067]。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E064",
+                  "E067"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "experiments_ablations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "Video-MME含4个商业及VITA-1.5等开源MLLM，准确率由答案直接比对（E076、E088）。Gemini 1.5 Pro仅帧75%，超GPT-4V/GPT-4o 15.1%/3.1%；7B中VITA-1.5最佳56.1%（E090、E092）。多语言长视频加字幕/音频较仅帧+16.7%/+12.5%，字幕通常优于音频；仅见输入模态对照，无模块移除/替换消融（E099、E098）。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E076",
+                  "E088",
+                  "E090",
+                  "E092",
+                  "E099",
+                  "E098"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "limitations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "视频时长增加时性能下降，开源模型的受限输入帧成为信息瓶颈[E104]；复杂时序推理数据集仍有限[E105]。",
+                "claimKind": "inference",
+                "sources": [
+                  "E104",
+                  "E105"
+                ]
+              }
+            ]
+          }
+        ],
+        "uncertainties": []
+      }
+    },
+    "candidate": {
+      "three": {
+        "items": [
+          {
+            "text": "提出 Video-MME，一个面向 MLLMs 视频分析的全谱多模态评测基准，覆盖 6 个视觉领域与 30 个子领域，视频时长从 11 秒到 1 小时，并纳入字幕与音轨。",
+            "sources": [
+              "S01",
+              "S02"
+            ]
+          },
+          {
+            "text": "构建含 900 个视频、2,700 个多项选择问答（每视频 3 题）的数据集，由具备视觉-语言研究经验的标注者完整观看视频后出题，并设置由另一标注者复核语言、选项逻辑与答案正确性的质量审查。",
+            "sources": [
+              "S02",
+              "S04",
+              "S05",
+              "S06"
+            ]
+          },
+          {
+            "text": "在 Video-MME 上评测显示 Gemini 1.5 Pro 平均准确率 75%，高于 GPT-4o 的 71.9%，领先开源模型 VILA-1.5 的 59%；整合字幕和音频分别提升 Gemini 1.5 Pro 6.2% 和 4.3%，且长视频增益更明显。",
+            "sources": [
+              "S01",
+              "S03"
+            ]
+          }
+        ]
+      },
+      "detailed": {
+        "kind": "detailed",
+        "sections": [
+          {
+            "id": "problem_motivation",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "现有 MLLMs 评估多聚焦静态视觉，已有视频基准在视频类型、时序动态与多模态覆盖上不足，难以全面检验视频理解（E002）。为此，作者构建 Video-MME 这一综合评测基准（E003）。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E002",
+                  "E003"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "method",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "Video-MME 的评测输入是一段视频与一道四选一问题，视频在评测时以帧序列送入，并可附带字幕或音轨 (E007; E053)。模型输出所选选项，评分把该输出与标准答案直接比对得到 accuracy，不借助 ChatGPT 等外部模型 (E047; E056)。因此它定义的是“给定视频与选择题，判断模型能否正确作答”的评测任务，而不是训练一个新模型。数据构建分三步：video collection、question-answer annotation、quality review (E034)。Video collection 先按 YouTube 流行趋势建立 6 个 domain、30 个细粒度 tag 的层级；6 个 domain 为 Knowledge、Film & Television、Sports Competition、Artistic Performance、Life Record 与 Multilingual (E007; E035)。每个 tag 下分别采集短（<2 分钟）、中（4–15 分钟）、长（30–60 分钟）视频，并一并获取字幕（若有）和音轨等元信息；最终得到 900 个视频，其中 744 个带字幕、900 个带音频，视频时长覆盖 11 秒到 1 小时 (E035; E007)。这些时长层级分别对应 Video-MME-S、Video-MME-M、Video-MME-L 三个子集，总表汇总为 900 个视频和 2,700 个 QA (E013; E026)。Question-answer annotation 由具备较强英语能力和 vision-language 研究经验的标注者完整观看视频后，为每个视频编写 3 道与内容紧密相关的问题，每题配 4 个候选选项，共 2,700 个 QA；题目覆盖 perception、reasoning、information synthesis 等 12 类任务，且设计上要求必须参考视频内容才能作答 (E036; E037; E038)。Quality review 先由另一名标注者逐题检查语言表达是否清晰、选项逻辑是否一致、指定正确答案是否合适 (E039)。为筛掉无需看视频即可回答的题，作者把纯文本问题交给 Gemini 1.5 Pro，过滤仅凭问题文本就能答对的 QA，并将不合格题退回原标注者修改；统计显示 Gemini 1.5 Pro 在 text-only 设置下 accuracy 低于 15%，说明该过滤使视频内容成为答题的关键线索 (E040)。该基准的机制是数据构建与评测，不涉及模型训练目标；实际评测阶段按官方配置运行 commercial 模型、open-source video MLLMs 以及可扩展到多帧的 image MLLMs，并尽量使用更多帧 (E044; E047)。评测设三种输入模态：frames only、frames with subtitles、frames with audio，以比较字幕和音轨对模型表现的影响 (E053; E055)。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E007",
+                  "E053",
+                  "E047",
+                  "E056",
+                  "E034",
+                  "E035",
+                  "E013",
+                  "E026",
+                  "E036",
+                  "E037",
+                  "E038",
+                  "E039",
+                  "E040",
+                  "E044",
+                  "E055"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "contributions_novelty",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "作者称 Video-MME 是面向 video analysis 的首个全面 MLLM 评测基准（E003）。",
+                "claimKind": "author_claim",
+                "sources": [
+                  "E003"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "该基准含 900 个视频、2,700 道多选题，覆盖 6 个 visual domains、30 类、11 秒至 1 小时，并纳入 subtitles 与 audio；针对既有 video benchmarks 多样性、时间动态与单模态覆盖不足（E007；E002）。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E007",
+                  "E002"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "评测中 Gemini 1.5 Pro 平均 75%、VILA-1.5 为 59%；subtitle 与 audio 分别提升 6.2%、4.3%，长视频性能下降（E009；E027）。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E009",
+                  "E027"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "作者据此提出 long context 架构与复杂 temporal reasoning 训练数据为改进方向（E028）。",
+                "claimKind": "author_claim",
+                "sources": [
+                  "E028"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "experiments_ablations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "在 Video-MME（900 视频、2,700 题）上评测商用、开源视频及图像 MLLM（E007、E044）。仅帧输入时 Gemini 1.5 Pro 75%，VILA-1.5 59%；前者长视频加音频 +6.2%、多语言加字幕 +16.7%，字幕增益短/长 2.8%/10.1%（E058、E061、E067）。所供实验仅分析输入模态组合，无模块消融（E066）。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E007",
+                  "E044",
+                  "E058",
+                  "E061",
+                  "E067",
+                  "E066"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "limitations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "在 Video-MME 上，MLLM 随视频时长增加性能下降[E027]。开源模型受限输入帧成为长视频理解的信息瓶颈[E072]。",
+                "claimKind": "inference",
+                "sources": [
+                  "E027",
+                  "E072"
+                ]
+              }
+            ]
+          }
+        ],
+        "uncertainties": []
+      }
+    },
+    "candidate-final": {
+      "three": {
+        "items": [
+          {
+            "text": "论文构建了 Video-MME 基准：采集 900 个视频，覆盖 6 个视觉域与 30 个细分类别，时长从 11 秒到 1 小时，并由专家标注 2,700 个四选一 QA 对且经独立人工复核。",
+            "sources": [
+              "S01",
+              "S02",
+              "S04",
+              "S05",
+              "S06"
+            ]
+          },
+          {
+            "text": "在 Video-MME 上评测多种 MLLMs 后发现，Gemini 1.5 Pro 以平均 75% 居商业模型首位（GPT-4o 为 71.9%），而领先开源模型 VILA-1.5 仅 59%，显示开源与商业模型间存在明显差距。",
+            "sources": [
+              "S01",
+              "S03"
+            ]
+          },
+          {
+            "text": "进一步评测表明，将字幕与音频纳入输入能显著提升视频理解，例如使 Gemini 1.5 Pro 分别提升 6.2% 和 4.3%，且这些增益在更长视频上更明显。",
+            "sources": [
+              "S03"
+            ]
+          }
+        ]
+      },
+      "detailed": {
+        "kind": "detailed",
+        "sections": [
+          {
+            "id": "problem_motivation",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "现有 MLLMs 评测偏静态视觉，视频基准在视频类型多样性、时序动态覆盖和单模态上不足；作者据此构建 Video-MME，以多领域、跨时长并含字幕与音轨的方式评估视频理解。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E002",
+                  "E003",
+                  "E007"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "method",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "Video-MME 的构建分为三步：video collection、question-answer annotation 与 quality review（E034）。任务输入是视频及其可选的字幕和音频，并配有人工编写的问题与四个候选选项；评测输出是待评 MLLM 所选答案与 ground-truth answer 比对后得到的准确率（E047，E053）。\n\n采集时，按领域层级从 YouTube 选片，覆盖 Knowledge、Film & Television、Sports Competition、Artistic Performance、Life Record、Multilingual 六个领域和 30 个细类（E007）。每个类别都选取 short（<2 分钟）、medium（4–15 分钟）、long（30–60 分钟）视频，并尽量保留对应字幕和音频（E035）。最终数据集含 900 个视频，其中 744 个有字幕、全部 900 个有音频（E035）。\n\n标注时，标注者先完整观看视频，再为每个视频迭代写出 3 个与视频内容紧密相关的问题，每题 4 个选项，共 2,700 个 QA 对（E036）。这些问题覆盖 perception、reasoning、information synthesis 等 12 类任务，并且设计成不直接参考视频就难以正确回答（E037，E038）。\n\n质量审查由另一名标注者逐题检查语言是否清楚、选项是否逻辑一致、指定答案是否合适（E039）。为排除仅凭文本就能作答的题，纯文本问题被交给 Gemini 1.5 Pro：可据文本回答的 QA 对被剔除；统计显示该纯文本设置下准确率低于 15%（E040）。\n\n评测阶段采用官方配置并尽量增加输入帧数，覆盖 commercial、开源 video 和可扩展到多帧的 image MLLMs（E044，E047）。模型输出直接与 ground-truth answer 比较，不调用 ChatGPT 等外部模型（E056）。每次评测有三种输入：frames only、frames with subtitles、frames with audio，从而把视觉、字幕和音频信息的作用分开观察（E053，E055）。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E034",
+                  "E047",
+                  "E053",
+                  "E007",
+                  "E035",
+                  "E036",
+                  "E037",
+                  "E038",
+                  "E039",
+                  "E040",
+                  "E044",
+                  "E056",
+                  "E055"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "contributions_novelty",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "作者提出 Video-MME，称其为面向 MLLMs 视频分析的首个综合多模态评测基准，以弥补既有基准在视频类型、时序动态和单模态覆盖上的不足。",
+                "claimKind": "author_claim",
+                "sources": [
+                  "E003",
+                  "E002"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "该基准含 900 个视频、2,700 道多选题，覆盖 6 个视觉域与 30 个细类，时长 11 秒至 1 小时，并含 subtitles 与 audio tracks。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E007"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "该多选题评测中，Gemini 1.5 Pro 平均 75%，开源 VILA-1.5 为 59%；字幕与音频分别带来 6.2% 和 4.3% 提升，视频越长性能越低。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E009",
+                  "E027"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "作者将长上下文架构与复杂时序推理训练数据列为改进方向，属推断而非已验证结论。",
+                "claimKind": "inference",
+                "sources": [
+                  "E028"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "experiments_ablations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "Video-MME评测4个商用及多个开源/图像MLLMs（E042,E044）；准确率直接比对ground-truth（E056）。仅帧Gemini 1.5 Pro达75%，超GPT-4V 15.1%、GPT-4o 3.1%（E058）；VILA-1.5 59%（E061,E062）。多语种长视频字幕/音频分别+16.7%/+12.5%，时长增加则降（E067,E068）。4.3聚焦模态与时长，未见模块移除/替换消融（E065）。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E042",
+                  "E044",
+                  "E056",
+                  "E058",
+                  "E061",
+                  "E062",
+                  "E065",
+                  "E067",
+                  "E068"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "limitations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "视频时长增加时模型性能下降，开源模型受限的输入帧成为长视频理解的信息瓶颈（E072）。此外，具备复杂时序理解的数据集仍较为有限（E073）。",
+                "claimKind": "inference",
+                "sources": [
+                  "E072",
+                  "E073"
+                ]
+              }
+            ]
+          }
+        ],
+        "uncertainties": []
+      }
+    }
+  },
+  "Chinchilla": {
+    "baseline": {
+      "three": {
+        "items": [
+          {
+            "text": "通过训练超过 400 个、参数量从 70 million 到超过 16 billion、训练 token 从 5 billion 到 500 billion 的语言模型，作者发现当前大语言模型显著训练不足，并测得计算最优训练下模型规模与训练 token 数应等比例扩展。",
+            "sources": [
+              "S07"
+            ]
+          },
+          {
+            "text": "为估计计算最优配置，作者采用三种方法：固定模型规模并改变训练 token 数、构建 IsoFLOP profiles，以及将最终损失拟合为模型参数数量与已见 token 数的参数化函数。",
+            "sources": [
+              "S06",
+              "S04",
+              "S02"
+            ]
+          },
+          {
+            "text": "Chinchilla 在 Rae et al. (2021) 的大型任务子集上评估，并在阅读理解任务上相对 Gopher 的两项准确率均提升超过 10%，同时在 TriviaQA 上优于 GPT-3。",
+            "sources": [
+              "S08",
+              "S10",
+              "S12"
+            ]
+          }
+        ]
+      },
+      "detailed": {
+        "kind": "detailed",
+        "sections": [
+          {
+            "id": "problem_motivation",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "固定 FLOPs 预算下如何权衡模型规模与训练 token 数？既有大模型多按 Kaplan et al. (2020) 与 GPT-3 约训 300B tokens、主要扩规模 (E005, E015)；但训练昂贵且常仅一次、预算先定，需准确估计最优分配，本文据此重估该权衡 (E003, E015)。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E003",
+                  "E005",
+                  "E015"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "method",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "方法以不同参数量 N 与训练 token 数 D 配置下的训练损失曲线及 FLOPs 预算 C 为输入，输出使损失最小的 N_opt(C)、D_opt(C)，并据此训练 Chinchilla。E034 这些路径共享一组覆盖不同 N、D 的训练运行：前两条分别从训练曲线和固定 FLOPs 的最终损失提取最优分配，第三条把所有最终损失合并拟合为参数化曲面。E034 E068 其共同假设是计算与模型规模满足幂律关系，因此拟合出的指数可表达“每增加一份计算应怎样分配参数与数据”。E034 E096\n\nApproach 1 固定从 70M 到 10B 的模型规模族，每个规模训练 4 个不同 token horizon，并按余弦 schedule 衰减学习率。E044 E045 对每条训练损失曲线先平滑再插值，得到连续的 FLOPs→loss 映射；随后在 1500 个对数间隔 FLOPs 上取该预算下最低损失点，构成训练曲线包络。E045 E046 最后用这些点拟合 N_opt∝C^a 与 D_opt∝C^b。E048\n\nApproach 2 固定 9 个 FLOPs 预算，改变模型规模（至 16B），只取每个运行训练末端的最终损失。E052 E054 余弦周期长度按目标 token 数设置，使各 IsoFLOP 点的最终损失可比。E055 E056 在每个 IsoFLOP 切片上，以参数量为横轴拟合抛物线，谷底给出该预算的最优 N，再由预算反推 D。E064 随后对不同预算的谷底拟合同样的幂律。E065\n\nApproach 3 把所有最终损失建模为参数化风险分解：第一项对应理想生成过程的熵，第二项对应 N 参数 transformer 相对理想过程的容量不足，第三项对应有限优化步与数据采样造成的未收敛损失。E068 E072 其中 α、β 控制两项随 N、D 的衰减速度。E087 用 Huber loss 与 L-BFGS 拟合各系数，并从多组初始化中取最优拟合。E073 E075 最后在 FLOPs≈6ND 约束下最小化该损失曲面，得到闭式的有效前沿。E085 E087 该前沿在 log-log 空间连接各等损失轮廓中 FLOPs 最小的点。E084\n\nApproach 1 给出 a=0.50、b=0.50，Approach 2 给出 0.49/0.51。E048 E066 Approach 3 给出 0.46/0.54；三条路径均表明计算增加时参数与训练 token 应近似等比例增加。E088 E090\n\n据此配置的 Chinchilla 为 70B 参数，沿用 Gopher 的架构与训练设置，在 MassiveText 上以更多 token 训练。E113 E114 E124 其训练改用 AdamW、无 NFKC 的 SentencePiece，并以 bfloat16 计算前后向、在分布式优化器状态中保存 float32 权重副本；优化目标为语言建模损失。E115 E117 E118",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E034",
+                  "E068",
+                  "E096",
+                  "E044",
+                  "E045",
+                  "E046",
+                  "E048",
+                  "E052",
+                  "E054",
+                  "E055",
+                  "E056",
+                  "E064",
+                  "E065",
+                  "E072",
+                  "E087",
+                  "E073",
+                  "E075",
+                  "E085",
+                  "E084",
+                  "E066",
+                  "E088",
+                  "E090",
+                  "E113",
+                  "E114",
+                  "E124",
+                  "E115",
+                  "E117",
+                  "E118"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "contributions_novelty",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "作者主张在固定 FLOPs 下由 L(N,D) 估计 N_opt(C)、D_opt(C) 后，模型与 token 应等比例扩展，不同于 Kaplan et al. (2020) 的模型增长更快（E138,E134）。",
+                "claimKind": "author_claim",
+                "sources": [
+                  "E138",
+                  "E134"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "前沿来自逾 400 个模型（<70M–>16B 参数、5B–>400B token），作者称与 Kaplan et al. (2020) 明显不同（E139）。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E139"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "按 Gopher 预算预测模型小 4 倍、token 多 4 倍，70B Chinchilla 以 1.4T token 训练后优于 Gopher（E140）。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E140"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "解读：验证限于该预算与模型范围（E140,E139）。",
+                "claimKind": "inference",
+                "sources": [
+                  "E140",
+                  "E139"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "experiments_ablations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "评估沿用 Rae et al. (2021) 的任务定义与大代表性子集 [E154]。Chinchilla 在 The Pile 全部子集上 bits-per-byte 均低于 Gopher [E163]。MMLU 5-shot 平均 67.6%，高出 Gopher 7.6%，57 项中 51 胜 2 平 4 负 [E171][E178]。BIG-bench 62 项平均 65.1% 对 54.4% [E176]。所给证据无模块移除/替换消融，该部分证据不足。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E154",
+                  "E163",
+                  "E171",
+                  "E176",
+                  "E178"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "limitations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "大尺度上仅 Chinchilla 与 Gopher 两次可比训练，缺中间尺度验证；幂律拟合在高算力处出现凹性，可能高估最优模型规模。",
+                "claimKind": "inference",
+                "sources": [
+                  "E219"
+                ]
+              }
+            ]
+          }
+        ],
+        "uncertainties": []
+      }
+    },
+    "candidate": {
+      "three": {
+        "items": [
+          {
+            "text": "论文用三种方法估计固定 FLOPs 预算下参数与训练 token 的最优分配：固定模型规模改变 token 数、在 1500 个对数间隔 FLOP 值上找最低损失模型、拟合参数化损失函数，并发现二者应近似等比例扩大。",
+            "sources": [
+              "S03",
+              "S04",
+              "S05",
+              "S06"
+            ]
+          },
+          {
+            "text": "基于缩放预测，作者训练了规模更小但训练 token 远多于 300B 的 Chinchilla，并在与 Gopher 等大型模型的比较中取得更优结果。",
+            "sources": [
+              "S01",
+              "S02"
+            ]
+          },
+          {
+            "text": "在 closed-book question answering 的评测中，Chinchilla 在 Natural Questions 上取得 31.5% 的 5-shot 与 35.5% 的 64-shot closed-book SOTA 准确率，分别高于 Gopher 的 21% 与 28%；在 TriviaQA 的 filtered 与 unfiltered 集上均明显优于 Gopher，并在 unfiltered 集上超过 GPT-3。",
+            "sources": [
+              "S08"
+            ]
+          }
+        ]
+      },
+      "detailed": {
+        "kind": "detailed",
+        "sections": [
+          {
+            "id": "problem_motivation",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "FLOPs预算下如何权衡模型规模与训练token数（E015, E016）？Kaplan et al. 主张模型远快于token增长，近期模型多约300B token（E004, E005）；作者因大模型只训练一次而需估计最优超参数（E003）。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E015",
+                  "E016",
+                  "E004",
+                  "E005",
+                  "E003"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "method",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "任务可写成：在固定 FLOPs 预算 C 下，选择模型参数量 N 与训练 token 数 D，使最终预训练损失 L(N,D) 最小，并输出最优分配 N_opt(C)、D_opt(C)；约束为 FLOPs(N,D)=C (E016, E017)。三条路线都先训练一组同时改变 N 与 D 的模型，再用训练曲线拟合经验缩放关系，并假定 compute 与模型规模呈 power law (E037)。\n\nApproach 1 固定 70M 到 10B 以上的若干模型族，每个模型用 4 种训练序列数训练 (E047)。它先平滑、插值每条 loss 曲线，得到 FLOP 数到 loss 的连续映射，再在 1500 个对数间隔 FLOP 值上取最低 loss 对应的 N 与 D (E048, E049)。随后拟合 N_opt∝C^a、D_opt∝C^b，得到 a=0.50、b=0.50 (E051)。\n\nApproach 2 做 IsoFLOP profiles：固定 9 个训练 FLOPs 预算，改变模型规模并记录最终 loss，使每个预算下可比较不同 N (E055, E057)。对每条 IsoFLOP 曲线拟合 parabola 以定位 loss 最低点，再用这些最低点拟合 power law，得到 a=0.49、b=0.51 (E067, E069)。\n\nApproach 3 把所有最终 loss 写成参数化的 L̂(N,D)：一项对应理想生成过程的 loss，一项表示 N 个参数的 transformer 即使训练充分也偏离理想过程，末项表示只在数据分布样本上做有限优化步数、未训练到收敛 (E071, E075)。参数通过最小化预测 log loss 与观测 log loss 之间的 Huber loss 来拟合，优化器为 L-BFGS，并从多组初始化中取最佳拟合以避免局部最优 (E076, E078)。在 FLOPs(N,D)≈6ND 约束下最小化该参数化 loss，可解析得到 efficient frontier，指数为 a=0.46、b=0.54 (E088, E091)。\n\n三种方法虽使用不同拟合流程和不同训练模型，却给出相近结论：compute 增加时 N 与 D 应近似等比例增加 (E093)。上述流程属于预训练：先训练大量不同 N、D 的模型来估计分配，再按预测的 N_opt、D_opt 训练最终模型 (E037, E020)。作为验证，作者按该前沿训练 70B 的 Chinchilla、使用 1.4T tokens (E020, E026)。它沿用 Gopher 的架构与训练设置 (E116)。数据子集分布略有不同，并改用 AdamW (E117, E118)。tokenizer 采用不做 NFKC normalisation 的版本 (E120)。训练时仍在前反向使用 bfloat16 计算，并在分布式优化器状态中保留 float32 权重副本 (E121)。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E016",
+                  "E017",
+                  "E037",
+                  "E047",
+                  "E048",
+                  "E049",
+                  "E051",
+                  "E055",
+                  "E057",
+                  "E067",
+                  "E069",
+                  "E071",
+                  "E075",
+                  "E076",
+                  "E078",
+                  "E088",
+                  "E091",
+                  "E093",
+                  "E020",
+                  "E026",
+                  "E116",
+                  "E117",
+                  "E118",
+                  "E120",
+                  "E121"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "contributions_novelty",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "作者将固定 FLOPs 下规模—token 权衡写成约束最小化，估计 N_opt(C)、D_opt(C)。E016 E017 结论是二者近似同比例扩展，而非 Kaplan et al. (2020) 的偏重增大模型。E004",
+                "claimKind": "author_claim",
+                "sources": [
+                  "E004",
+                  "E016",
+                  "E017"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "估计基于 400 多个、70M 以下至 16B 以上、5B–400B token 的模型。E019 作者令学习率 schedule 匹配 token 数，并纳入更大模型。E029 E031",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E019",
+                  "E029",
+                  "E031"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "Gopher 预算下，Chinchilla 以 70B、1.4T token 优于更大的 Gopher 并降低 inference 成本。E020",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E020"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "70B 验证跨出 16B 拟合范围。E019 E020 适用边界是 dense transformer 与该 compute 预算。E020 E028",
+                "claimKind": "inference",
+                "sources": [
+                  "E019",
+                  "E020",
+                  "E028"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "experiments_ablations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "Chinchilla对比Gopher等，在Rae et al.任务代表性子集上评测[E136]。MMLU 5-shot平均67.6%，较Gopher高7.6%[E153]；BIG-bench 62任务均分65.1%对54.4%[E158]。Pile各子集bpb均优[E145]；Wikitext103多4倍数据有泄漏风险[E146]。所给摘录未见移除/替换模块消融。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E136",
+                  "E153",
+                  "E158",
+                  "E145",
+                  "E146"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "limitations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "仅有两组大尺度可比训练（Chinchilla 与 Gopher），缺少中间规模验证；且分析均不足一个 epoch，幂律假设在高算力下或高估最优规模（E201）。",
+                "claimKind": "inference",
+                "sources": [
+                  "E201"
+                ]
+              }
+            ]
+          }
+        ],
+        "uncertainties": []
+      }
+    },
+    "candidate-final": {
+      "three": {
+        "items": [
+          {
+            "text": "在固定 FLOPs 预算下，作者训练覆盖 70M 至 16B 参数、5B 至 500B tokens 的 400 多个 language model，并用训练曲线拟合经验估计器，发现模型规模与训练 tokens 应大致等比例扩展。",
+            "sources": [
+              "S01",
+              "S02",
+              "S04"
+            ]
+          },
+          {
+            "text": "据此预测并用 1.4 trillion tokens 训练 70B 的 Chinchilla，在与 Gopher 相同计算预算下，以更小模型超过 Gopher，并降低 inference 成本、便于下游使用。",
+            "sources": [
+              "S01",
+              "S03"
+            ]
+          },
+          {
+            "text": "在评估中，Chinchilla 于 MMLU 达到 67.5% 的平均准确率，比 Gopher 高 7% 以上；在 Natural Questions 上取得 31.5% 5-shot 与 35.5% 64-shot 的 closed-book SOTA 准确率。",
+            "sources": [
+              "S01",
+              "S08"
+            ]
+          }
+        ]
+      },
+      "detailed": {
+        "kind": "detailed",
+        "sections": [
+          {
+            "id": "problem_motivation",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "固定FLOPs预算下，模型规模与训练token应如何权衡？E015 E016 既有大模型约训练300B token、主要扩规模，而作者估计二者应按相等比例扩展。E005 E004",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E015",
+                  "E016",
+                  "E005",
+                  "E004"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "method",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "任务可概括为：给定训练预算 C（以 FLOPs 计），输出使最终预训练损失最小的模型参数量 N_opt(C) 与训练 token 数 D_opt(C)。形式化为在 FLOPs(N,D)=C 下最小化 L(N,D)；作者把 L 视为 N、D 的函数并用实验拟合这一分配 [E016][E017]。分析以平滑训练损失作为测试损失的无偏估计，前提是训练 token 数少于整个语料 token 数（无限数据 regime）[E021]。\n\n三条估计路径共享同一数据流：先训练一批同时改变模型规模与训练 token 数的模型，记录损失曲线，再外推幂律 [E037]。Approach 1 固定 70M 到 10B 的若干模型族，每个模型训练 4 个不同 token 预算的 horizon [E047][E048]。对每条训练损失曲线平滑、插值，得到 FLOPs 到损失的连续映射，在 1500 个对数间隔 FLOP 点上取损失最低的模型及其所需 token 数，最后拟合 N_opt∝C^a、D_opt∝C^b，得到 a=0.50、b=0.50 [E049][E051]。\n\nApproach 2 反过来固定 9 个 FLOPs 预算（6×10^18 到 3×10^21），在每个预算下改变模型规模（最大到 16B），只取训练末端损失，并把 cosine schedule 长度设成与 token 数一致 [E055][E057][E059]。对每条 IsoFLOP 曲线拟合抛物线找谷底，得到该预算的最优参数量 [E064][E067]。再对谷底拟合幂律，得 a=0.49、b=0.51 [E069]。\n\nApproach 3 把所有 Approach 1、2 的末端损失合并，拟合参数化损失 L̂(N,D)=E+A/N^α+B/D^β：E 对应数据分布的理想生成损失（自然文本熵），A/N^α 表示有限参数 transformer 相对理想过程的差距，B/D^β 表示有限优化步数、只在数据分布样本上训练造成的未收敛损失 [E071][E075]。用 Huber loss 比较预测与观测的 log loss，以 L-BFGS 并多组初值取最优来估 A、B、E、α、β [E076][E078]。再在 FLOPs≈6ND 约束下最小化 L̂，得到闭式 N_opt、D_opt，指数 a=0.46、b=0.54 [E088][E091]。三法结果一致：预算增加时参数与 token 应按近似相等比例扩张，而不是只放大模型；Table 2 的指数也显示 a、b 接近 0.5 [E038][E093][E103]。\n\n实际训练/使用上，拟合阶段用各规模模型和不同训练 horizon 产生曲线 [E019]。得到 frontier 后，给定 C 可按 N_opt(C)、D_opt(C) 选型，并用 Chinchilla 验证：在 Gopher 的预算下取 70B、1.4T token [E020][E026]。Chinchilla 沿用 Gopher 架构与训练设置 [E116]。但使用 MassiveText 的调整子集分布、AdamW、以及不做 NFKC 归一化的 SentencePiece [E117][E118][E120]。前向/反向用 bfloat16，分布式优化器状态保留 float32 权重副本 [E121]。",
+                "claimKind": "source_fact",
+                "sources": [
+                  "E016",
+                  "E017",
+                  "E019",
+                  "E020",
+                  "E021",
+                  "E026",
+                  "E037",
+                  "E038",
+                  "E047",
+                  "E048",
+                  "E049",
+                  "E051",
+                  "E055",
+                  "E057",
+                  "E059",
+                  "E064",
+                  "E067",
+                  "E069",
+                  "E071",
+                  "E075",
+                  "E076",
+                  "E078",
+                  "E088",
+                  "E091",
+                  "E093",
+                  "E103",
+                  "E116",
+                  "E117",
+                  "E118",
+                  "E120",
+                  "E121"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "contributions_novelty",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "作者在固定 FLOPs 预算下拟合 L(N,D)，并用 400 多个模型估计 N_opt(C)、D_opt(C)。",
+                "claimKind": "author_claim",
+                "sources": [
+                  "E016",
+                  "E017",
+                  "E019"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "其结论是模型规模与 token 数应大致同比例扩张，区别于 Kaplan et al. (2020) 的 5.5 倍对 1.8 倍建议。",
+                "claimKind": "author_claim",
+                "sources": [
+                  "E004",
+                  "E031"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "70B Chinchilla 用 1.4 万亿 token 训练，实验显示胜过 280B Gopher，并降低推理成本。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E020",
+                  "E025",
+                  "E026"
+                ]
+              },
+              {
+                "type": "paragraph",
+                "text": "该外推基于 70M–16B、5B–400B token 网格，超出范围需谨慎。",
+                "claimKind": "inference",
+                "sources": [
+                  "E019"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "experiments_ablations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "在 The Pile 子集及 MMLU、BIG-bench 等上，Chinchilla 与 Gopher、GPT-3、MT-NLG 530B 比较；MMLU 5-shot 67.6%（Gopher 60.0%），BIG-bench 平均 65.1% vs 54.4%。所给原文没有模块移除/替换消融，不能据此判断各组件贡献。",
+                "claimKind": "observed_result",
+                "sources": [
+                  "E146",
+                  "E153",
+                  "E158",
+                  "E167"
+                ]
+              }
+            ]
+          },
+          {
+            "id": "limitations",
+            "status": "available",
+            "blocks": [
+              {
+                "type": "paragraph",
+                "text": "大规模可比训练仅 Chinchilla 与 Gopher 两次，缺少中间规模测试；幂律拟合在高算力下呈凹性，可能高估最优规模 E201。",
+                "claimKind": "inference",
+                "sources": [
+                  "E201"
+                ]
+              }
+            ]
+          }
+        ],
+        "uncertainties": []
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "name": "SAM",
+    "arxiv": "2304.02643",
+    "documentVersion": "sha256:c6ca524e47200c3e542587ca76ac1dbc89cc67340f948c819250d16fdbd90cfb",
+    "pages": 30
+  },
+  {
+    "name": "Attention",
+    "arxiv": "1706.03762",
+    "documentVersion": "sha256:bdfaa68d8984f0dc02beaca527b76f207d99b666d31d1da728ee0728182df697",
+    "pages": 15
+  },
+  {
+    "name": "VideoMME",
+    "arxiv": "2405.21075",
+    "documentVersion": "sha256:81272de466da51ca55471ef58522fa5911fb802fba843780d8253d27fc0aeaa2",
+    "pages": 13
+  },
+  {
+    "name": "Chinchilla",
+    "arxiv": "2203.15556",
+    "documentVersion": "sha256:3fd3632a8ef48171bd25282990221d49535d75356192f068b3b2ebe08f2aedd4",
+    "pages": 36
+  }
+]

@@ -328,6 +328,26 @@ function quoteDedupeKey(candidate: EvidenceCandidate): string {
   return candidate.quote.trim().replace(/\s+/g, ' ').toLocaleLowerCase();
 }
 
+/** Register complete, already selected body paragraphs without truncating their source text. */
+export function createParagraphEvidencePacket(ledger: EvidenceLedger, paragraphs: readonly EvidencePassage[]): EvidencePacket {
+  const current = new Set(ledger.candidates);
+  for (const paragraph of paragraphs) {
+    if (!paragraph.text.trim() || !paragraph.members.length || paragraph.members.some(member => !current.has(member.candidate))) {
+      throw new Error('A paragraph packet must contain anchored passages from this exact current PDF ledger.');
+    }
+  }
+  const packet: EvidencePacket = {
+    purpose: 'three_line', coverage: ledger.coverage, coverageHints: coverageHints(ledger),
+    sources: paragraphs.map((paragraph, index) => ({
+      alias: `S${String(index + 1).padStart(2, '0')}`,
+      slot: paragraph.members[0].candidate.slot, section: paragraph.sectionTitle,
+      excerpt: paragraph.text, precision: paragraph.members[0].candidate.precision, coverage: ledger.coverage,
+    })),
+  };
+  mappings.set(packet, new Map(packet.sources.map((source, index) => [source.alias, paragraphs[index]])));
+  return packet;
+}
+
 /**
  * Creates a bounded model-facing packet while retaining an in-memory mapping
  * to the original local candidates. The mapping is deliberately not exposed

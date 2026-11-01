@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { generateDetailedOverview } from './detailedOverviewPipeline';
+import { generateIndependentDetailedOverview as generateDetailedOverview } from './detailedOverviewPipeline';
 import { pageBlocksFromTextContent } from './pdfPageBlocks';
 import { locateEvidenceCandidate, pdfEvidenceLedgerFromPages } from './evidenceLedger';
 import { createDetailedEvidenceLedger, createStructuredPaper } from './structuredPaper';
@@ -24,7 +24,7 @@ function completion(request: CompatibleRequest) {
   const sources = payload(request).newSources.map(source => source.alias);
   return { content: JSON.stringify({ status: 'available', text: `完整解释 ${sources[0]}。`, sources }), usage: { promptTokens: 100, completionTokens: 50 } };
 }
-describe('complete chapter overview pipeline', () => {
+describe('independent complete chapter overview pipeline', () => {
   it('publishes each completed column before later requests with detached immutable anchors', async () => {
     const snapshots: Array<readonly DetailedOverviewSection[]> = [];
     const output = await generateDetailedOverview({ ...fixture(5, true), config,

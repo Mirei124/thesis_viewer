@@ -13,7 +13,7 @@ import type { PageExtraction } from './pdfPageBlocks';
 import type { VerifiedEvidenceRef } from './inlineEvidence';
 
 export const DETAILED_OVERVIEW_PROMPT_VERSION = 'research-detailed-overview-zh-v4';
-export const PROGRESSIVE_DETAILED_OVERVIEW_PROMPT_VERSION = 'research-detailed-overview-zh-v20';
+export const PROGRESSIVE_DETAILED_OVERVIEW_PROMPT_VERSION = 'research-detailed-overview-zh-v21';
 
 export const DETAILED_SECTION_IDS = [
   'problem_motivation', 'method', 'contributions_novelty', 'experiments_ablations', 'limitations',

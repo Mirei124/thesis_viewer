@@ -1,3 +1,4 @@
+import { generateSharedDetailedOverview } from './detailedOverviewShared';
 import type { ChatMessage, CompatibleRequest, CompatibleResponse, CompatibleUsage } from './compatibleProvider';
 import type { EvidenceLedger } from './evidenceLedger';
 import type { PageExtraction } from './pdfPageBlocks';
@@ -130,7 +131,7 @@ async function prepareBatches(id: DetailedSectionId, selection: DetailedContextS
 }
 
 /** Chapter coverage and anchor validation are local guarantees; factual correctness still requires source review. */
-export async function generateDetailedOverview(options: DetailedOverviewPipelineOptions): Promise<{ result: DetailedOverview; diagnostics: DetailedPipelineDiagnostic[] }> {
+export async function generateIndependentDetailedOverview(options: DetailedOverviewPipelineOptions): Promise<{ result: DetailedOverview; diagnostics: DetailedPipelineDiagnostic[] }> {
   const { pages, config, signal, request, onUsage } = options;
   checkAbort(signal);
   const ledger = createDetailedEvidenceLedger(options.ledger, pages);
@@ -298,4 +299,9 @@ export async function generateDetailedOverview(options: DetailedOverviewPipeline
     await publishCompleted();
   }
   return { result: assembleDetailedOverview(sections), diagnostics };
+}
+
+/** Default path reuses original-source prefixes; fallback never calls this wrapper recursively. */
+export async function generateDetailedOverview(options: DetailedOverviewPipelineOptions): Promise<{ result: DetailedOverview; diagnostics: DetailedPipelineDiagnostic[] }> {
+  return generateSharedDetailedOverview(options, generateIndependentDetailedOverview);
 }

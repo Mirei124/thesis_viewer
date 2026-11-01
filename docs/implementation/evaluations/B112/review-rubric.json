@@ -1,0 +1,390 @@
+{
+  "status": "frozen_before_anonymous_outputs",
+  "version": 1,
+  "scope": "独立原文审查；未见任何A/B输出、未调用模型API；PDF物理页码从1起；仅正文核心机制，不要求附录。",
+  "scoring": {
+    "errors": {
+      "major": "改变核心对象、机制、因果、比较条件、训练/推理边界或主要结果含义；按独立错误计，重复同一误解仅计一次。",
+      "minor": "局部不准确且不改变主线；遗漏单独记coverage，不自动算事实错误。"
+    },
+    "coverage": {
+      "0": "缺失或被错误叙述替代",
+      "1": "正确提及对象/名称/结论",
+      "2": "解释其作用、联系、流程或条件；三行中准确的紧凑贡献说明亦可为2"
+    },
+    "method_retellability": {
+      "1": "无法复述或主线错误",
+      "2": "知道名词但关键输入/步骤/输出断裂",
+      "3": "可复述主线，关键模块仍有缺口",
+      "4": "可按顺序解释主要机制及模块作用",
+      "5": "机制完整清晰，关键条件/边界准确，适合首次读者"
+    },
+    "three_line_complementarity": {
+      "1": "基本重复或主线错误",
+      "2": "明显重复且重要贡献缺失",
+      "3": "部分互补但分配失衡",
+      "4": "三项各承担不同且有依据的贡献",
+      "5": "紧凑覆盖论文主要贡献层次且无明显冗余"
+    },
+    "rules": [
+      "篇幅本身不加分；方法软目标1000–1400可见字符，只要求核心机制。",
+      "下列点为覆盖证据地图，不要求每项全部展开，也不强制三行逐项列满。",
+      "每段核对claim与引用支持强度：直接支持/合理概括/部分支持/不支持/相矛盾；可定位不等于entailment。",
+      "公式并非强制；若出现必须正确解释关键变量和约束。",
+      "不因未写实验参数、优化器、全部数据集或全部消融硬扣分；未提供的细节不臆造。",
+      "先独立评分再比较；不根据文件长度、措辞或猜测版本身份调整标准。"
+    ]
+  },
+  "papers": {
+    "sam": {
+      "source": ".local-cache/papers/2304.02643/sam.pdf",
+      "version": "2304.02643v1",
+      "three_line_core": [
+        {
+          "id": "S-C1",
+          "claim": "提出promptable segmentation任务，含歧义提示仍返回合理mask，用于零样本迁移",
+          "pdf_page": 2,
+          "quote": "return a valid segmentation mask given any segmentation prompt"
+        },
+        {
+          "id": "S-C2",
+          "claim": "SAM将重图像编码与轻prompt/mask解码分离，并输出多mask处理歧义",
+          "pdf_page": 2,
+          "quote": "the same image embedding can be reused"
+        },
+        {
+          "id": "S-C3",
+          "claim": "模型在环三阶段data engine构建SA-1B，11M图像/约1.1B mask",
+          "pdf_page": 2,
+          "quote": "assisted-manual, semi-automatic, and fully automatic"
+        },
+        {
+          "id": "S-C4",
+          "claim": "以跨分布/多下游任务零样本评测验证通用性，非所有任务全面超越",
+          "pdf_page": 2,
+          "quote": "under a zero-shot transfer protocol"
+        }
+      ],
+      "method_core": [
+        {
+          "id": "S-M1",
+          "claim": "输入图像和指定目标的点/框/mask提示，输出有效分割；歧义允许多个合理对象",
+          "pdf_page": 4,
+          "quote": "reasonable mask for at least one of those objects"
+        },
+        {
+          "id": "S-M2",
+          "claim": "MAE预训练ViT一次处理图像，embedding供反复提示复用",
+          "pdf_page": 5,
+          "quote": "The image encoder runs once per image"
+        },
+        {
+          "id": "S-M3",
+          "claim": "稀疏点/框用位置编码+类型embedding，dense mask卷积后加到image embedding",
+          "pdf_page": 5,
+          "quote": "Dense prompts (i.e., masks) are embedded using convolutions"
+        },
+        {
+          "id": "S-M4",
+          "claim": "轻decoder用prompt自注意力和双向cross attention融合图像/提示",
+          "pdf_page": 5,
+          "quote": "cross-attention in two directions"
+        },
+        {
+          "id": "S-M5",
+          "claim": "上采样图像特征，输出token经MLP形成动态分类器生成逐位置mask",
+          "pdf_page": 5,
+          "quote": "dynamic linear classifier"
+        },
+        {
+          "id": "S-M6",
+          "claim": "多mask解决歧义；训练仅对最小mask损失回传；预测IoU分数排名",
+          "pdf_page": 5,
+          "quote": "backprop only the minimum"
+        },
+        {
+          "id": "S-M7",
+          "claim": "focal+dice监督，模拟交互提示序列训练",
+          "pdf_page": 5,
+          "quote": "simulate an interactive setup"
+        },
+        {
+          "id": "S-M8",
+          "claim": "data engine人工辅助→半自动补遗漏对象→全自动grid提示",
+          "pdf_page": 5,
+          "quote": "three stages"
+        },
+        {
+          "id": "S-M9",
+          "claim": "全自动对grid点产生多mask，用IoU/稳定性筛选、NMS去重，多crop补小物体",
+          "pdf_page": 6,
+          "quote": "selected only stable masks"
+        }
+      ],
+      "pitfalls": [
+        "约50ms仅在图像embedding预计算之后的prompt encoder+decoder，不是整幅图像端到端。",
+        "text只是初步探索；主要训练/发布能力围绕几何提示，不夸大成熟任意文本分割。",
+        "三种mask是歧义替代候选，不是固定三类语义标签；最小loss是候选间选择。",
+        "SA-1B最终只含自动生成mask；早期人工环用于发展模型。",
+        "零样本可通过与现有detector组合实现，不等于SAM独立提供语义类别识别。"
+      ]
+    },
+    "attention": {
+      "source": ".local-cache/papers/1706.03762/attention.pdf",
+      "version": "1706.03762v7",
+      "three_line_core": [
+        {
+          "id": "T-C1",
+          "claim": "提出无递归/卷积的Transformer encoder-decoder，以attention建模依赖",
+          "pdf_page": 1,
+          "quote": "dispensing with recurrence and convolutions entirely"
+        },
+        {
+          "id": "T-C2",
+          "claim": "scaled dot-product、多头及位置信息构成并行表示建模机制",
+          "pdf_page": 4,
+          "quote": "Multi-Head Attention consists of several attention layers running in parallel"
+        },
+        {
+          "id": "T-C3",
+          "claim": "翻译质量与训练效率改进，EN-DE28.4/EN-FR41.8；可提及解析迁移",
+          "pdf_page": 1,
+          "quote": "more parallelizable and requiring significantly less time to train"
+        }
+      ],
+      "method_core": [
+        {
+          "id": "T-M1",
+          "claim": "输入token embedding加位置编码形成带序列顺序的表示",
+          "pdf_page": 6,
+          "quote": "add \"positional encodings\" to the input embeddings"
+        },
+        {
+          "id": "T-M2",
+          "claim": "encoder堆叠多头self attention与逐位置FFN",
+          "pdf_page": 3,
+          "quote": "two sub-layers"
+        },
+        {
+          "id": "T-M3",
+          "claim": "QK点积除sqrt(dk)，softmax权重对V加权；缩放避免大点积使梯度过小",
+          "pdf_page": 4,
+          "quote": "pushing the softmax function into regions where it has extremely small gradients"
+        },
+        {
+          "id": "T-M4",
+          "claim": "各头独立学习Q/K/V投影，并行attention，拼接后输出投影，捕获不同子空间/位置",
+          "pdf_page": 5,
+          "quote": "different representation subspaces at different positions"
+        },
+        {
+          "id": "T-M5",
+          "claim": "decoder masked self attention配合右移目标输入防看未来",
+          "pdf_page": 3,
+          "quote": "output embeddings are offset by one position"
+        },
+        {
+          "id": "T-M6",
+          "claim": "cross attention的query来自decoder，K/V来自encoder，关联源序列",
+          "pdf_page": 5,
+          "quote": "memory keys and values come from the output of the encoder"
+        },
+        {
+          "id": "T-M7",
+          "claim": "各子层残差连接后LayerNorm；FFN逐位置共享，两层线性含ReLU",
+          "pdf_page": 3,
+          "quote": "LayerNorm(x + Sublayer(x))"
+        },
+        {
+          "id": "T-M8",
+          "claim": "decoder线性+softmax预测next token，推理自回归逐个生成",
+          "pdf_page": 2,
+          "quote": "generates an output sequence ... one element at a time"
+        },
+        {
+          "id": "T-M9",
+          "claim": "self attention缩短远距依赖路径、训练位置可并行；二次序列复杂度并非免费",
+          "pdf_page": 6,
+          "quote": "O(n2 · d)"
+        }
+      ],
+      "pitfalls": [
+        "训练并行不等于推理所有输出token同时生成。",
+        "encoder self attention、decoder masked self attention、cross attention三者QKV来源不同。",
+        "原论文为post-LN，不把现代pre-LN/RoPE/GQA/KV cache当作论文提出。",
+        "不将attention-only理解为不存在FFN或输出线性层。",
+        "正弦位置允许外推是作者假设，不是已证明无限长泛化。"
+      ]
+    },
+    "video-mme": {
+      "source": ".local-cache/papers/2405.21075/video-mme.pdf",
+      "version": "2405.21075v3",
+      "three_line_core": [
+        {
+          "id": "V-C1",
+          "claim": "构建覆盖6域30类别、短中长视频的综合视频理解benchmark",
+          "pdf_page": 1,
+          "quote": "6 primary visual domains with 30 subfields"
+        },
+        {
+          "id": "V-C2",
+          "claim": "900视频2700人工四选一QA，覆盖字幕/音频并严格质量审查",
+          "pdf_page": 2,
+          "quote": "2,700 high-quality multiple-choice questions (3 per video)"
+        },
+        {
+          "id": "V-C3",
+          "claim": "统一评测开放/闭源、图像/视频MLLM，分析模态及长度瓶颈",
+          "pdf_page": 2,
+          "quote": "a general decline in MLLM performance with increasing video length"
+        }
+      ],
+      "method_core": [
+        {
+          "id": "V-M1",
+          "claim": "先定义domain-tag层级，从YouTube人工收集跨类别视频",
+          "pdf_page": 4,
+          "quote": "domain hierarchy for sourcing raw videos from YouTube"
+        },
+        {
+          "id": "V-M2",
+          "claim": "按短<2min、中4–15min、长30–60min分层，避免只测短片",
+          "pdf_page": 4,
+          "quote": "short (< 2 minutes), medium (4-15 minutes), and long videos (30-60 minutes)"
+        },
+        {
+          "id": "V-M3",
+          "claim": "保存对应字幕与音轨；744有字幕、900有音频，非全部都有字幕",
+          "pdf_page": 4,
+          "quote": "744 videos with subtitles and all 900 with audios"
+        },
+        {
+          "id": "V-M4",
+          "claim": "熟练annotator完整观看每视频，三问题各四选项，任务跨感知/推理/信息综合",
+          "pdf_page": 4,
+          "quote": "thoroughly viewing the entire video"
+        },
+        {
+          "id": "V-M5",
+          "claim": "另一annotator检查清晰度、可回答性、选项逻辑及正确答案",
+          "pdf_page": 4,
+          "quote": "examination by a different annotator"
+        },
+        {
+          "id": "V-M6",
+          "claim": "Gemini text-only筛掉无需视频即可回答问题，不合格返工",
+          "pdf_page": 4,
+          "quote": "filter out QA pairs that can be answered solely based on the textual questions"
+        },
+        {
+          "id": "V-M7",
+          "claim": "certificate为足以且必要让人验证答案的最小视频子片段集合；length为这些片段时长之和，用来分析时间难度",
+          "pdf_page": 5,
+          "quote": "sum of the temporal lengths of the sub-clips identified"
+        },
+        {
+          "id": "V-M8",
+          "claim": "按官方配置评测视频及多图像MLLM，比较回答选项正确率、时长组、字幕有无",
+          "pdf_page": 6,
+          "quote": "settings of “without subtitles” and “with subtitles”"
+        }
+      ],
+      "pitfalls": [
+        "论文贡献是评测基准/构建与分析，不是新视频编码器、Q-Former或训练架构；related work不可当本方法。",
+        "全程人工QA构建，Gemini用于过滤而非自动生成全部题目。",
+        "音频/字幕增益来自特定模型设置，不能说所有模型等幅提升。",
+        "75% Gemini1.5Pro/71.9% GPT4o对应无字幕；有字幕81.3/77.2。",
+        "长视频性能下降为本benchmark观察，不能无条件断言时长因果或所有领域的普遍定理。",
+        "certificate length不是视频总长，也非模型token context窗口。"
+      ]
+    },
+    "chinchilla": {
+      "source": ".local-cache/papers/2203.15556/chinchilla.pdf",
+      "version": "2203.15556v1",
+      "three_line_core": [
+        {
+          "id": "C-C1",
+          "claim": "研究固定训练FLOPs预算下参数N与token D的最优分配，用400余训练模型实证",
+          "pdf_page": 2,
+          "quote": "minimizing L under the constraint"
+        },
+        {
+          "id": "C-C2",
+          "claim": "三种拟合均支持N与D随算力约等比例增加，纠正仅扩大模型而数据固定",
+          "pdf_page": 4,
+          "quote": "parameter count and number of training tokens should be increased equally"
+        },
+        {
+          "id": "C-C3",
+          "claim": "同Gopher训练预算训练70B/1.4T Chinchilla，以更小模型更多数据验证更好下游表现",
+          "pdf_page": 2,
+          "quote": "70B model, called Chinchilla, on 1.4 trillion tokens"
+        },
+        {
+          "id": "C-C4",
+          "claim": "更小模型降低后续推理/微调成本，非减少该对照训练预算",
+          "pdf_page": 1,
+          "quote": "less compute for fine-tuning and inference"
+        }
+      ],
+      "method_core": [
+        {
+          "id": "C-M1",
+          "claim": "以N参数、D见过token、C计算预算建模最终预训练loss，约束下求最小",
+          "pdf_page": 2,
+          "quote": "L ( N, D)"
+        },
+        {
+          "id": "C-M2",
+          "claim": "扫描模型大小和训练时长，400余模型提供训练曲线/终点数据",
+          "pdf_page": 2,
+          "quote": "losses of over 400 models"
+        },
+        {
+          "id": "C-M3",
+          "claim": "学习率cosine schedule匹配目标训练token数，避免固定长schedule中间loss偏估",
+          "pdf_page": 3,
+          "quote": "schedule to approximately match the number of training tokens"
+        },
+        {
+          "id": "C-M4",
+          "claim": "方法1对多模型多horizon曲线平滑/插值，取每FLOP最低loss包络，再拟合Nopt/Dopt幂律",
+          "pdf_page": 5,
+          "quote": "envelope of minimal loss per FLOP"
+        },
+        {
+          "id": "C-M5",
+          "claim": "方法2固定FLOPs改变N，相应调整D，用最终loss对N曲线谷值推最优，再跨预算拟合",
+          "pdf_page": 6,
+          "quote": "fit a parabola to each IsoFLOPs curve"
+        },
+        {
+          "id": "C-M6",
+          "claim": "方法3拟合E+A/N^alpha+B/D^beta，分别表示不可约/模型容量/有限数据训练损失",
+          "pdf_page": 6,
+          "quote": "L̂( N, D) ... E +"
+        },
+        {
+          "id": "C-M7",
+          "claim": "参数拟合后在C≈6ND约束下最优化，获得近半半幂律；三方法近似一致而非精确相同",
+          "pdf_page": 7,
+          "quote": "FLOPs( N, D) ≈ 6 N D"
+        },
+        {
+          "id": "C-M8",
+          "claim": "外推Gopher预算并训练70B/1.4T对照280B Gopher，做下游评测验证",
+          "pdf_page": 2,
+          "quote": "4 times smaller ... 4 times more tokens"
+        }
+      ],
+      "pitfalls": [
+        "等比例指随训练计算预算增长N与D的缩放率近似相同，不是N=D或算力增倍时二者各增倍。",
+        "训练token不是唯一文档数量；1.4T是tokens。",
+        "更少参数的训练对照保持总FLOPs约相同，推理成本降低是后续优势。",
+        "三种法第三法预测更小模型，不能说三种精确预测同一70B。",
+        "compute-optimal按给定训练预算和经验loss定义，不涵盖所有部署成本、架构、数据质量条件。",
+        "不把拟合经验规律说成数学定理或所有规模永恒最优。"
+      ]
+    }
+  }
+}

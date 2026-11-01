@@ -1,0 +1,22 @@
+[
+  {
+    "name": "SAM",
+    "match": true,
+    "sources": 7
+  },
+  {
+    "name": "Attention",
+    "match": true,
+    "sources": 8
+  },
+  {
+    "name": "VideoMME",
+    "match": true,
+    "sources": 7
+  },
+  {
+    "name": "Chinchilla",
+    "match": true,
+    "sources": 8
+  }
+]

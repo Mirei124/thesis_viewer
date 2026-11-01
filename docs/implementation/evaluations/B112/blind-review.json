@@ -1,0 +1,2299 @@
+{
+  "rubric": "review-rubric.json",
+  "blind_integrity": "仅读取manifest所列8份匿名文件、其源输入/支持成员与原PDF；未查看private映射、baseline/candidate、日志；冻结标准未修改。",
+  "counting": "错误按独立误解计；同一文件同一条件省略跨段重复不叠加。coverage仅方法栏/三行本身评分，不借其他栏目补齐。",
+  "files": [
+    {
+      "file": "f29e9999.json",
+      "paper": "sam",
+      "three": {
+        "errors": [],
+        "error_counts": {
+          "major": 0,
+          "minor": 0
+        },
+        "coverage": {
+          "S-C1": {
+            "score": 2,
+            "criterion": "提出promptable segmentation任务，含歧义提示仍返回合理mask，用于零样本迁移",
+            "evidence_page": 2
+          },
+          "S-C2": {
+            "score": 2,
+            "criterion": "SAM将重图像编码与轻prompt/mask解码分离，并输出多mask处理歧义",
+            "evidence_page": 2
+          },
+          "S-C3": {
+            "score": 2,
+            "criterion": "模型在环三阶段data engine构建SA-1B，11M图像/约1.1B mask",
+            "evidence_page": 2
+          },
+          "S-C4": {
+            "score": 1,
+            "criterion": "以跨分布/多下游任务零样本评测验证通用性，非所有任务全面超越",
+            "evidence_page": 2
+          }
+        },
+        "coverage_total": 7,
+        "coverage_max": 8,
+        "complementarity": 5,
+        "item_entailment_audit": [
+          {
+            "item_index": 0,
+            "sources": [
+              "S03",
+              "S02"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          },
+          {
+            "item_index": 1,
+            "sources": [
+              "S04",
+              "S07"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          },
+          {
+            "item_index": 2,
+            "sources": [
+              "S05",
+              "S01",
+              "S06"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          }
+        ]
+      },
+      "method": {
+        "errors": [],
+        "error_counts": {
+          "major": 0,
+          "minor": 0
+        },
+        "coverage": {
+          "S-M1": {
+            "score": 2,
+            "criterion": "输入图像和指定目标的点/框/mask提示，输出有效分割；歧义允许多个合理对象",
+            "evidence_page": 4
+          },
+          "S-M2": {
+            "score": 2,
+            "criterion": "MAE预训练ViT一次处理图像，embedding供反复提示复用",
+            "evidence_page": 5
+          },
+          "S-M3": {
+            "score": 2,
+            "criterion": "稀疏点/框用位置编码+类型embedding，dense mask卷积后加到image embedding",
+            "evidence_page": 5
+          },
+          "S-M4": {
+            "score": 2,
+            "criterion": "轻decoder用prompt自注意力和双向cross attention融合图像/提示",
+            "evidence_page": 5
+          },
+          "S-M5": {
+            "score": 2,
+            "criterion": "上采样图像特征，输出token经MLP形成动态分类器生成逐位置mask",
+            "evidence_page": 5
+          },
+          "S-M6": {
+            "score": 2,
+            "criterion": "多mask解决歧义；训练仅对最小mask损失回传；预测IoU分数排名",
+            "evidence_page": 5
+          },
+          "S-M7": {
+            "score": 2,
+            "criterion": "focal+dice监督，模拟交互提示序列训练",
+            "evidence_page": 5
+          },
+          "S-M8": {
+            "score": 2,
+            "criterion": "data engine人工辅助→半自动补遗漏对象→全自动grid提示",
+            "evidence_page": 5
+          },
+          "S-M9": {
+            "score": 2,
+            "criterion": "全自动对grid点产生多mask，用IoU/稳定性筛选、NMS去重，多crop补小物体",
+            "evidence_page": 6
+          }
+        },
+        "coverage_total": 18,
+        "coverage_max": 18,
+        "retellability": 5
+      },
+      "other_sections": {
+        "errors": [],
+        "error_counts": {
+          "major": 0,
+          "minor": 0
+        }
+      },
+      "paragraph_entailment_audit": [
+        {
+          "section": "problem_motivation",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E007",
+            "E008",
+            "E010",
+            "E011"
+          ],
+          "member_count_read_together": 97,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "method",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E019",
+            "E008",
+            "E034",
+            "E035",
+            "E036",
+            "E037",
+            "E038",
+            "E039",
+            "E041",
+            "E042",
+            "E043",
+            "E045",
+            "E021",
+            "E025"
+          ],
+          "member_count_read_together": 258,
+          "physical_pages": [
+            2,
+            4,
+            5,
+            6
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E008",
+            "E009"
+          ],
+          "member_count_read_together": 59,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 1,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E010",
+            "E011",
+            "E016"
+          ],
+          "member_count_read_together": 55,
+          "physical_pages": [
+            2,
+            3
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 2,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E013"
+          ],
+          "member_count_read_together": 15,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "experiments_ablations",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E051",
+            "E054",
+            "E072",
+            "E126",
+            "E127"
+          ],
+          "member_count_read_together": 89,
+          "physical_pages": [
+            8,
+            9,
+            11
+          ],
+          "issues": []
+        },
+        {
+          "section": "limitations",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E140",
+            "E139"
+          ],
+          "member_count_read_together": 76,
+          "physical_pages": [
+            12
+          ],
+          "issues": []
+        }
+      ],
+      "notes": "三行任务/模型/数据三层互补；跨任务零样本验证只作接口提及。方法可完整复述，文本能力需结合limitations中的探索限定阅读。",
+      "scope_notes": [
+        "“任意prompt输出valid mask”在两版中均作为论文task要求/目标阐述，未视为实测保证，因此不因这句话本身扣重大错误。",
+        "方法介绍text encoder来自原文p5；两版limitations均明确text-to-mask探索/不稳健，整体不判成熟通用文本分割错误。"
+      ]
+    },
+    {
+      "file": "aae65c62.json",
+      "paper": "sam",
+      "three": {
+        "errors": [],
+        "error_counts": {
+          "major": 0,
+          "minor": 0
+        },
+        "coverage": {
+          "S-C1": {
+            "score": 1,
+            "criterion": "提出promptable segmentation任务，含歧义提示仍返回合理mask，用于零样本迁移",
+            "evidence_page": 2
+          },
+          "S-C2": {
+            "score": 1,
+            "criterion": "SAM将重图像编码与轻prompt/mask解码分离，并输出多mask处理歧义",
+            "evidence_page": 2
+          },
+          "S-C3": {
+            "score": 2,
+            "criterion": "模型在环三阶段data engine构建SA-1B，11M图像/约1.1B mask",
+            "evidence_page": 2
+          },
+          "S-C4": {
+            "score": 2,
+            "criterion": "以跨分布/多下游任务零样本评测验证通用性，非所有任务全面超越",
+            "evidence_page": 2
+          }
+        },
+        "coverage_total": 6,
+        "coverage_max": 8,
+        "complementarity": 4,
+        "item_entailment_audit": [
+          {
+            "item_index": 0,
+            "sources": [
+              "S01",
+              "S04"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          },
+          {
+            "item_index": 1,
+            "sources": [
+              "S03",
+              "S05",
+              "S06"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          },
+          {
+            "item_index": 2,
+            "sources": [
+              "S10",
+              "S11",
+              "S12"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          }
+        ]
+      },
+      "method": {
+        "errors": [
+          {
+            "severity": "minor",
+            "claim": "每 11 轮随机采样几何 prompt",
+            "reason": "应为每个mask训练时模拟11轮随机提示；现写法变成每隔11轮采样，改变局部训练频率。",
+            "pdf_pages": [
+              5
+            ],
+            "original_evidence": "randomly sampling prompts in 11 rounds per mask",
+            "cited_aliases": [
+              "E048"
+            ]
+          }
+        ],
+        "error_counts": {
+          "major": 0,
+          "minor": 1
+        },
+        "coverage": {
+          "S-M1": {
+            "score": 2,
+            "criterion": "输入图像和指定目标的点/框/mask提示，输出有效分割；歧义允许多个合理对象",
+            "evidence_page": 4
+          },
+          "S-M2": {
+            "score": 2,
+            "criterion": "MAE预训练ViT一次处理图像，embedding供反复提示复用",
+            "evidence_page": 5
+          },
+          "S-M3": {
+            "score": 2,
+            "criterion": "稀疏点/框用位置编码+类型embedding，dense mask卷积后加到image embedding",
+            "evidence_page": 5
+          },
+          "S-M4": {
+            "score": 2,
+            "criterion": "轻decoder用prompt自注意力和双向cross attention融合图像/提示",
+            "evidence_page": 5
+          },
+          "S-M5": {
+            "score": 2,
+            "criterion": "上采样图像特征，输出token经MLP形成动态分类器生成逐位置mask",
+            "evidence_page": 5
+          },
+          "S-M6": {
+            "score": 2,
+            "criterion": "多mask解决歧义；训练仅对最小mask损失回传；预测IoU分数排名",
+            "evidence_page": 5
+          },
+          "S-M7": {
+            "score": 1,
+            "criterion": "focal+dice监督，模拟交互提示序列训练",
+            "evidence_page": 5
+          },
+          "S-M8": {
+            "score": 2,
+            "criterion": "data engine人工辅助→半自动补遗漏对象→全自动grid提示",
+            "evidence_page": 5
+          },
+          "S-M9": {
+            "score": 2,
+            "criterion": "全自动对grid点产生多mask，用IoU/稳定性筛选、NMS去重，多crop补小物体",
+            "evidence_page": 6
+          }
+        },
+        "coverage_total": 17,
+        "coverage_max": 18,
+        "retellability": 4
+      },
+      "other_sections": {
+        "errors": [],
+        "error_counts": {
+          "major": 0,
+          "minor": 0
+        }
+      },
+      "paragraph_entailment_audit": [
+        {
+          "section": "problem_motivation",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E004",
+            "E007"
+          ],
+          "member_count_read_together": 41,
+          "physical_pages": [
+            1,
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "method",
+          "block_index": 0,
+          "support_judgment": "部分支持",
+          "aliases": [
+            "E040",
+            "E023",
+            "E028",
+            "E043",
+            "E044",
+            "E045",
+            "E046",
+            "E047",
+            "E048",
+            "E030",
+            "E051",
+            "E052",
+            "E054"
+          ],
+          "member_count_read_together": 223,
+          "physical_pages": [
+            2,
+            4,
+            5,
+            6
+          ],
+          "issues": [
+            "应为每个mask训练时模拟11轮随机提示；现写法变成每隔11轮采样，改变局部训练频率。"
+          ]
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E061"
+          ],
+          "member_count_read_together": 26,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 1,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E062"
+          ],
+          "member_count_read_together": 33,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 2,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E063",
+            "E064",
+            "E067"
+          ],
+          "member_count_read_together": 52,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 3,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E066"
+          ],
+          "member_count_read_together": 15,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "experiments_ablations",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E104",
+            "E125",
+            "E129",
+            "E159",
+            "E169"
+          ],
+          "member_count_read_together": 71,
+          "physical_pages": [
+            9,
+            10,
+            11,
+            12
+          ],
+          "issues": []
+        },
+        {
+          "section": "limitations",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E172"
+          ],
+          "member_count_read_together": 26,
+          "physical_pages": [
+            12
+          ],
+          "issues": []
+        }
+      ],
+      "notes": "三行覆盖数据与验证较好，但任务只称SA新任务，未解释promptable目标/歧义，模型未覆盖复用与多mask。",
+      "scope_notes": [
+        "“任意prompt输出valid mask”在两版中均作为论文task要求/目标阐述，未视为实测保证，因此不因这句话本身扣重大错误。",
+        "方法介绍text encoder来自原文p5；两版limitations均明确text-to-mask探索/不稳健，整体不判成熟通用文本分割错误。"
+      ]
+    },
+    {
+      "file": "b8b20888.json",
+      "paper": "attention",
+      "three": {
+        "errors": [],
+        "error_counts": {
+          "major": 0,
+          "minor": 0
+        },
+        "coverage": {
+          "T-C1": {
+            "score": 2,
+            "criterion": "提出无递归/卷积的Transformer encoder-decoder，以attention建模依赖",
+            "evidence_page": 1
+          },
+          "T-C2": {
+            "score": 1,
+            "criterion": "scaled dot-product、多头及位置信息构成并行表示建模机制",
+            "evidence_page": 4
+          },
+          "T-C3": {
+            "score": 2,
+            "criterion": "翻译质量与训练效率改进，EN-DE28.4/EN-FR41.8；可提及解析迁移",
+            "evidence_page": 1
+          }
+        },
+        "coverage_total": 5,
+        "coverage_max": 6,
+        "complementarity": 5,
+        "item_entailment_audit": [
+          {
+            "item_index": 0,
+            "sources": [
+              "S01",
+              "S02"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          },
+          {
+            "item_index": 1,
+            "sources": [
+              "S03",
+              "S04",
+              "S05"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          },
+          {
+            "item_index": 2,
+            "sources": [
+              "S01"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          }
+        ]
+      },
+      "method": {
+        "errors": [],
+        "error_counts": {
+          "major": 0,
+          "minor": 0
+        },
+        "coverage": {
+          "T-M1": {
+            "score": 2,
+            "criterion": "输入token embedding加位置编码形成带序列顺序的表示",
+            "evidence_page": 6
+          },
+          "T-M2": {
+            "score": 2,
+            "criterion": "encoder堆叠多头self attention与逐位置FFN",
+            "evidence_page": 3
+          },
+          "T-M3": {
+            "score": 2,
+            "criterion": "QK点积除sqrt(dk)，softmax权重对V加权；缩放避免大点积使梯度过小",
+            "evidence_page": 4
+          },
+          "T-M4": {
+            "score": 2,
+            "criterion": "各头独立学习Q/K/V投影，并行attention，拼接后输出投影，捕获不同子空间/位置",
+            "evidence_page": 5
+          },
+          "T-M5": {
+            "score": 1,
+            "criterion": "decoder masked self attention配合右移目标输入防看未来",
+            "evidence_page": 3
+          },
+          "T-M6": {
+            "score": 2,
+            "criterion": "cross attention的query来自decoder，K/V来自encoder，关联源序列",
+            "evidence_page": 5
+          },
+          "T-M7": {
+            "score": 2,
+            "criterion": "各子层残差连接后LayerNorm；FFN逐位置共享，两层线性含ReLU",
+            "evidence_page": 3
+          },
+          "T-M8": {
+            "score": 2,
+            "criterion": "decoder线性+softmax预测next token，推理自回归逐个生成",
+            "evidence_page": 2
+          },
+          "T-M9": {
+            "score": 1,
+            "criterion": "self attention缩短远距依赖路径、训练位置可并行；二次序列复杂度并非免费",
+            "evidence_page": 6
+          }
+        },
+        "coverage_total": 16,
+        "coverage_max": 18,
+        "retellability": 4
+      },
+      "other_sections": {
+        "errors": [
+          {
+            "severity": "minor",
+            "claim": "已验证范围仅限WMT2014英德、英法翻译任务",
+            "reason": "论文6.3还有English constituency parsing实验；引用的结论段列举翻译并不蕴含“仅限”。",
+            "pdf_pages": [
+              9,
+              10
+            ],
+            "original_evidence": "To evaluate if the Transformer can generalize to other tasks we performed experiments on English constituency parsing.",
+            "cited_aliases": [
+              "E169"
+            ]
+          }
+        ],
+        "error_counts": {
+          "major": 0,
+          "minor": 1
+        }
+      },
+      "paragraph_entailment_audit": [
+        {
+          "section": "problem_motivation",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E003",
+            "E004",
+            "E005"
+          ],
+          "member_count_read_together": 26,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "method",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E012",
+            "E016",
+            "E017",
+            "E019",
+            "E023",
+            "E025",
+            "E029",
+            "E035",
+            "E037",
+            "E039",
+            "E044",
+            "E045",
+            "E055",
+            "E058",
+            "E059",
+            "E060",
+            "E062",
+            "E063",
+            "E064",
+            "E066",
+            "E074",
+            "E077",
+            "E078",
+            "E081",
+            "E097",
+            "E102",
+            "E106",
+            "E125",
+            "E127"
+          ],
+          "member_count_read_together": 299,
+          "physical_pages": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E005",
+            "E010"
+          ],
+          "member_count_read_together": 8,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 1,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E005"
+          ],
+          "member_count_read_together": 4,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 2,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E007"
+          ],
+          "member_count_read_together": 9,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "experiments_ablations",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E131",
+            "E133",
+            "E134",
+            "E155",
+            "E156"
+          ],
+          "member_count_read_together": 42,
+          "physical_pages": [
+            8,
+            9
+          ],
+          "issues": []
+        },
+        {
+          "section": "limitations",
+          "block_index": 0,
+          "support_judgment": "部分支持；排他范围与原文相矛盾",
+          "aliases": [
+            "E169",
+            "E170"
+          ],
+          "member_count_read_together": 13,
+          "physical_pages": [
+            10
+          ],
+          "issues": [
+            "论文6.3还有English constituency parsing实验；引用的结论段列举翻译并不蕴含“仅限”。"
+          ]
+        }
+      ],
+      "notes": "方法清楚解释QKV、多头、FFN、位置与自回归；遗漏shifted targets和复杂度/远距路径作用。三行第三条已提解析迁移，limitations与自身也矛盾。",
+      "scope_notes": [
+        "41.8出自本文摘要，实验栏41.0出自正文p8。原PDF自身存在两种数值，按各自出处不扣数值错误。"
+      ]
+    },
+    {
+      "file": "4ebff376.json",
+      "paper": "attention",
+      "three": {
+        "errors": [],
+        "error_counts": {
+          "major": 0,
+          "minor": 0
+        },
+        "coverage": {
+          "T-C1": {
+            "score": 2,
+            "criterion": "提出无递归/卷积的Transformer encoder-decoder，以attention建模依赖",
+            "evidence_page": 1
+          },
+          "T-C2": {
+            "score": 1,
+            "criterion": "scaled dot-product、多头及位置信息构成并行表示建模机制",
+            "evidence_page": 4
+          },
+          "T-C3": {
+            "score": 2,
+            "criterion": "翻译质量与训练效率改进，EN-DE28.4/EN-FR41.8；可提及解析迁移",
+            "evidence_page": 1
+          }
+        },
+        "coverage_total": 5,
+        "coverage_max": 6,
+        "complementarity": 4,
+        "item_entailment_audit": [
+          {
+            "item_index": 0,
+            "sources": [
+              "S01",
+              "S03",
+              "S11"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          },
+          {
+            "item_index": 1,
+            "sources": [
+              "S05",
+              "S04",
+              "S11"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          },
+          {
+            "item_index": 2,
+            "sources": [
+              "S10",
+              "S08"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          }
+        ]
+      },
+      "method": {
+        "errors": [],
+        "error_counts": {
+          "major": 0,
+          "minor": 0
+        },
+        "coverage": {
+          "T-M1": {
+            "score": 2,
+            "criterion": "输入token embedding加位置编码形成带序列顺序的表示",
+            "evidence_page": 6
+          },
+          "T-M2": {
+            "score": 2,
+            "criterion": "encoder堆叠多头self attention与逐位置FFN",
+            "evidence_page": 3
+          },
+          "T-M3": {
+            "score": 2,
+            "criterion": "QK点积除sqrt(dk)，softmax权重对V加权；缩放避免大点积使梯度过小",
+            "evidence_page": 4
+          },
+          "T-M4": {
+            "score": 2,
+            "criterion": "各头独立学习Q/K/V投影，并行attention，拼接后输出投影，捕获不同子空间/位置",
+            "evidence_page": 5
+          },
+          "T-M5": {
+            "score": 1,
+            "criterion": "decoder masked self attention配合右移目标输入防看未来",
+            "evidence_page": 3
+          },
+          "T-M6": {
+            "score": 2,
+            "criterion": "cross attention的query来自decoder，K/V来自encoder，关联源序列",
+            "evidence_page": 5
+          },
+          "T-M7": {
+            "score": 1,
+            "criterion": "各子层残差连接后LayerNorm；FFN逐位置共享，两层线性含ReLU",
+            "evidence_page": 3
+          },
+          "T-M8": {
+            "score": 2,
+            "criterion": "decoder线性+softmax预测next token，推理自回归逐个生成",
+            "evidence_page": 2
+          },
+          "T-M9": {
+            "score": 0,
+            "criterion": "self attention缩短远距依赖路径、训练位置可并行；二次序列复杂度并非免费",
+            "evidence_page": 6
+          }
+        },
+        "coverage_total": 14,
+        "coverage_max": 18,
+        "retellability": 4
+      },
+      "other_sections": {
+        "errors": [
+          {
+            "severity": "minor",
+            "claim": "仅在WMT2014翻译任务上验证",
+            "reason": "同论文p9–10有解析任务；不应由结论中的翻译例子推出排他范围。",
+            "pdf_pages": [
+              9,
+              10
+            ],
+            "original_evidence": "The Transformer generalizes well to English constituency parsing",
+            "cited_aliases": [
+              "E214"
+            ]
+          }
+        ],
+        "error_counts": {
+          "major": 0,
+          "minor": 1
+        }
+      },
+      "paragraph_entailment_audit": [
+        {
+          "section": "problem_motivation",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E003",
+            "E005"
+          ],
+          "member_count_read_together": 22,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "method",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E020",
+            "E024",
+            "E025",
+            "E068",
+            "E027",
+            "E031",
+            "E033",
+            "E037",
+            "E043",
+            "E045",
+            "E047",
+            "E052",
+            "E053",
+            "E067",
+            "E066",
+            "E070",
+            "E071",
+            "E072",
+            "E074",
+            "E082",
+            "E083",
+            "E089",
+            "E135",
+            "E110",
+            "E114"
+          ],
+          "member_count_read_together": 248,
+          "physical_pages": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E138",
+            "E141"
+          ],
+          "member_count_read_together": 8,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 1,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E140"
+          ],
+          "member_count_read_together": 9,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 2,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E138"
+          ],
+          "member_count_read_together": 4,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "experiments_ablations",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E176",
+            "E178",
+            "E179",
+            "E191",
+            "E201"
+          ],
+          "member_count_read_together": 43,
+          "physical_pages": [
+            8,
+            9
+          ],
+          "issues": []
+        },
+        {
+          "section": "limitations",
+          "block_index": 0,
+          "support_judgment": "部分支持；排他范围与原文相矛盾",
+          "aliases": [
+            "E214",
+            "E215"
+          ],
+          "member_count_read_together": 13,
+          "physical_pages": [
+            10
+          ],
+          "issues": [
+            "同论文p9–10有解析任务；不应由结论中的翻译例子推出排他范围。"
+          ]
+        }
+      ],
+      "notes": "三行第二条以训练运行时参数说明效率，有依据但未形成机制层贡献；方法主线完整，残差和norm顺序未解释，未提依赖路径/复杂度。",
+      "scope_notes": [
+        "41.8出自本文摘要，实验栏41.0出自正文p8。原PDF自身存在两种数值，按各自出处不扣数值错误。"
+      ]
+    },
+    {
+      "file": "a8ae9757.json",
+      "paper": "video-mme",
+      "three": {
+        "errors": [],
+        "error_counts": {
+          "major": 0,
+          "minor": 0
+        },
+        "coverage": {
+          "V-C1": {
+            "score": 2,
+            "criterion": "构建覆盖6域30类别、短中长视频的综合视频理解benchmark",
+            "evidence_page": 1
+          },
+          "V-C2": {
+            "score": 1,
+            "criterion": "900视频2700人工四选一QA，覆盖字幕/音频并严格质量审查",
+            "evidence_page": 2
+          },
+          "V-C3": {
+            "score": 2,
+            "criterion": "统一评测开放/闭源、图像/视频MLLM，分析模态及长度瓶颈",
+            "evidence_page": 2
+          }
+        },
+        "coverage_total": 5,
+        "coverage_max": 6,
+        "complementarity": 4,
+        "item_entailment_audit": [
+          {
+            "item_index": 0,
+            "sources": [
+              "S01"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          },
+          {
+            "item_index": 1,
+            "sources": [
+              "S02",
+              "S03",
+              "S05"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          },
+          {
+            "item_index": 2,
+            "sources": [
+              "S09",
+              "S10"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          }
+        ]
+      },
+      "method": {
+        "errors": [
+          {
+            "severity": "minor",
+            "claim": "同一批QA分别置于frames only/with subtitles/with audio；评测协议由三种模态输入构成",
+            "reason": "Table5三模态细分针对Gemini1.5Pro；大部分开源模型不支持audio并省略其音频评估。概括未说所有模型，但缺适用条件易产生该印象。",
+            "pdf_pages": [
+              6,
+              7
+            ],
+            "original_evidence": "Performance of Gemini 1.5 Pro ... most of the open-source models do not support audio input, so audio evaluation is omitted.",
+            "cited_aliases": [
+              "E056"
+            ]
+          }
+        ],
+        "error_counts": {
+          "major": 0,
+          "minor": 1
+        },
+        "coverage": {
+          "V-M1": {
+            "score": 2,
+            "criterion": "先定义domain-tag层级，从YouTube人工收集跨类别视频",
+            "evidence_page": 4
+          },
+          "V-M2": {
+            "score": 1,
+            "criterion": "按短<2min、中4–15min、长30–60min分层，避免只测短片",
+            "evidence_page": 4
+          },
+          "V-M3": {
+            "score": 2,
+            "criterion": "保存对应字幕与音轨；744有字幕、900有音频，非全部都有字幕",
+            "evidence_page": 4
+          },
+          "V-M4": {
+            "score": 2,
+            "criterion": "熟练annotator完整观看每视频，三问题各四选项，任务跨感知/推理/信息综合",
+            "evidence_page": 4
+          },
+          "V-M5": {
+            "score": 2,
+            "criterion": "另一annotator检查清晰度、可回答性、选项逻辑及正确答案",
+            "evidence_page": 4
+          },
+          "V-M6": {
+            "score": 2,
+            "criterion": "Gemini text-only筛掉无需视频即可回答问题，不合格返工",
+            "evidence_page": 4
+          },
+          "V-M7": {
+            "score": 0,
+            "criterion": "certificate为足以且必要让人验证答案的最小视频子片段集合；length为这些片段时长之和，用来分析时间难度",
+            "evidence_page": 5
+          },
+          "V-M8": {
+            "score": 1,
+            "criterion": "按官方配置评测视频及多图像MLLM，比较回答选项正确率、时长组、字幕有无",
+            "evidence_page": 6
+          }
+        },
+        "coverage_total": 12,
+        "coverage_max": 16,
+        "retellability": 4
+      },
+      "other_sections": {
+        "errors": [
+          {
+            "severity": "minor",
+            "claim": "contributions: 加subtitles/audios分别提升6.2%/4.3%；experiments: 多语言长视频+16.7%/+12.5%",
+            "reason": "数值正确，均为Gemini1.5Pro；两段缺该模型限定，不是对所有MLLM的一般增益。合计为同一条件缺失问题。",
+            "pdf_pages": [
+              7,
+              8
+            ],
+            "original_evidence": "Table 5. Performance of Gemini 1.5 Pro across six major categories",
+            "cited_aliases": [
+              "E064",
+              "E067",
+              "E098",
+              "E099"
+            ]
+          }
+        ],
+        "error_counts": {
+          "major": 0,
+          "minor": 1
+        }
+      },
+      "paragraph_entailment_audit": [
+        {
+          "section": "problem_motivation",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E002",
+            "E003",
+            "E007"
+          ],
+          "member_count_read_together": 50,
+          "physical_pages": [
+            1,
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "method",
+          "block_index": 0,
+          "support_judgment": "核心构建流程直接支持；模态协议缺适用模型条件",
+          "aliases": [
+            "E031",
+            "E037",
+            "E038",
+            "E039",
+            "E040",
+            "E041",
+            "E042",
+            "E043",
+            "E056",
+            "E048",
+            "E057"
+          ],
+          "member_count_read_together": 95,
+          "physical_pages": [
+            1,
+            4,
+            6,
+            7
+          ],
+          "issues": [
+            "Table5三模态细分针对Gemini1.5Pro；大部分开源模型不支持audio并省略其音频评估。概括未说所有模型，但缺适用条件易产生该印象。"
+          ]
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E059",
+            "E060"
+          ],
+          "member_count_read_together": 30,
+          "physical_pages": [
+            1
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 1,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E062",
+            "E066"
+          ],
+          "member_count_read_together": 22,
+          "physical_pages": [
+            2,
+            3
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 2,
+          "support_judgment": "部分支持",
+          "aliases": [
+            "E063",
+            "E064"
+          ],
+          "member_count_read_together": 25,
+          "physical_pages": [
+            2
+          ],
+          "issues": [
+            "数值正确，均为Gemini1.5Pro；两段缺该模型限定，不是对所有MLLM的一般增益。合计为同一条件缺失问题。"
+          ]
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 3,
+          "support_judgment": "部分支持",
+          "aliases": [
+            "E064",
+            "E067"
+          ],
+          "member_count_read_together": 27,
+          "physical_pages": [
+            2,
+            3
+          ],
+          "issues": [
+            "数值正确，均为Gemini1.5Pro；两段缺该模型限定，不是对所有MLLM的一般增益。合计为同一条件缺失问题。"
+          ]
+        },
+        {
+          "section": "experiments_ablations",
+          "block_index": 0,
+          "support_judgment": "部分支持",
+          "aliases": [
+            "E076",
+            "E088",
+            "E090",
+            "E092",
+            "E099",
+            "E098"
+          ],
+          "member_count_read_together": 99,
+          "physical_pages": [
+            6,
+            7,
+            8
+          ],
+          "issues": [
+            "数值正确，均为Gemini1.5Pro；两段缺该模型限定，不是对所有MLLM的一般增益。合计为同一条件缺失问题。"
+          ]
+        },
+        {
+          "section": "limitations",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E104",
+            "E105"
+          ],
+          "member_count_read_together": 42,
+          "physical_pages": [
+            8
+          ],
+          "issues": []
+        }
+      ],
+      "notes": "三行互补但第一条与第二条都集中数据规模/属性，质量审查仅称高质量；方法构建流程充分，缺certificate难度分析且未给时长分层界限。",
+      "scope_notes": [
+        "三模态条件缺失按minor而非major：文字未明确宣称所有模型均跑音频，但无条件协议概括容易误导。",
+        "原文p7叙述有一处把多语言16.7与audio联系的歧义；Table5显示long multilingual字幕+16.7/audio+12.5；此次输出数值均可由表支持。"
+      ]
+    },
+    {
+      "file": "cd1ec80a.json",
+      "paper": "video-mme",
+      "three": {
+        "errors": [],
+        "error_counts": {
+          "major": 0,
+          "minor": 0
+        },
+        "coverage": {
+          "V-C1": {
+            "score": 2,
+            "criterion": "构建覆盖6域30类别、短中长视频的综合视频理解benchmark",
+            "evidence_page": 1
+          },
+          "V-C2": {
+            "score": 2,
+            "criterion": "900视频2700人工四选一QA，覆盖字幕/音频并严格质量审查",
+            "evidence_page": 2
+          },
+          "V-C3": {
+            "score": 2,
+            "criterion": "统一评测开放/闭源、图像/视频MLLM，分析模态及长度瓶颈",
+            "evidence_page": 2
+          }
+        },
+        "coverage_total": 6,
+        "coverage_max": 6,
+        "complementarity": 5,
+        "item_entailment_audit": [
+          {
+            "item_index": 0,
+            "sources": [
+              "S01",
+              "S02"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          },
+          {
+            "item_index": 1,
+            "sources": [
+              "S02",
+              "S04",
+              "S05",
+              "S06"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          },
+          {
+            "item_index": 2,
+            "sources": [
+              "S01",
+              "S03"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          }
+        ]
+      },
+      "method": {
+        "errors": [
+          {
+            "severity": "minor",
+            "claim": "评测设三种输入模态frames only/with subtitles/with audio",
+            "reason": "同a8，三模态是Gemini细分实验；多数开源模型不支持audio，不能把它无条件表述为全部模型通用运行协议。",
+            "pdf_pages": [
+              6,
+              7
+            ],
+            "original_evidence": "most of the open-source models do not support audio input, so audio evaluation is omitted.",
+            "cited_aliases": [
+              "E053",
+              "E055"
+            ]
+          }
+        ],
+        "error_counts": {
+          "major": 0,
+          "minor": 1
+        },
+        "coverage": {
+          "V-M1": {
+            "score": 2,
+            "criterion": "先定义domain-tag层级，从YouTube人工收集跨类别视频",
+            "evidence_page": 4
+          },
+          "V-M2": {
+            "score": 2,
+            "criterion": "按短<2min、中4–15min、长30–60min分层，避免只测短片",
+            "evidence_page": 4
+          },
+          "V-M3": {
+            "score": 2,
+            "criterion": "保存对应字幕与音轨；744有字幕、900有音频，非全部都有字幕",
+            "evidence_page": 4
+          },
+          "V-M4": {
+            "score": 2,
+            "criterion": "熟练annotator完整观看每视频，三问题各四选项，任务跨感知/推理/信息综合",
+            "evidence_page": 4
+          },
+          "V-M5": {
+            "score": 2,
+            "criterion": "另一annotator检查清晰度、可回答性、选项逻辑及正确答案",
+            "evidence_page": 4
+          },
+          "V-M6": {
+            "score": 2,
+            "criterion": "Gemini text-only筛掉无需视频即可回答问题，不合格返工",
+            "evidence_page": 4
+          },
+          "V-M7": {
+            "score": 0,
+            "criterion": "certificate为足以且必要让人验证答案的最小视频子片段集合；length为这些片段时长之和，用来分析时间难度",
+            "evidence_page": 5
+          },
+          "V-M8": {
+            "score": 1,
+            "criterion": "按官方配置评测视频及多图像MLLM，比较回答选项正确率、时长组、字幕有无",
+            "evidence_page": 6
+          }
+        },
+        "coverage_total": 13,
+        "coverage_max": 16,
+        "retellability": 4
+      },
+      "other_sections": {
+        "errors": [
+          {
+            "severity": "minor",
+            "claim": "contributions: subtitle与audio分别提升6.2%、4.3%",
+            "reason": "本段缺模型限定；对应Gemini1.5Pro而非普遍模型增益。",
+            "pdf_pages": [
+              7
+            ],
+            "original_evidence": "Table 5. Performance of Gemini 1.5 Pro across six major categories",
+            "cited_aliases": [
+              "E027"
+            ]
+          }
+        ],
+        "error_counts": {
+          "major": 0,
+          "minor": 1
+        }
+      },
+      "paragraph_entailment_audit": [
+        {
+          "section": "problem_motivation",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E002",
+            "E003"
+          ],
+          "member_count_read_together": 30,
+          "physical_pages": [
+            1
+          ],
+          "issues": []
+        },
+        {
+          "section": "method",
+          "block_index": 0,
+          "support_judgment": "核心构建流程直接支持；模态协议缺适用模型条件",
+          "aliases": [
+            "E007",
+            "E053",
+            "E047",
+            "E056",
+            "E034",
+            "E035",
+            "E013",
+            "E026",
+            "E036",
+            "E037",
+            "E038",
+            "E039",
+            "E040",
+            "E044",
+            "E055"
+          ],
+          "member_count_read_together": 144,
+          "physical_pages": [
+            2,
+            3,
+            4,
+            6,
+            7
+          ],
+          "issues": [
+            "同a8，三模态是Gemini细分实验；多数开源模型不支持audio，不能把它无条件表述为全部模型通用运行协议。"
+          ]
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E003"
+          ],
+          "member_count_read_together": 10,
+          "physical_pages": [
+            1
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 1,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E007",
+            "E002"
+          ],
+          "member_count_read_together": 40,
+          "physical_pages": [
+            1,
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 2,
+          "support_judgment": "部分支持",
+          "aliases": [
+            "E009",
+            "E027"
+          ],
+          "member_count_read_together": 27,
+          "physical_pages": [
+            2,
+            3
+          ],
+          "issues": [
+            "本段缺模型限定；对应Gemini1.5Pro而非普遍模型增益。"
+          ]
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 3,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E028"
+          ],
+          "member_count_read_together": 9,
+          "physical_pages": [
+            3
+          ],
+          "issues": []
+        },
+        {
+          "section": "experiments_ablations",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E007",
+            "E044",
+            "E058",
+            "E061",
+            "E067",
+            "E066"
+          ],
+          "member_count_read_together": 117,
+          "physical_pages": [
+            2,
+            6,
+            7,
+            8
+          ],
+          "issues": []
+        },
+        {
+          "section": "limitations",
+          "block_index": 0,
+          "support_judgment": "部分支持",
+          "aliases": [
+            "E027",
+            "E072"
+          ],
+          "member_count_read_together": 30,
+          "physical_pages": [
+            3,
+            8
+          ],
+          "issues": [
+            "本段缺模型限定；对应Gemini1.5Pro而非普遍模型增益。"
+          ]
+        }
+      ],
+      "notes": "三行贡献分配清楚，详细方法覆盖采集/分层/QA/复核/text-only过滤，仍缺certificate分析。",
+      "scope_notes": [
+        "三模态条件缺失按minor而非major：文字未明确宣称所有模型均跑音频，但无条件协议概括容易误导。",
+        "原文p7叙述有一处把多语言16.7与audio联系的歧义；Table5显示long multilingual字幕+16.7/audio+12.5；此次输出数值均可由表支持。"
+      ]
+    },
+    {
+      "file": "516d5b76.json",
+      "paper": "chinchilla",
+      "three": {
+        "errors": [
+          {
+            "severity": "major",
+            "claim": "三种方法：固定模型规模改变token、在1500个FLOP值找最低损失模型、拟合参数化函数",
+            "reason": "前两项实际都属于Approach1；真正第二条是固定FLOPs改变N/D的IsoFLOP profiles，三方法身份被写错。",
+            "pdf_pages": [
+              5,
+              6
+            ],
+            "original_evidence": "3.1 Approach 1: Fix model sizes and vary number of training tokens; 3.2 Approach 2: IsoFLOP profiles",
+            "cited_aliases": []
+          }
+        ],
+        "error_counts": {
+          "major": 1,
+          "minor": 0
+        },
+        "coverage": {
+          "C-C1": {
+            "score": 1,
+            "criterion": "研究固定训练FLOPs预算下参数N与token D的最优分配，用400余训练模型实证",
+            "evidence_page": 2
+          },
+          "C-C2": {
+            "score": 1,
+            "criterion": "三种拟合均支持N与D随算力约等比例增加，纠正仅扩大模型而数据固定",
+            "evidence_page": 4
+          },
+          "C-C3": {
+            "score": 1,
+            "criterion": "同Gopher训练预算训练70B/1.4T Chinchilla，以更小模型更多数据验证更好下游表现",
+            "evidence_page": 2
+          },
+          "C-C4": {
+            "score": 0,
+            "criterion": "更小模型降低后续推理/微调成本，非减少该对照训练预算",
+            "evidence_page": 1
+          }
+        },
+        "coverage_total": 3,
+        "coverage_max": 8,
+        "complementarity": 3,
+        "item_entailment_audit": [
+          {
+            "item_index": 0,
+            "sources": [
+              "S03",
+              "S04",
+              "S05",
+              "S06"
+            ],
+            "support_judgment": "部分支持；方法枚举与原文相矛盾",
+            "note": "S04只支持Approach1内部取包络，不能另算一种方法。真正IsoFLOP路径遗漏。"
+          },
+          {
+            "item_index": 1,
+            "sources": [
+              "S01",
+              "S02"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          },
+          {
+            "item_index": 2,
+            "sources": [
+              "S08"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          }
+        ]
+      },
+      "method": {
+        "errors": [],
+        "error_counts": {
+          "major": 0,
+          "minor": 0
+        },
+        "coverage": {
+          "C-M1": {
+            "score": 2,
+            "criterion": "以N参数、D见过token、C计算预算建模最终预训练loss，约束下求最小",
+            "evidence_page": 2
+          },
+          "C-M2": {
+            "score": 2,
+            "criterion": "扫描模型大小和训练时长，400余模型提供训练曲线/终点数据",
+            "evidence_page": 2
+          },
+          "C-M3": {
+            "score": 0,
+            "criterion": "学习率cosine schedule匹配目标训练token数，避免固定长schedule中间loss偏估",
+            "evidence_page": 3
+          },
+          "C-M4": {
+            "score": 2,
+            "criterion": "方法1对多模型多horizon曲线平滑/插值，取每FLOP最低loss包络，再拟合Nopt/Dopt幂律",
+            "evidence_page": 5
+          },
+          "C-M5": {
+            "score": 2,
+            "criterion": "方法2固定FLOPs改变N，相应调整D，用最终loss对N曲线谷值推最优，再跨预算拟合",
+            "evidence_page": 6
+          },
+          "C-M6": {
+            "score": 2,
+            "criterion": "方法3拟合E+A/N^alpha+B/D^beta，分别表示不可约/模型容量/有限数据训练损失",
+            "evidence_page": 6
+          },
+          "C-M7": {
+            "score": 2,
+            "criterion": "参数拟合后在C≈6ND约束下最优化，获得近半半幂律；三方法近似一致而非精确相同",
+            "evidence_page": 7
+          },
+          "C-M8": {
+            "score": 1,
+            "criterion": "外推Gopher预算并训练70B/1.4T对照280B Gopher，做下游评测验证",
+            "evidence_page": 2
+          }
+        },
+        "coverage_total": 13,
+        "coverage_max": 16,
+        "retellability": 4
+      },
+      "other_sections": {
+        "errors": [],
+        "error_counts": {
+          "major": 0,
+          "minor": 0
+        }
+      },
+      "paragraph_entailment_audit": [
+        {
+          "section": "problem_motivation",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E015",
+            "E016",
+            "E004",
+            "E005",
+            "E003"
+          ],
+          "member_count_read_together": 55,
+          "physical_pages": [
+            1,
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "method",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E016",
+            "E017",
+            "E037",
+            "E047",
+            "E048",
+            "E049",
+            "E051",
+            "E055",
+            "E057",
+            "E067",
+            "E069",
+            "E071",
+            "E075",
+            "E076",
+            "E078",
+            "E088",
+            "E091",
+            "E093",
+            "E020",
+            "E026",
+            "E116",
+            "E117",
+            "E118",
+            "E120",
+            "E121"
+          ],
+          "member_count_read_together": 281,
+          "physical_pages": [
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            9
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E016",
+            "E017",
+            "E004"
+          ],
+          "member_count_read_together": 62,
+          "physical_pages": [
+            1,
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 1,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E019",
+            "E029",
+            "E031"
+          ],
+          "member_count_read_together": 41,
+          "physical_pages": [
+            2,
+            3
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 2,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E020"
+          ],
+          "member_count_read_together": 18,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 3,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E019",
+            "E020",
+            "E028"
+          ],
+          "member_count_read_together": 50,
+          "physical_pages": [
+            2,
+            3
+          ],
+          "issues": []
+        },
+        {
+          "section": "experiments_ablations",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E136",
+            "E153",
+            "E158",
+            "E145",
+            "E146"
+          ],
+          "member_count_read_together": 88,
+          "physical_pages": [
+            10,
+            11
+          ],
+          "issues": []
+        },
+        {
+          "section": "limitations",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E201"
+          ],
+          "member_count_read_together": 22,
+          "physical_pages": [
+            15
+          ],
+          "issues": []
+        }
+      ],
+      "notes": "三行第三条被单项QA结果占据，遗漏70B/1.4T/同Gopher训练预算验证和后续成本意义。方法本身正确区分三条路径；未交代匹配schedule的关键对照理由，也未明确最终训练等预算。"
+    },
+    {
+      "file": "11588990.json",
+      "paper": "chinchilla",
+      "three": {
+        "errors": [],
+        "error_counts": {
+          "major": 0,
+          "minor": 0
+        },
+        "coverage": {
+          "C-C1": {
+            "score": 2,
+            "criterion": "研究固定训练FLOPs预算下参数N与token D的最优分配，用400余训练模型实证",
+            "evidence_page": 2
+          },
+          "C-C2": {
+            "score": 2,
+            "criterion": "三种拟合均支持N与D随算力约等比例增加，纠正仅扩大模型而数据固定",
+            "evidence_page": 4
+          },
+          "C-C3": {
+            "score": 1,
+            "criterion": "同Gopher训练预算训练70B/1.4T Chinchilla，以更小模型更多数据验证更好下游表现",
+            "evidence_page": 2
+          },
+          "C-C4": {
+            "score": 0,
+            "criterion": "更小模型降低后续推理/微调成本，非减少该对照训练预算",
+            "evidence_page": 1
+          }
+        },
+        "coverage_total": 5,
+        "coverage_max": 8,
+        "complementarity": 3,
+        "item_entailment_audit": [
+          {
+            "item_index": 0,
+            "sources": [
+              "S07"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "结合各来源及原文核对，未发现事实矛盾。"
+          },
+          {
+            "item_index": 1,
+            "sources": [
+              "S06",
+              "S04",
+              "S02"
+            ],
+            "support_judgment": "原文支持；所选引用仅部分支持",
+            "note": "原文p5–6三路径确有这些身份，但S04仅说token由N/FLOPs决定，未明确列出IsoFLOP profiles；引用需更完整的3.2上下文。此为引用支持不足，不新增事实错误。"
+          },
+          {
+            "item_index": 2,
+            "sources": [
+              "S08",
+              "S10",
+              "S12"
+            ],
+            "support_judgment": "直接支持或忠实概括",
+            "note": "原文p11–13支持RACE两项>10pp及TriviaQA unfiltered超过GPT3；引用S10、S12是承接碎片，须回读原文定位其对象，当前未把此局部条件省略另计事实错误。"
+          }
+        ]
+      },
+      "method": {
+        "errors": [],
+        "error_counts": {
+          "major": 0,
+          "minor": 0
+        },
+        "coverage": {
+          "C-M1": {
+            "score": 2,
+            "criterion": "以N参数、D见过token、C计算预算建模最终预训练loss，约束下求最小",
+            "evidence_page": 2
+          },
+          "C-M2": {
+            "score": 2,
+            "criterion": "扫描模型大小和训练时长，400余模型提供训练曲线/终点数据",
+            "evidence_page": 2
+          },
+          "C-M3": {
+            "score": 2,
+            "criterion": "学习率cosine schedule匹配目标训练token数，避免固定长schedule中间loss偏估",
+            "evidence_page": 3
+          },
+          "C-M4": {
+            "score": 2,
+            "criterion": "方法1对多模型多horizon曲线平滑/插值，取每FLOP最低loss包络，再拟合Nopt/Dopt幂律",
+            "evidence_page": 5
+          },
+          "C-M5": {
+            "score": 2,
+            "criterion": "方法2固定FLOPs改变N，相应调整D，用最终loss对N曲线谷值推最优，再跨预算拟合",
+            "evidence_page": 6
+          },
+          "C-M6": {
+            "score": 2,
+            "criterion": "方法3拟合E+A/N^alpha+B/D^beta，分别表示不可约/模型容量/有限数据训练损失",
+            "evidence_page": 6
+          },
+          "C-M7": {
+            "score": 2,
+            "criterion": "参数拟合后在C≈6ND约束下最优化，获得近半半幂律；三方法近似一致而非精确相同",
+            "evidence_page": 7
+          },
+          "C-M8": {
+            "score": 1,
+            "criterion": "外推Gopher预算并训练70B/1.4T对照280B Gopher，做下游评测验证",
+            "evidence_page": 2
+          }
+        },
+        "coverage_total": 15,
+        "coverage_max": 16,
+        "retellability": 4
+      },
+      "other_sections": {
+        "errors": [],
+        "error_counts": {
+          "major": 0,
+          "minor": 0
+        }
+      },
+      "paragraph_entailment_audit": [
+        {
+          "section": "problem_motivation",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E005",
+            "E015",
+            "E003"
+          ],
+          "member_count_read_together": 11,
+          "physical_pages": [
+            1,
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "method",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E034",
+            "E068",
+            "E096",
+            "E044",
+            "E045",
+            "E046",
+            "E048",
+            "E052",
+            "E054",
+            "E055",
+            "E056",
+            "E064",
+            "E065",
+            "E072",
+            "E087",
+            "E073",
+            "E075",
+            "E085",
+            "E084",
+            "E066",
+            "E088",
+            "E090",
+            "E113",
+            "E114",
+            "E124",
+            "E115",
+            "E117",
+            "E118"
+          ],
+          "member_count_read_together": 321,
+          "physical_pages": [
+            4,
+            5,
+            6,
+            7,
+            8,
+            9
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E138",
+            "E134"
+          ],
+          "member_count_read_together": 44,
+          "physical_pages": [
+            1,
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 1,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E139"
+          ],
+          "member_count_read_together": 20,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 2,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E140"
+          ],
+          "member_count_read_together": 18,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "contributions_novelty",
+          "block_index": 3,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E140",
+            "E139"
+          ],
+          "member_count_read_together": 38,
+          "physical_pages": [
+            2
+          ],
+          "issues": []
+        },
+        {
+          "section": "experiments_ablations",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E154",
+            "E163",
+            "E171",
+            "E178",
+            "E176"
+          ],
+          "member_count_read_together": 61,
+          "physical_pages": [
+            10,
+            11,
+            12
+          ],
+          "issues": []
+        },
+        {
+          "section": "limitations",
+          "block_index": 0,
+          "support_judgment": "直接支持或忠实概括",
+          "aliases": [
+            "E219"
+          ],
+          "member_count_read_together": 22,
+          "physical_pages": [
+            15
+          ],
+          "issues": []
+        }
+      ],
+      "notes": "三行第一二条覆盖规模律与估计路径，但第三条只列阅读/TriviaQA结果，未写70B、1.4T及同预算验证。方法三条路径清晰，第三法未给损失公式但各项意义清楚；最终配置只写70B/更多token，缺1.4T与同预算。"
+    }
+  ],
+  "pair_comparison": [
+    {
+      "paper": "sam",
+      "three_preference": "f29e9999.json",
+      "method_preference": "f29e9999.json",
+      "reason": "三行更聚焦任务/架构/数据贡献；方法两者完整但aae有11轮误述。"
+    },
+    {
+      "paper": "attention",
+      "three_preference": "b8b20888.json",
+      "method_preference": "tie",
+      "reason": "b8三行用机制替代运行参数且含解析迁移；两方法均足够解释主线，b8多些机制细节但不因长度判优；共同局限范围错误。"
+    },
+    {
+      "paper": "video-mme",
+      "three_preference": "cd1ec80a.json",
+      "method_preference": "cd1ec80a.json",
+      "reason": "三行质量控制覆盖更明确；方法明确时长分组和元信息，但两者均须补模态适用条件。"
+    },
+    {
+      "paper": "chinchilla",
+      "three_preference": "11588990.json",
+      "method_preference": "11588990.json",
+      "reason": "三行避免三路径误分；方法更好解释schedule匹配与固定算力反推D，仍缺关键最终等预算/1.4T。"
+    }
+  ],
+  "product_gate": "匿名评审不能判定哪版是实验版；映射后若拟接入项引入516d5b76三行的重大路径错误应拒绝该项。其余偏好是单次四篇观察，需明确共同残留局部错误与核心遗漏，不能声称全域提升。"
+}

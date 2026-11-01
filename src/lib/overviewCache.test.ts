@@ -57,6 +57,15 @@ describe('verified overview cache', () => {
     }
   });
 
+  it('does not reuse the prior truncated-passage or independent-column context generations', () => {
+    for (const [kind, oldVersion] of [['three-line', 'research-overview-zh-v8'], ['detailed', 'research-detailed-overview-zh-v20']] as const) {
+      const current = overviewCacheKey({ documentContentKey, kind, config });
+      const old: unknown[] = JSON.parse(current);
+      old[5] = oldVersion;
+      expect(current).not.toEqual(JSON.stringify(old));
+    }
+  });
+
   it('isolates detailed review and selection policy while leaving three-line keys unchanged', () => {
     const input = { documentContentKey, config, kind: 'detailed' as const };
     const disabled = overviewCacheKey(input);
