@@ -26,7 +26,6 @@
 .qa-scope-steps span:first-child { text-align: start; }
 .qa-scope-steps span:last-child { text-align: end; }
 .qa-scope-steps .is-current { color: var(--text); font-weight: 650; text-decoration: underline; text-underline-offset: .2em; }
-.qa-scope-note { inline-size: 100%; font-size: .73rem; line-height: 1.5; color: var(--text-muted); margin: 0; }
 .qa-messages { flex: 1 1 auto; min-block-size: 0; min-inline-size: 0; overflow: auto; padding-inline: 1px; scrollbar-width: thin; overflow-anchor: none; }
 .qa-empty { padding-block: 1.4rem; line-height: 1.7; }
 .qa-empty > p:first-child { font-size: 1rem; font-weight: 550; margin-block: 0 .6rem; }
@@ -45,14 +44,16 @@
 .qa-status { color: var(--text-muted); font-size: .8rem; line-height: 1.5; margin-block: .5rem; }
 .qa-turn-error, .qa-panel-error { border-inline-start: 2px solid var(--status-error-border); background: var(--status-error-surface); color: var(--status-error-text); padding: .55rem .65rem; font-size: .82rem; line-height: 1.6; overflow-wrap: anywhere; }
 .qa-panel-error { flex: 0 0 auto; margin: 0 0 .4rem; }
-.qa-retry, .qa-answer-actions button { font-size: .75rem !important; padding: .25rem .45rem; }
-.qa-answer-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; margin-block: .5rem; }
+.qa-retry { font-size: .75rem !important; padding: .25rem .45rem; }
+.qa-answer-actions { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; margin-block: .35rem .1rem; }
 .qa-answer-actions span { color: var(--text-muted); font-size: .75rem; }
-.qa-usage { color: var(--text-muted); font-size: .72rem; margin-block: .4rem; }
-.qa-usage summary { cursor: pointer; }
-.qa-usage dl { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: .25rem .6rem; padding: .35rem 0; margin: 0; }
-.qa-usage dt, .qa-usage dd { margin: 0; overflow-wrap: anywhere; }
-.qa-usage p { margin: .35rem 0; }
+.qa-answer-actions .qa-copy-answer { display: inline-flex; align-items: center; justify-content: center; inline-size: 2rem; block-size: 2rem; padding: .35rem; border: 1px solid transparent; background: transparent; color: var(--text-muted); }
+.qa-copy-answer svg { inline-size: 18px; block-size: 18px; flex: 0 0 auto; pointer-events: none; }
+.qa-answer-actions .qa-copy-answer:hover { background: var(--surface-muted); color: var(--text-strong); }
+.qa-usage { display: block; min-inline-size: 0; max-inline-size: 100%; margin-block: .15rem .4rem; overflow-x: auto; white-space: nowrap; scrollbar-width: thin; color: var(--text-muted); font-size: .68rem; line-height: 1.6; font-variant-numeric: tabular-nums; }
+.qa-usage:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: .2rem; }
+.qa-usage-title { font-weight: 500; }
+.qa-usage-partial { color: var(--text-muted); }
 .qa-composer { flex: 0 0 auto; padding-block-start: .7rem; border-block-start: 1px solid var(--border); margin-block-start: .4rem; background: var(--surface); }
 .qa-input-wrap { border: 1px solid var(--border-strong); border-radius: .5rem; background: var(--surface); padding: .55rem; }
 .qa-input-wrap:focus-within { border-color: var(--accent); }

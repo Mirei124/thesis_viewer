@@ -73,8 +73,9 @@ function validateRecord(db: DatabaseName, store: string, row: unknown): DataReco
   if (!shape || !text(row[shape.key])) return invalid();
   let valid = false;
   if (store === 'pdf-highlights') {
-    valid = exactKeys(row, ['id', 'documentVersion', 'anchor', 'quote', 'color', 'createdAt']) && text(row.documentVersion)
+    valid = exactKeys(row, ['id', 'documentVersion', 'anchor', 'quote', 'color', 'style', 'createdAt']) && text(row.documentVersion)
       && string(row.quote) && oneOf(row.color, ['yellow', 'green', 'blue', 'pink']) && integer(row.createdAt)
+      && (row.style === undefined || oneOf(row.style, ['highlight', 'underline']))
       && plain(row.anchor) && exactKeys(row.anchor, ['pageIndex', 'rects']) && integer(row.anchor.pageIndex)
       && Array.isArray(row.anchor.rects) && row.anchor.rects.every(rect => plain(rect) && exactKeys(rect, ['left', 'bottom', 'right', 'top'])
         && ['left', 'bottom', 'right', 'top'].every(key => typeof rect[key] === 'number' && Number.isFinite(rect[key]))

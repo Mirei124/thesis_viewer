@@ -86,6 +86,25 @@ describe('portable local-data backup validation', () => {
     backup.databases['thesis-viewer']['pdf-highlights'] = [{ id: 'highlight', documentVersion: 'doc', quote: 'text', color: 'yellow', createdAt: 1, anchor: { pageIndex: 0, rects: [{ left: 4, right: 2, bottom: 1, top: 3 }] } }];
     expect(() => parse(backup)).toThrow(DataBackupError);
   });
+  it('round trips underline and explicit highlight styles without changing the anchor or backup version', () => {
+    const backup = empty();
+    backup.databases['thesis-viewer']['pdf-highlights'] = ['underline', 'highlight'].map((style, index) => ({
+      id: `highlight-${index}`, documentVersion: 'doc', quote: 'Selected text', color: 'blue', style, createdAt: 1,
+      anchor: { pageIndex: 2, rects: [{ left: 1, right: 8, bottom: 2, top: 5 }] },
+    }));
+    expect(parse(backup)).toEqual(backup);
+  });
+  it('accepts legacy highlights without a style while rejecting unsupported imported annotation modes', () => {
+    const backup = empty();
+    const legacy = { id: 'highlight', documentVersion: 'doc', quote: 'Selected text', color: 'yellow', createdAt: 1,
+      anchor: { pageIndex: 0, rects: [{ left: 1, right: 8, bottom: 2, top: 5 }] } };
+    backup.databases['thesis-viewer']['pdf-highlights'] = [legacy];
+    expect(parse(backup).databases['thesis-viewer']['pdf-highlights'][0]).toEqual(legacy);
+    for (const style of ['strike-through', '', null, false, 1, { mode: 'underline' }]) {
+      backup.databases['thesis-viewer']['pdf-highlights'] = [{ ...legacy, style }];
+      expect(() => parse(backup)).toThrow(DataBackupError);
+    }
+  });
   it('rejects malformed nested answers instead of importing unusable conversations', () => {
     const backup = empty(); const session = newPaperQaSession('doc', 'version');
     session.turns = [{ id: 'turn', question: 'Question', createdAt: 0, status: 'completed', text: 'Answer', sourceIds: [] }];

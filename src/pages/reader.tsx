@@ -72,7 +72,10 @@ import {
   loadPdfHighlights,
   putPdfHighlight,
   type StoredPdfHighlight,
+  type PdfHighlightStyle,
+  normalizePdfHighlightStyle,
 } from '../lib/pdfHighlightRepository';
+import { clampAnnotationPopup, pdfUnderlineEdge } from '../lib/pdfAnnotationAppearance';
 import { DEFAULT_OVERVIEW_PREFERENCES, loadOverviewPreferences, type OverviewPreferences } from '../lib/overviewPreferences';
 import { containsApiHostPermission, requestApiHostPermission } from '../lib/apiPermissions';
 import { CompatibleProviderError, requestCompatibleCompletion, type CompatibleUsage } from '../lib/compatibleProvider';
@@ -149,6 +152,7 @@ type SessionHighlight = {
   quote: string;
   rects: PdfHighlightRect[];
   color: PdfHighlightColor;
+  style: PdfHighlightStyle;
   createdAt: number;
 };
 
@@ -545,11 +549,12 @@ function OutlineItems({ items, depth, onNavigate, label }: {
   );
 }
 
-type ReaderIconName = 'document' | 'search' | 'previous' | 'next' | 'minus' | 'plus' | 'generate' | 'rotate' | 'left' | 'right' | 'settings' | 'close' | 'more' | 'link' | 'outline' | 'pages' | 'insights' | 'tools' | 'historyBack' | 'historyForward' | 'reading' | 'qa';
+type ReaderIconName = 'document' | 'search' | 'previous' | 'next' | 'minus' | 'plus' | 'generate' | 'rotate' | 'left' | 'right' | 'settings' | 'close' | 'more' | 'link' | 'outline' | 'pages' | 'insights' | 'tools' | 'historyBack' | 'historyForward' | 'reading' | 'qa' | 'copy';
 
 function ReaderIcon({ name }: { name: ReaderIconName }) {
   const paths: Record<ReaderIconName, string> = {
     qa: 'M4 4h16v12H9l-5 5V4z M8 8h8 M8 12h5',
+    copy: 'M8 8h12v13H8z M16 8V3H3v13h5',
     reading: 'M3 12a9 9 0 1 0 3-6.7M3 3v5h5M12 7v5l3 2',
     document: 'M6 3h8l4 4v14H6z M14 3v5h4 M9 12h6 M9 16h6',
     search: 'M20 20l-5-5 M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0',
@@ -1246,6 +1251,7 @@ function ReaderPage() {
       quote: selectionDraft.quote,
       rects: selectionDraft.rects,
       color,
+      style: 'highlight',
       createdAt: Date.now(),
     };
     highlightRevisionRef.current += 1;
@@ -1262,6 +1268,16 @@ function ReaderPage() {
     const current = sessionHighlights.find((highlight) => highlight.id === activeHighlightId);
     if (!current || current.color === color) return;
     const updated = { ...current, color };
+    highlightRevisionRef.current += 1;
+    setSessionHighlights((previous) => previous.map((highlight) => highlight.id === activeHighlightId ? updated : highlight));
+    if (documentContentKey) void saveHighlight(updated, highlightStorageSessionRef.current);
+  }
+
+  function updateActiveHighlightStyle(style: PdfHighlightStyle) {
+    if (!activeHighlightId) return;
+    const current = sessionHighlights.find((highlight) => highlight.id === activeHighlightId);
+    if (!current || current.style === style) return;
+    const updated = { ...current, style };
     highlightRevisionRef.current += 1;
     setSessionHighlights((previous) => previous.map((highlight) => highlight.id === activeHighlightId ? updated : highlight));
     if (documentContentKey) void saveHighlight(updated, highlightStorageSessionRef.current);
@@ -1284,6 +1300,7 @@ function ReaderPage() {
       anchor: { pageIndex: highlight.pageIndex, rects: highlight.rects },
       quote: highlight.quote,
       color: highlight.color,
+      style: highlight.style,
       createdAt: highlight.createdAt,
     };
   }
@@ -1296,6 +1313,7 @@ function ReaderPage() {
       rects: highlight.anchor.rects,
       quote: highlight.quote,
       color: highlight.color,
+      style: normalizePdfHighlightStyle(highlight.style),
       createdAt: highlight.createdAt,
     };
   }
@@ -3253,6 +3271,24 @@ function ReaderPage() {
         })()
       : null;
 
+  useLayoutEffect(() => {
+    const place = (element: HTMLElement | null, anchor: { left: number; top: number } | null) => {
+      if (!element || !anchor) return;
+      element.style.left = `${anchor.left}px`;
+      element.style.top = `${anchor.top}px`;
+      const point = clampAnnotationPopup(anchor, element.getBoundingClientRect(), { width: window.innerWidth, height: window.innerHeight });
+      element.style.left = `${point.left}px`;
+      element.style.top = `${point.top}px`;
+    };
+    const update = () => {
+      place(highlightToolbarRef.current, highlightToolbarPosition);
+      place(translationPopoverRef.current, translation ? { left: translation.left, top: translation.top } : null);
+    };
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, [selectionDraft, activeHighlightId, sessionHighlights, renderedHighlightViewport, translation, locale, translationTarget]);
+
   const pdfImportForm = (
         <form className="url-import" onSubmit={importUrl}>
           <label htmlFor="pdf-url">{t(state.kind === 'ready' ? 'reader.directPdfUrl' : 'reader.welcome.link')}</label>
@@ -3744,7 +3780,7 @@ function ReaderPage() {
                 const [secondX, secondY] = renderedHighlightViewport.viewport.convertToViewportPoint(rect.right, rect.top);
                 return <span
                   key={`${highlight.id}-${index}`}
-                  className={`pdf-highlight pdf-highlight-${highlight.color}${highlight.id === activeHighlightId ? ' is-active' : ''}`}
+                  className={`pdf-highlight pdf-highlight-${highlight.color}${highlight.style === 'underline' ? ` pdf-highlight-underline pdf-underline-${pdfUnderlineEdge(state.rotation)}` : ''}${highlight.id === activeHighlightId ? ' is-active' : ''}`}
                   style={{
                     left: `${Math.min(firstX, secondX)}px`,
                     top: `${Math.min(firstY, secondY)}px`,
@@ -3822,19 +3858,19 @@ function ReaderPage() {
         style={{ left: `${translation.left}px`, top: `${translation.top}px` }}
       >
         <div className="translation-popover-header">
-          <h2 id="translation-popover-title">{t('reader.translation.to', { language: t(translation.targetLanguage === 'Chinese' ? 'reader.translation.chinese' : 'reader.translation.english') })}</h2>
-          <button type="button" onClick={closeTranslation} aria-label={t('reader.translation.close')}>{t('reader.translation.close')}</button>
+          <h2 id="translation-popover-title">{t('reader.translation.title')}</h2>
+          <div className="translation-header-actions">
+            <button type="button" className="translation-icon-button" onClick={() => void copyTranslation()} disabled={translation.status !== 'success' || !translation.result} aria-label={t('reader.translation.copy')} title={t('reader.translation.copy')}><ReaderIcon name="copy" /></button>
+            <button type="button" className="translation-icon-button" onClick={closeTranslation} aria-label={t('reader.translation.close')} title={t('reader.translation.close')}><ReaderIcon name="close" /></button>
+          </div>
         </div>
         <p className="translation-source-label">{t('reader.translation.source')}</p>
         <blockquote className="translation-source">{translation.quote}</blockquote>
-        {translation.sourceNotice && <p className="translation-source-notice" role="status">{display(translation.sourceNotice)}</p>}
         {translation.status === 'preparing' && <p role="status">{t('reader.insights.requestingPermission')}</p>}
         {translation.status === 'generating' && <p role="status">{t('reader.translation.generating')} <button type="button" onClick={closeTranslation}>{t('reader.cancel')}</button></p>}
         {translation.status === 'success' && translation.result && <>
-          <p className="translation-source-label">{t('reader.translation.title')}</p>
           <p className="translation-result">{translation.result.translation}</p>
           {translation.result.uncertainty && <p className="translation-uncertainty">{t('reader.translation.uncertainty', { text: translation.result.uncertainty })}</p>}
-          <div className="translation-actions"><button type="button" onClick={() => void copyTranslation()}>{t('reader.translation.copy')}</button></div>
         </>}
         {translation.status === 'error' && <p className="translation-error" role="alert">{display(translation.message)} <a href="options.html">{t('reader.insights.openSettings')}</a></p>}
         {translation.message && translation.status === 'success' && <p role="status">{display(translation.message)}</p>}
@@ -3847,30 +3883,22 @@ function ReaderPage() {
         style={{ left: `${highlightToolbarPosition.left}px`, top: `${highlightToolbarPosition.top}px` }}
       >
         {selectionDraft ? <>
-          <span className="highlight-toolbar-label">{t('reader.highlight.selectedCount', { count: selectionDraft.quote.length })}</span>
           <label className="translation-target-label">{t('reader.translation.target')}
             <select value={translationTarget} onChange={(event) => setTranslationTarget(event.target.value as 'Chinese' | 'English')} aria-label={t('reader.translation.targetLabel')}>
               <option value="Chinese">{t('reader.translation.chinese')}</option>
               <option value="English">{t('reader.translation.english')}</option>
             </select>
           </label>
-          <button type="button" className="qa-selection-ask" disabled={!qa.ready || qa.busy} onMouseDown={(event) => event.preventDefault()} onClick={() => {
+          <button type="button" className="selection-action translate-button" onMouseDown={(event) => event.preventDefault()} onClick={startTranslation}>{t('reader.translation.action')}</button>
+          <button type="button" className="selection-action qa-selection-ask" disabled={!qa.ready || qa.busy} onMouseDown={(event) => event.preventDefault()} onClick={() => {
             qa.setSelection({ text: selectionDraft.quote, pageIndex: selectionDraft.pageIndex });
             setSelectionDraft(null); clearBrowserSelection(); openRailTab('right', 'qa');
           }}>{qaLabel(locale, 'askSelection')}</button>
-          <button type="button" className="translate-button" onMouseDown={(event) => event.preventDefault()} onClick={startTranslation}>{t('reader.translation.action')}</button>
-          <button type="button" className="highlight-create-button" onMouseDown={(event) => event.preventDefault()} onClick={() => createHighlight('yellow')}>{t('reader.highlight.action')}</button>
-          {HIGHLIGHT_COLORS.filter((color) => color !== 'yellow').map((color) => <button
-            type="button"
-            key={color}
-            className={`highlight-color-button highlight-color-${color}`}
-            aria-label={t('reader.highlight.createColor', { color: t(`reader.highlight.color.${color}` as MessageKey) })}
-            title={t('reader.highlight.createColor', { color: t(`reader.highlight.color.${color}` as MessageKey) })}
-            onMouseDown={(event) => event.preventDefault()}
-            onClick={() => createHighlight(color)}
-          />)}
+          <button type="button" className="selection-action highlight-create-button" onMouseDown={(event) => event.preventDefault()} onClick={() => createHighlight('yellow')}>{t('reader.highlight.action')}</button>
         </> : activeHighlight && <>
-          <span className="highlight-toolbar-label">{t('reader.highlight.edit')}</span>
+          <div className="highlight-style-options" role="group" aria-label={t('reader.highlight.style')}>
+            {(['highlight', 'underline'] as const).map((style) => <button type="button" key={style} className="highlight-style-button" aria-pressed={activeHighlight.style === style} onMouseDown={(event) => event.preventDefault()} onClick={() => updateActiveHighlightStyle(style)}>{t(style === 'underline' ? 'reader.highlight.style.underline' : 'reader.highlight.style.highlight')}</button>)}
+          </div>
           {HIGHLIGHT_COLORS.map((color) => <button
             type="button"
             key={color}

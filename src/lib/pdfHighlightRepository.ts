@@ -11,6 +11,13 @@ export type StoredPdfHighlightRect = {
   top: number;
 };
 
+export type PdfHighlightStyle = 'highlight' | 'underline';
+
+/** Missing styles belong to pre-underline records and keep their original appearance. */
+export function normalizePdfHighlightStyle(value: unknown): PdfHighlightStyle {
+  return value === 'underline' ? 'underline' : 'highlight';
+}
+
 export type StoredPdfHighlight = {
   id: string;
   documentVersion: string;
@@ -20,6 +27,7 @@ export type StoredPdfHighlight = {
   };
   quote: string;
   color: 'yellow' | 'green' | 'blue' | 'pink';
+  style?: PdfHighlightStyle;
   createdAt: number;
 };
 
