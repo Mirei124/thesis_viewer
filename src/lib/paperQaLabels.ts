@@ -1,7 +1,7 @@
 const en = {
   title: 'Paper Q&A', askSelection: 'Ask about selection', history: 'Conversations', newSession: 'New conversation',
   back: 'Back to conversation', currentPaper: 'Current paper', onlyPaper: 'Only this paper', scope: 'Reading scope',
-  pre_experiments: 'Methods without experiments', body: 'Main text without contents', full: 'Complete paper',
+  pre_experiments: 'Methods without experiments', body: 'Main text without appendices', full: 'Complete paper',
   preparing: 'Preparing the paper text…', empty: 'What would you like to understand about this paper?',
   emptyHint: 'Ask about a method, an equation or an experiment. You can also select text in the PDF.',
   placeholder: 'Ask a question about this paper', inputLabel: 'Question about the current paper',
@@ -21,7 +21,7 @@ const en = {
 const zh: Record<keyof typeof en, string> = {
   title: '论文问答', askSelection: '选区提问', history: '本篇对话', newSession: '新对话',
   back: '返回对话', currentPaper: '当前论文', onlyPaper: '仅当前论文', scope: '输入范围',
-  pre_experiments: '仅方法不含实验', body: '仅正文不含目录', full: '完整文章',
+  pre_experiments: '仅方法不含实验', body: '仅正文不含附录', full: '完整文章',
   preparing: '正在准备论文原文…', empty: '这篇论文有哪些地方想进一步理解？',
   emptyHint: '可以询问方法、公式或实验，也可以在 PDF 中选中文字后提问。',
   placeholder: '对这篇论文有什么疑问？', inputLabel: '向当前论文提问',
