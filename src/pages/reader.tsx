@@ -3311,7 +3311,7 @@ function ReaderPage() {
     if (!source || !qa.activeSession.sourceIds.includes(sourceId)) return;
     const groups = buildInlineEvidenceExcerpts(source.evidenceIds, detailedLedger?.candidates ?? [], extraction.kind === 'ready' ? extraction.pages : []);
     evidenceTriggerRef.current = trigger as HTMLButtonElement;
-    setActiveEvidence({ alias: source.id, category: qaLabel(locale, 'title'), count: source.evidenceIds.length, groups });
+    setActiveEvidence({ alias: source.id, category: qaLabel(locale, 'title'), count: groups.length, groups });
   }
 
   function renderQaAnswer(text: string, sourceIds: readonly string[], enabled: boolean) {
@@ -3337,16 +3337,16 @@ function ReaderPage() {
   function renderInlineEvidence(text: string, refs: readonly VerifiedEvidenceRef[]) {
     return <OverviewMarkdown text={text} evidenceRefs={refs} renderSource={(part, key) => {
       const category = t(part.alias.startsWith('E') ? 'reader.evidence.sourceDetailed' : 'reader.evidence.sourceThreeLine');
-      const groups = buildInlineEvidenceExcerpts(
-        part.evidenceIds,
-        detailedLedger?.candidates ?? (evidenceLedger.kind === 'ready' ? evidenceLedger.ledger.candidates : []),
-        extraction.kind === 'ready' ? extraction.pages : [],
-      );
       return <button type="button" className="inline-evidence-button" key={key} aria-haspopup="dialog"
-        aria-label={t('reader.evidence.showMembers', { category, alias: part.alias, count: part.evidenceIds.length })}
+        aria-label={t('reader.evidence.showMembers', { category, alias: part.alias })}
         onClick={(event) => {
+          const groups = buildInlineEvidenceExcerpts(
+            part.evidenceIds,
+            detailedLedger?.candidates ?? (evidenceLedger.kind === 'ready' ? evidenceLedger.ledger.candidates : []),
+            extraction.kind === 'ready' ? extraction.pages : [],
+          );
           evidenceTriggerRef.current = event.currentTarget;
-          setActiveEvidence({ alias: part.alias, category, count: part.evidenceIds.length, groups });
+          setActiveEvidence({ alias: part.alias, category, count: groups.length, groups });
         }}>{inlineEvidenceLabel(part)}</button>;
     }} />;
   }
@@ -3365,16 +3365,17 @@ function ReaderPage() {
           <button type="button" autoFocus aria-label={t('reader.evidence.close')} onClick={() => setActiveEvidence(null)}>×</button>
         </header>
         <div className="inline-evidence-excerpts">
-          {activeEvidence.groups.map((group, groupIndex) => <p className="inline-evidence-excerpt" key={groupIndex}>
-            {groupIndex > 0 && <span className="inline-evidence-break">{t('reader.evidence.separateExcerpt')}</span>}
-            {group.members.map((item) => {
-              const member = t('reader.evidence.member', { index: item.index, count: activeEvidence.count });
-              const description = item.location && t('reader.evidence.goTo', { category: activeEvidence.category, alias: activeEvidence.alias, member, page: item.location.pageIndex + 1, precision: t(`reader.evidence.precision.${item.location.precision}` as MessageKey) });
-              return <span key={item.evidenceId}>{item.separatorBefore}{description
-                ? <button type="button" className="inline-evidence-quote" aria-label={`${item.quote}; ${description}`} title={description} onClick={() => { setActiveEvidence(null); goToEvidenceCandidate(item.evidenceId); }}>{item.displayQuote}</button>
-                : <span className="inline-evidence-unlocated">{item.displayQuote || t('reader.evidence.unavailable')} <small>({t('reader.evidence.unlocated')})</small></span>}</span>;
-            })}
-          </p>)}
+          {activeEvidence.groups.some(group => group.mathLayout) && <p className="inline-evidence-reading-note">{t('reader.evidence.mathLayout')}</p>}
+          {activeEvidence.groups.map((group, groupIndex) => {
+            const target = group.target;
+            const description = target?.location && t('reader.evidence.goToStart', { index: groupIndex + 1, count: activeEvidence.count, page: target.location.pageIndex + 1 });
+            return <p className="inline-evidence-excerpt" key={groupIndex}>
+              {description && target
+                ? <button type="button" className="inline-evidence-quote" aria-label={`${group.text}; ${description}`} title={description}
+                  onClick={() => { setActiveEvidence(null); goToEvidenceCandidate(target.evidenceId); }}>{group.text}</button>
+                : <span className="inline-evidence-unlocated">{group.text || t('reader.evidence.unavailable')} <small>({t('reader.evidence.unlocated')})</small></span>}
+            </p>;
+          })}
         </div>
       </dialog>}
       <div className={state.kind === 'ready' ? 'reader-loaded-header' : 'reader-first-screen'}>

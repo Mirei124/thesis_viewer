@@ -1,0 +1,38 @@
+[
+  {
+    "id": "1706.03762",
+    "paragraphsChecked": 271,
+    "oldGroups": 950,
+    "newGroups": 521,
+    "shortBefore": 235,
+    "shortAfter": 99,
+    "maxCallMs": 3.4
+  },
+  {
+    "id": "1512.03385",
+    "paragraphsChecked": 373,
+    "oldGroups": 1667,
+    "newGroups": 951,
+    "shortBefore": 237,
+    "shortAfter": 179,
+    "maxCallMs": 19
+  },
+  {
+    "id": "2304.02643",
+    "paragraphsChecked": 634,
+    "oldGroups": 2895,
+    "newGroups": 1381,
+    "shortBefore": 388,
+    "shortAfter": 214,
+    "maxCallMs": 23
+  },
+  {
+    "id": "2610.23751",
+    "paragraphsChecked": 667,
+    "oldGroups": 2521,
+    "newGroups": 2035,
+    "shortBefore": 256,
+    "shortAfter": 194,
+    "maxCallMs": 15.5
+  }
+]
