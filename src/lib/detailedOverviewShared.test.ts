@@ -27,6 +27,48 @@ function validCompletion(request: CompatibleRequest) {
   return { content: JSON.stringify({ status: 'available', text: `Source grounded ${alias}.`, sources: [alias] }), usage: { promptTokens: 10, completionTokens: 4 } };
 }
 describe('default source-prefix detailed overview pipeline', () => {
+  it('keeps both nested dimension products in one method source and readable excerpt', () => {
+    // R²-Omni page 3: N_a×D has a smaller subscript inside a raised
+    // dimension expression. Neither the operators nor D may become sources
+    // separate from the sentence that defines the representation.
+    const rows = [
+      ['3 Method', 62, 740, 12, 100],
+      ['where', 61.937, 249.532, 11.127, 30.033],
+      ['Z', 96.303, 249.532, 10.036, 5.58], ['v', 102.514, 253.492, 7.332, 3.806],
+      ['∈', 112.222, 249.532, 10.909, 5.847], ['R', 123.480, 249.532, 10.909, 8.149],
+      ['N', 131.949, 253.492, 7.332, 5.008], ['v', 137.137, 252.296, 5.591, 2.902],
+      ['×', 140.849, 253.492, 7.970, 5.069], ['D', 146.637, 253.492, 7.332, 4.920],
+      ['and', 156.242, 249.532, 11.127, 18.249],
+      ['Z', 178.824, 249.532, 10.036, 5.58], ['a', 184.956, 253.492, 7.332, 3.850],
+      ['∈', 194.716, 249.532, 10.909, 5.847], ['R', 205.974, 249.532, 10.909, 8.149],
+      ['N', 214.443, 253.492, 7.332, 5.008], ['a', 219.570, 252.296, 5.591, 2.935],
+      ['×', 223.322, 253.492, 7.970, 5.069], ['D', 229.110, 253.492, 7.332, 4.920],
+      ['contain video and audio tokens.', 238.715, 249.532, 11.127, 290],
+    ] as const;
+    const pages = [pageBlocksFromTextContent({ items: rows.map(([str, x, y, size, width]) => ({
+      str, transform: [size, 0, 0, size, x, y], width, height: size,
+      hasEOL: false, fontName: 'f', dir: 'ltr',
+    })), styles: {}, lang: null }, 2, 'doc')];
+    const ledger = pdfEvidenceLedgerFromPages(pages, 'doc', []);
+    for (const contextLimit of [32000, 128000]) {
+      const plan = prepareSharedDetailedOverview({ pages, ledger, config: { ...config, contextLimit } });
+      const method = plan.requests.find(request => request.id === 'method')!;
+      const sent = method.messages.flatMap(message => {
+        try { const value = JSON.parse(message.content); return [...(value.sources ?? []), ...(value.extraSources ?? [])]; }
+        catch { return []; }
+      });
+      const source = sent.find(source => source.excerpt.startsWith('where Z'));
+      expect(source).toBeDefined();
+      const members = resolveProgressiveEvidenceAliases(plan.session, [source.alias], plan.ledger, pages);
+      expect(members.filter(member => member.quote === '×')).toHaveLength(2);
+      expect(members.filter(member => member.quote === 'D')).toHaveLength(2);
+      expect(members).toHaveLength(rows.length - 1);
+      const groups = buildInlineEvidenceExcerpts(members.map(member => member.evidenceId), plan.ledger.candidates, pages);
+      expect(groups).toHaveLength(1);
+      expect(groups[0].text).toContain('and Za ∈ RNa×D contain');
+    }
+  });
+
   it('keeps an attached superscript in the selected method source and its popup', () => {
     // Actual R²-Omni page-3 geometry: the raised digit previously became a
     // standalone paragraph and was discarded as numeric noise before sending.

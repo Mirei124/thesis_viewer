@@ -79,7 +79,7 @@ describe('verified overview cache', () => {
     expect(JSON.parse(disabled)).toHaveLength(14);
   });
 
-  it('does not reuse summaries built before script-aware paragraph reconstruction', () => {
+  it('isolates the current paragraph reconstruction from prior source generations', () => {
     for (const kind of ['three-line', 'detailed'] as const) {
       const current = overviewCacheKey({ documentContentKey, kind, config });
       const parts: unknown[] = JSON.parse(current);
@@ -88,8 +88,10 @@ describe('verified overview cache', () => {
       // anchors alone cannot establish that their model input retained scripts.
       const legacy = parts.slice(0, -1);
       expect(JSON.stringify(legacy)).not.toBe(current);
-      parts[parts.length - 1] = 'structured-paper-v1';
-      expect(JSON.stringify(parts)).not.toBe(current);
+      for (const version of ['structured-paper-v1', 'structured-paper-v2']) {
+        parts[parts.length - 1] = version;
+        expect(JSON.stringify(parts)).not.toBe(current);
+      }
     }
   });
 

@@ -2,7 +2,7 @@ import type { EvidenceLedger } from './evidenceLedger';
 import type { EvidencePassage, EvidencePassageMember } from './evidencePassages';
 import type { PageExtraction, PdfPageTextBlock } from './pdfPageBlocks';
 
-export const STRUCTURED_PAPER_VERSION = 'structured-paper-v2';
+export const STRUCTURED_PAPER_VERSION = 'structured-paper-v3';
 export type SectionRole = 'intro' | 'method' | 'related' | 'experiments' | 'limitations' | 'conclusion' | 'appendix' | 'references' | 'unknown';
 export type ParagraphKind = 'body' | 'heading' | 'caption' | 'table' | 'equation' | 'frontmatter' | 'contents';
 export type StructuredParagraph = EvidencePassage & {
@@ -41,14 +41,22 @@ function attachLocalScripts(lines: Line[], page: PageExtraction): Set<PdfPageTex
     const from = owners.get(block), host = owners.get(previous);
     if (!from || !host || from === host || from.column !== host.column) continue;
     const text = block.normalizedText.trim();
-    if (!/^[\p{L}\p{N}+−-]{1,8}$/u.test(text)) continue;
+    const previousText = previous.normalizedText.trim();
+    const sameScriptBand = Math.abs(block.rawTransform[5] - previous.rawTransform[5])
+      <= Math.max(sizeOf(block), sizeOf(previous)) * 0.5;
+    // Additional operators such as × may continue a confirmed superscript
+    // expression, e.g. N_a×D. This operator continuation cannot start from
+    // ordinary prose or jump to a different lower-script/fraction band.
+    const operatorContinuation = /^\p{Sm}{1,3}$/u.test(text) && attached.has(previous) && sameScriptBand;
+    if (!/^[\p{L}\p{N}+−-]{1,8}$/u.test(text) && !operatorContinuation) continue;
+    const attachedOperator = /^\p{Sm}{1,3}$/u.test(previousText) && attached.has(previous) && sameScriptBand;
     const base = metrics.get(host)!;
     const ratio = sizeOf(block) / base.size;
     const offset = Math.abs(block.rawTransform[5] - base.y);
     const gap = block.rawTransform[4] - previous.rawTransform[4] - previous.rawWidth;
     if (ratio < 0.45 || ratio > 0.85 || offset < base.size * 0.15 || offset > base.size * 0.7
       || gap < -base.size * 0.2 || gap > base.size * 0.45
-      || !/[\p{L}\p{N})\]}.!?]$/u.test(previous.normalizedText.trim())) continue;
+      || !(/[\p{L}\p{N})\]}.!?]$/u.test(previousText) || attachedOperator)) continue;
     // An absent source index is known empty only within a complete extraction.
     if (block.sourceOrder - previous.sourceOrder > 1 && block.sourceOrder >= page.textItemCount) continue;
     const ambiguous = lines.some(other => {

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { pageBlocksFromTextContent } from './pdfPageBlocks';
 import { locateEvidenceCandidate, pdfEvidenceLedgerFromPages } from './evidenceLedger';
 import { createDetailedEvidenceLedger, createStructuredPaper } from './structuredPaper';
+import { buildInlineEvidenceExcerpts } from './inlineEvidenceExcerpts';
 function page(rows: Array<[string, number, number, number?, number?]>, index = 0) {
   return pageBlocksFromTextContent({ items: rows.map(([str, x, y, size = 10, width = 230]) => ({ str, transform: [size, 0, 0, size, x, y], width, height: size, hasEOL: true, fontName: 'f', dir: 'ltr' })), styles: {}, lang: null }, index, 'doc');
 }
@@ -190,6 +191,78 @@ describe('structured paper', () => {
     ])]);
     expect(paper.sections.some(section => /(?:Results 16|Details 18|Benchmarks 26|Omni-LLMs 29|Studies 29)$/.test(section.title))).toBe(false);
     expect(paper.sections.find(section => section.title === 'B.1. Experiment 2')).toMatchObject({ role: 'appendix', level: 2 });
+  });
+
+  it('retains both nested dimension expressions and their operators in one original paragraph', () => {
+    // R^(N_v×D) and R^(N_a×D), from 2611.03247 page 3. The nested
+    // subscript sits lower and uses a smaller font than the outer exponent.
+    const pages = [page([
+      ['3.1 Overview', 62, 300, 12, 150],
+      ['where', 61.937, 249.532, 11.127, 30.033], ['Z', 96.303, 249.532, 10.036, 5.580],
+      ['v', 102.514, 253.492, 7.332, 3.806], ['∈', 112.222, 249.532, 10.909, 5.847],
+      ['R', 123.480, 249.532, 10.909, 8.149], ['N', 131.949, 253.492, 7.332, 5.008],
+      ['v', 137.137, 252.296, 5.591, 2.902], ['×', 140.849, 253.492, 7.970, 5.069],
+      ['D', 146.637, 253.492, 7.332, 4.920], ['and', 156.242, 249.532, 11.127, 18.249],
+      ['Z', 178.824, 249.532, 10.036, 5.580], ['a', 184.956, 253.492, 7.332, 3.850],
+      ['∈', 194.716, 249.532, 10.909, 5.847], ['R', 205.974, 249.532, 10.909, 8.149],
+      ['N', 214.443, 253.492, 7.332, 5.008], ['a', 219.570, 252.296, 5.591, 2.935],
+      ['×', 223.322, 253.492, 7.970, 5.069], ['D', 229.110, 253.492, 7.332, 4.920],
+      ['contain', 238.715, 249.532, 11.127, 36.153], ['N', 279.417, 249.532, 10.036, 6.855],
+      ['v', 286.507, 247.895, 7.332, 3.806], ['video and', 294.918, 249.532, 11.127, 48.726],
+      ['N', 348.194, 249.532, 10.036, 6.855], ['a', 355.205, 247.895, 7.332, 3.850],
+      ['audio tokens.', 363.668, 249.532, 11.127, 65.929],
+      ['The projectors then', 436.385, 249.532, 11.127, 96.529],
+      ['map these features into the embedding space.', 62.362, 235.983, 10.931, 470.554],
+    ])];
+    const snapshot = structuredClone(pages);
+    const { paper, ledger } = build(pages);
+    const paragraph = paper.paragraphs.find(p => p.text.startsWith('where'))!;
+    expect(paragraph.members.map(m => m.candidate.quote)).toEqual(pages[0].blocks.slice(1).map(block => block.normalizedText));
+    expect(paragraph.text).toContain('R N v × D and Z a ∈ R N a × D contain');
+    expect(paper.paragraphs.some(p => p.text === '× D × D')).toBe(false);
+    for (const m of paragraph.members) {
+      expect(paragraph.text.slice(m.textStart, m.textEnd)).toBe(m.candidate.quote);
+      expect(locateEvidenceCandidate(m.candidate, pages)?.anchor).toBeDefined();
+    }
+    expect(pages).toEqual(snapshot);
+    const popup = buildInlineEvidenceExcerpts(paragraph.members.map(m => m.candidate.evidenceId), ledger.candidates, pages);
+    expect(popup).toHaveLength(1);
+    expect(popup[0].text).toContain('where Zv ∈ RNv×D and Za ∈ RNa×D contain');
+  });
+
+  it('does not begin an operator attachment from ordinary prose or cross to another script band', () => {
+    for (const rows of [
+      [['The ordinary base R', 50, 720, 10, 100], ['×', 150, 724, 7, 4], ['D', 155, 724, 7, 4]],
+      [['The ordinary base R', 50, 720, 10, 100], ['N', 150, 724, 7, 5], ['×', 156, 716, 7, 4], ['D', 161, 716, 7, 4]],
+      [['The ordinary base R', 50, 720, 10, 100], ['N', 150, 724, 7, 5], ['×', 320, 724, 7, 4], ['D', 325, 724, 7, 4]],
+    ] satisfies Array<Array<[string, number, number, number, number]>>) {
+      const { paper } = build([page([['2 Method', 50, 760, 12, 120], ...rows])]);
+      expect(paper.paragraphs.find(p => p.text.startsWith('The ordinary base'))?.text).not.toContain('×');
+      expect(paper.paragraphs.find(p => p.text === '× D')).toBeDefined();
+    }
+  });
+
+  it('keeps a denominator separate instead of flattening a display fraction into an exponent chain', () => {
+    const { paper } = build([page([
+      ['2 Method', 50, 760, 12, 120], ['The base R', 50, 720, 10, 100],
+      ['N', 150, 724, 7, 5], ['×', 156, 724, 7, 4], ['D', 162, 709, 7, 4],
+    ])]);
+    const numerator = paper.paragraphs.find(p => p.text.startsWith('The base'))!;
+    expect(numerator.text).toContain('N ×');
+    expect(numerator.text).not.toContain('D');
+    expect(paper.paragraphs.find(p => p.text === 'D')).toBeDefined();
+  });
+
+  it('does not continue an exponent across an unreliable nonempty intermediate item', () => {
+    const pages = [page([
+      ['2 Method', 50, 760, 12, 120], ['The base R', 50, 720, 10, 100],
+      ['N', 150, 724, 7, 5], ['unreliable', 155, 724, 7, 1],
+      ['×', 156, 724, 7, 4], ['D', 161, 724, 7, 4],
+    ])];
+    pages[0].blocks[3].qualityFlags.push('non-axis-aligned-transform');
+    const { paper } = build(pages);
+    expect(paper.paragraphs.find(p => p.text.startsWith('The base'))?.text).not.toContain('×');
+    expect(paper.paragraphs.find(p => p.text === '× D')).toBeDefined();
   });
 
 });
