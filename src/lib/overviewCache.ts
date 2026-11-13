@@ -5,6 +5,7 @@ import type { VerifiedEvidenceRef } from './inlineEvidence';
 import type { ModelConfig } from './modelConfig';
 import { PDF_PAGE_BLOCK_EXTRACTION_VERSION, type PageExtraction } from './pdfPageBlocks';
 import { THREE_LINE_OVERVIEW_PROMPT_VERSION, type ThreeLineOverview } from './threeLineOverview';
+import { STRUCTURED_PAPER_VERSION } from './structuredPaper';
 
 export type OverviewCacheKind = 'three-line' | 'detailed';
 export type OverviewCacheInput = {
@@ -33,6 +34,7 @@ export function overviewCacheKey(input: OverviewCacheInput): string {
     config.contextLimit,
     config.outputLimit,
     ...(input.kind === 'detailed' ? [config.semanticReview === true, DETAILED_CONTEXT_SELECTION_VERSION] : []),
+    STRUCTURED_PAPER_VERSION,
   ]);
 }
 

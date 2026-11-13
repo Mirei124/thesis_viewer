@@ -8,6 +8,8 @@ import { pdfEvidenceLedgerFromPages } from './evidenceLedger';
 import type { ModelConfig } from './modelConfig';
 import { createStructuredPaper } from './structuredPaper';
 import { selectDetailedContext } from './detailedContext';
+import { resolveProgressiveEvidenceAliases } from './evidencePacket';
+import { buildInlineEvidenceExcerpts } from './inlineEvidenceExcerpts';
 import type { CompatibleRequest } from './compatibleProvider';
 const config: ModelConfig = { baseUrl: 'https://example.test/v1', model: 'test', structuredOutput: true, contextLimit: 128000, outputLimit: 16000 };
 function fixture() {
@@ -25,6 +27,38 @@ function validCompletion(request: CompatibleRequest) {
   return { content: JSON.stringify({ status: 'available', text: `Source grounded ${alias}.`, sources: [alias] }), usage: { promptTokens: 10, completionTokens: 4 } };
 }
 describe('default source-prefix detailed overview pipeline', () => {
+  it('keeps an attached superscript in the selected method source and its popup', () => {
+    // Actual R²-Omni page-3 geometry: the raised digit previously became a
+    // standalone paragraph and was discarded as numeric noise before sending.
+    const rows = [
+      ['3 Method', 62, 740, 12, 100],
+      ['As shown in Fig. 2, R', 62.013, 175.011, 10.8981909, 100.0889852],
+      ['2', 162.1, 178.971, 7.9701, 4.4313756],
+      ['-Omni applies two training-free stages with complementary mechanisms.', 167.029, 175.011, 10.8981909, 365.8849631],
+      ['The first stage consolidates tokens while the second stage allocates precision.', 62, 161.462, 10.8981909, 470],
+    ] as const;
+    const pages = [pageBlocksFromTextContent({ items: rows.map(([str, x, y, size, width]) => ({
+      str, transform: [size, 0, 0, size, x, y], width, height: size,
+      hasEOL: false, fontName: 'f', dir: 'ltr',
+    })), styles: {}, lang: null }, 2, 'doc')];
+    const ledger = pdfEvidenceLedgerFromPages(pages, 'doc', []);
+    for (const contextLimit of [32000, 128000]) {
+      const plan = prepareSharedDetailedOverview({ pages, ledger, config: { ...config, contextLimit } });
+      const method = plan.requests.find(request => request.id === 'method')!;
+      const sent = method.messages.flatMap(message => {
+        try { const value = JSON.parse(message.content); return [...(value.sources ?? []), ...(value.extraSources ?? [])]; }
+        catch { return []; }
+      });
+      const source = sent.find(source => source.excerpt.includes('As shown in Fig. 2, R'));
+      expect(source).toBeDefined();
+      const members = resolveProgressiveEvidenceAliases(plan.session, [source.alias], plan.ledger, pages);
+      expect(members.some(member => member.quote === '2')).toBe(true);
+      const groups = buildInlineEvidenceExcerpts(members.map(member => member.evidenceId), plan.ledger.candidates, pages);
+      expect(groups).toHaveLength(1);
+      expect(groups[0].text).toContain('R2-Omni');
+    }
+  });
+
   it('reuses exact source-only prefixes without feeding generated answers into later requests', () => {
     const plan = prepareSharedDetailedOverview(fixture());
     expect(plan.fallbackReason).toBeUndefined();

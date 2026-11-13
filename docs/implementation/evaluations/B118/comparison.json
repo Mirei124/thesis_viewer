@@ -1,0 +1,67 @@
+[
+  {
+    "id": "1706.03762",
+    "pages": 15,
+    "oldParagraphs": 271,
+    "newParagraphs": 238,
+    "members": 1483,
+    "oldSections": 26,
+    "newSections": 26,
+    "removedTitles": [],
+    "addedTitles": []
+  },
+  {
+    "id": "1512.03385",
+    "pages": 12,
+    "oldParagraphs": 373,
+    "newParagraphs": 358,
+    "members": 2774,
+    "oldSections": 19,
+    "newSections": 19,
+    "removedTitles": [],
+    "addedTitles": []
+  },
+  {
+    "id": "2304.02643",
+    "pages": 30,
+    "oldParagraphs": 634,
+    "newParagraphs": 616,
+    "members": 5249,
+    "oldSections": 33,
+    "newSections": 34,
+    "removedTitles": [],
+    "addedTitles": [
+      "F.1. Dataset Card for SA-1B"
+    ]
+  },
+  {
+    "id": "2610.23751",
+    "pages": 41,
+    "oldParagraphs": 667,
+    "newParagraphs": 666,
+    "members": 3232,
+    "oldSections": 43,
+    "newSections": 43,
+    "removedTitles": [],
+    "addedTitles": []
+  },
+  {
+    "id": "2611.03247",
+    "pages": 32,
+    "oldParagraphs": 766,
+    "newParagraphs": 606,
+    "members": 5244,
+    "oldSections": 37,
+    "newSections": 37,
+    "removedTitles": [
+      "3. R-Omni",
+      "B.1. R-Omni Implementation",
+      "B.4. R-Omni Compression-Ratio Configurations"
+    ],
+    "addedTitles": [
+      "3. R 2 -Omni",
+      "B.1. R 2 -Omni Implementation",
+      "B.4. R 2 -Omni Compression-Ratio Configurations"
+    ]
+  }
+]

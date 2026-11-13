@@ -2,7 +2,7 @@ import type { EvidenceLedger } from './evidenceLedger';
 import type { EvidencePassage, EvidencePassageMember } from './evidencePassages';
 import type { PageExtraction, PdfPageTextBlock } from './pdfPageBlocks';
 
-export const STRUCTURED_PAPER_VERSION = 'structured-paper-v1';
+export const STRUCTURED_PAPER_VERSION = 'structured-paper-v2';
 export type SectionRole = 'intro' | 'method' | 'related' | 'experiments' | 'limitations' | 'conclusion' | 'appendix' | 'references' | 'unknown';
 export type ParagraphKind = 'body' | 'heading' | 'caption' | 'table' | 'equation' | 'frontmatter' | 'contents';
 export type StructuredParagraph = EvidencePassage & {
@@ -20,6 +20,60 @@ export type StructuredPaper = {
 type Line = { blocks: PdfPageTextBlock[]; text: string; x: number; right: number; y: number; size: number; column: number };
 const median = (values: number[]) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)] ?? 10;
 const sizeOf = (b: PdfPageTextBlock) => Math.hypot(b.rawTransform[0], b.rawTransform[1]) || b.rawHeight || 10;
+
+/** Attach only locally supported scripts after ordinary baseline clustering.
+ * A script can sort before its base in y order, so the base item's source
+ * predecessor and its normal-font baseline supply the stable reading line.
+ * Neither the source item nor its geometry/quote is changed. */
+function attachLocalScripts(lines: Line[], page: PageExtraction): Set<PdfPageTextBlock> {
+  const attached = new Set<PdfPageTextBlock>();
+  const owners = new Map(lines.flatMap(line => line.blocks.map(block => [block, line] as const)));
+  const metrics = new Map(lines.map(line => {
+    const largest = Math.max(...line.blocks.map(sizeOf));
+    const bases = line.blocks.filter(block => sizeOf(block) >= largest * 0.9);
+    return [line, { size: median(bases.map(sizeOf)), y: median(bases.map(block => block.rawTransform[5])) }] as const;
+  }));
+  // Include unreliable nonempty items in source order. They cannot provide a
+  // host line, and therefore prevent jumping across an unknown source item.
+  const ordered = page.blocks.filter(block => block.normalizedText.trim()).sort((a, b) => a.sourceOrder - b.sourceOrder);
+  for (let index = 1; index < ordered.length; index++) {
+    const block = ordered[index], previous = ordered[index - 1];
+    const from = owners.get(block), host = owners.get(previous);
+    if (!from || !host || from === host || from.column !== host.column) continue;
+    const text = block.normalizedText.trim();
+    if (!/^[\p{L}\p{N}+−-]{1,8}$/u.test(text)) continue;
+    const base = metrics.get(host)!;
+    const ratio = sizeOf(block) / base.size;
+    const offset = Math.abs(block.rawTransform[5] - base.y);
+    const gap = block.rawTransform[4] - previous.rawTransform[4] - previous.rawWidth;
+    if (ratio < 0.45 || ratio > 0.85 || offset < base.size * 0.15 || offset > base.size * 0.7
+      || gap < -base.size * 0.2 || gap > base.size * 0.45
+      || !/[\p{L}\p{N})\]}.!?]$/u.test(previous.normalizedText.trim())) continue;
+    // An absent source index is known empty only within a complete extraction.
+    if (block.sourceOrder - previous.sourceOrder > 1 && block.sourceOrder >= page.textItemCount) continue;
+    const ambiguous = lines.some(other => {
+      if (other === host || other === from || other.column !== host.column) return false;
+      const alternate = metrics.get(other)!;
+      if (sizeOf(block) > alternate.size * 0.85 || Math.abs(block.rawTransform[5] - alternate.y) > offset + base.size * 0.1) return false;
+      return other.blocks.some(item => {
+        const horizontalGap = block.rawTransform[4] - item.rawTransform[4] - item.rawWidth;
+        return horizontalGap >= -alternate.size * 0.2 && horizontalGap <= alternate.size * 0.45;
+      });
+    });
+    if (ambiguous) continue;
+    from.blocks.splice(from.blocks.indexOf(block), 1);
+    host.blocks.push(block);
+    host.x = Math.min(host.x, block.rawTransform[4]);
+    host.right = Math.max(host.right, block.rawTransform[4] + block.rawWidth);
+    owners.set(block, host);
+    attached.add(block);
+    // Keep the normal-font baseline even if a preceding script created this
+    // initial line. Subsequent paragraph gap checks must not follow the script.
+    host.y = base.y;
+    host.size = base.size;
+  }
+  return attached;
+}
 function roleFor(title: string): SectionRole {
   if (/\b(references|bibliography)\b/i.test(title)) return 'references';
   if (/\bappendi(?:x|ces)\b/i.test(title)) return 'appendix';
@@ -42,7 +96,7 @@ function linesFor(page: PageExtraction): Line[] {
   const leftCount = long.filter(b => b.rawTransform[4] < middle - size * 3 && b.rawTransform[4] + b.rawWidth < middle + size).length;
   const rightCount = long.filter(b => b.rawTransform[4] > middle - size && b.rawTransform[4] < middle + size * 5).length;
   const twoColumns = leftCount >= 5 && rightCount >= 5;
-  const lines: Line[] = [];
+  let lines: Line[] = [];
   for (const b of [...blocks].sort((a, c) => c.rawTransform[5] - a.rawTransform[5] || a.rawTransform[4] - c.rawTransform[4])) {
     const x = b.rawTransform[4], y = b.rawTransform[5];
     const column = twoColumns ? (x < middle && x + b.rawWidth > middle + size * 2 ? -1 : x >= middle - size ? 1 : 0) : 0;
@@ -50,7 +104,11 @@ function linesFor(page: PageExtraction): Line[] {
     if (line) { line.blocks.push(b); line.x = Math.min(line.x, x); line.right = Math.max(line.right, x + b.rawWidth); }
     else lines.push({ blocks: [b], text: '', x, right: x + b.rawWidth, y, size: sizeOf(b), column });
   }
+  const scripts = attachLocalScripts(lines, page);
+  lines = lines.filter(line => line.blocks.length > 0);
   for (const line of lines) {
+    line.x = Math.min(...line.blocks.map(block => block.rawTransform[4]));
+    line.right = Math.max(...line.blocks.map(block => block.rawTransform[4] + block.rawWidth));
     line.blocks.sort((a, b) => a.rawTransform[4] - b.rawTransform[4]);
     line.text = line.blocks.reduce((text, block, index) => {
       const previous = line.blocks[index - 1];
@@ -59,7 +117,7 @@ function linesFor(page: PageExtraction): Line[] {
         && block.rawTransform[4] - (previous.rawTransform[4] + previous.rawWidth) < sizeOf(previous) * 0.2;
       return text + (text && !smallCapSuffix ? ' ' : '') + block.normalizedText.trim();
     }, '').replace(/([A-Z])\s*-\s*(?=[A-Z])/g, '$1-');
-    line.size = median(line.blocks.map(sizeOf));
+    line.size = median(line.blocks.filter(block => !scripts.has(block)).map(sizeOf));
   }
   // Full-width lines divide a page into horizontal regions; columns are read within each region.
   const spans = lines.filter(l => l.column === -1).sort((a, b) => b.y - a.y);
@@ -87,6 +145,14 @@ function kindFor(line: Line): ParagraphKind {
   if (line.blocks.length > 5 && line.text.replace(/[\p{L}\s]/gu, '').length > line.text.length * 0.25 && /[=∝∑∈≈]/.test(line.text)) return 'equation';
   if (line.blocks.length >= 4 && line.blocks.filter(b => /^[-+\d.,%±]+$/.test(b.normalizedText.trim())).length >= 3) return 'table';
   return 'body';
+}
+
+function hasDetachedPageNumber(line: Line): boolean {
+  // Digits inside a real title are valid; a contents page label is separated
+  // far to the right of the title rather than sharing its word spacing.
+  const number = line.blocks.at(-1), previous = line.blocks.at(-2);
+  return Boolean(number && previous && /^\d{1,4}$/.test(number.normalizedText.trim())
+    && number.rawTransform[4] - previous.rawTransform[4] - previous.rawWidth > line.size * 2);
 }
 
 /** Geometry changes reading context only. Original candidates and their quotes/offsets are never edited. */
@@ -126,7 +192,8 @@ export function createStructuredPaper(ledger: EvidenceLedger, pages: readonly Pa
       group = [];
     };
     for (const line of lines) {
-      const supplementary = (current.role === 'references' || current.role === 'appendix') && /[A-Za-z]{3}/.test(line.text) && /^[A-Z](?:\.\d+)*\.?\s+[A-Z][\p{L} ,:&()/'’–-]{2,100}$/u.test(line.text);
+      const supplementary = (current.role === 'references' || current.role === 'appendix') && !hasDetachedPageNumber(line)
+        && /[A-Za-z]{3}/.test(line.text) && /^[A-Z](?:\.\d+)*\.?\s+[A-Z][\p{L}\d ,:&()/'’–-]{2,100}$/u.test(line.text);
       let level = toc ? undefined : supplementary ? (line.text.match(/^[A-Z](?:\.\d+)*/)?.[0].split('.').length ?? 1) : headingLevel(line, bodySize);
       if (current === root && page.pageIndex === 0 && !/^(?:\d|abstract$|introduction$)/i.test(line.text)) level = undefined;
       if (level !== undefined) {

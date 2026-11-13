@@ -5,6 +5,7 @@ import type { ModelConfig } from './modelConfig';
 import { normalizePdfTextItem, PDF_PAGE_BLOCK_EXTRACTION_VERSION, type PageExtraction, type PdfPageTextBlock } from './pdfPageBlocks';
 import { overviewCacheContextValid, overviewCacheKey, verifiedCachedOverview } from './overviewCache';
 import { THREE_LINE_OVERVIEW_PROMPT_VERSION, type ThreeLineOverview } from './threeLineOverview';
+import { STRUCTURED_PAPER_VERSION } from './structuredPaper';
 
 const documentContentKey = 'a'.repeat(64);
 const documentVersion = `sha256:${documentContentKey}`;
@@ -74,8 +75,22 @@ describe('verified overview cache', () => {
     expect(disabled).toContain('detailed-context-selection-v3');
     expect(overviewCacheKey({ ...input, kind: 'three-line', config: { ...config, semanticReview: true } }))
       .toBe(overviewCacheKey({ ...input, kind: 'three-line' }));
-    expect(JSON.parse(overviewCacheKey({ ...input, kind: 'three-line' }))).toHaveLength(11);
-    expect(JSON.parse(disabled)).toHaveLength(13);
+    expect(JSON.parse(overviewCacheKey({ ...input, kind: 'three-line' }))).toHaveLength(12);
+    expect(JSON.parse(disabled)).toHaveLength(14);
+  });
+
+  it('does not reuse summaries built before script-aware paragraph reconstruction', () => {
+    for (const kind of ['three-line', 'detailed'] as const) {
+      const current = overviewCacheKey({ documentContentKey, kind, config });
+      const parts: unknown[] = JSON.parse(current);
+      expect(parts.at(-1)).toBe(STRUCTURED_PAPER_VERSION);
+      // Prior cache keys had no paragraph-reconstruction stamp. Valid raw
+      // anchors alone cannot establish that their model input retained scripts.
+      const legacy = parts.slice(0, -1);
+      expect(JSON.stringify(legacy)).not.toBe(current);
+      parts[parts.length - 1] = 'structured-paper-v1';
+      expect(JSON.stringify(parts)).not.toBe(current);
+    }
   });
 
   it('requires matching document, ledger and page extraction before reading or writing', () => {
