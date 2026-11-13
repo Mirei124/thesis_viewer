@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { METHOD_PRESENTATION_INSTRUCTION } from './methodPresentation';
 import { pdfEvidenceLedgerFromPages } from './evidenceLedger';
 import { normalizePdfTextItem, type PageExtraction, type PdfPageTextBlock } from './pdfPageBlocks';
 import {
@@ -92,6 +93,13 @@ describe('detailed overview compact section contract', () => {
   it('requires module mechanisms and scoped modality checks instead of a short name list', () => {
     const { ledger } = sample();
     const prompt = detailedSectionMessages('method', detailedEvidencePacket(ledger, 'method'))[0].content;
+    expect(prompt).toContain(METHOD_PRESENTATION_INSTRUCTION);
+    const session = createProgressiveEvidenceSession(ledger);
+    appendProgressiveEvidenceStage(session, 'problem_motivation');
+    const increment = appendProgressiveEvidenceStage(session, 'method');
+    const progressive = JSON.parse(progressiveDetailedSectionMessages('method', increment, [])[1].content);
+    expect(progressive.instruction).toContain(METHOD_PRESENTATION_INSTRUCTION);
+    expect(progressive.promptVersion).toBe('research-detailed-overview-zh-v22');
     for (const instruction of ['1000–1400', '中英文字符总数', '用1–2句', '每阶段仅一句', '不列阶段样本量、标注耗时、重训次数或型号升级', '一个短句', '尽量不超过1600', '主动删去旁枝统计', '内部怎样变换', '推理流程', '字幕、音频', '文本提示编码', '先判断论文的核心贡献类型', '数据引擎若是核心贡献', '下游评测任务清单', '数据集质检统计', 'benchmark指标与结果应放到实验栏', '不代表必须逐段复述']) expect(prompt).toContain(instruction);
   });
 

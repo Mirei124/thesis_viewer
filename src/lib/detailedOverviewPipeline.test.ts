@@ -1,3 +1,4 @@
+import { METHOD_PRESENTATION_INSTRUCTION } from './methodPresentation';
 import { describe, expect, it } from 'vitest';
 import { generateIndependentDetailedOverview as generateDetailedOverview } from './detailedOverviewPipeline';
 import { pageBlocksFromTextContent } from './pdfPageBlocks';
@@ -57,6 +58,7 @@ describe('independent complete chapter overview pipeline', () => {
           expect(snapshots).toHaveLength(1);
           if (request.messages.at(-1)!.content.includes('method_semantic_review')) {
             reviews++;
+            expect(JSON.parse(request.messages.at(-1)!.content).instruction).toContain(METHOD_PRESENTATION_INSTRUCTION);
             const response = completion(request);
             return { ...response, content: response.content.replace('完整解释', 'verified replacement') };
           }

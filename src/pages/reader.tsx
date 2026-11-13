@@ -61,11 +61,12 @@ import {
 } from '../lib/detailedOverview';
 import { generateDetailedOverview } from '../lib/detailedOverviewPipeline';
 import { createDetailedEvidenceLedger } from '../lib/structuredPaper';
-import { inlineEvidenceLabel, inlineEvidenceParts, type VerifiedEvidenceRef } from '../lib/inlineEvidence';
+import { inlineEvidenceLabel, type VerifiedEvidenceRef } from '../lib/inlineEvidence';
 import { buildInlineEvidenceExcerpts, type InlineExcerptGroup } from '../lib/inlineEvidenceExcerpts';
 import { PdfLinkLayer } from '../components/PdfLinkLayer';
 import { pdfDestinationPoint, resolvePdfLinkDestination } from '../lib/pdfLinks';
 import { LimitedMath } from '../components/LimitedMath';
+import { OverviewMarkdown } from '../components/OverviewMarkdown';
 import {
   clearPdfHighlights,
   deletePdfHighlight,
@@ -3333,22 +3334,21 @@ function ReaderPage() {
     return result;
   }
 
-  function renderInlineEvidence(text: string, refs: readonly VerifiedEvidenceRef[], renderMath = false) {
-    return inlineEvidenceParts(text, refs).map((part, index) => {
-      if (part.kind === 'text') return renderMath ? <LimitedMath key={`text-${index}`} text={part.value} /> : part.value;
+  function renderInlineEvidence(text: string, refs: readonly VerifiedEvidenceRef[]) {
+    return <OverviewMarkdown text={text} evidenceRefs={refs} renderSource={(part, key) => {
       const category = t(part.alias.startsWith('E') ? 'reader.evidence.sourceDetailed' : 'reader.evidence.sourceThreeLine');
       const groups = buildInlineEvidenceExcerpts(
         part.evidenceIds,
         detailedLedger?.candidates ?? (evidenceLedger.kind === 'ready' ? evidenceLedger.ledger.candidates : []),
         extraction.kind === 'ready' ? extraction.pages : [],
       );
-      return <button type="button" className="inline-evidence-button" key={`${part.alias}-${index}`} aria-haspopup="dialog"
+      return <button type="button" className="inline-evidence-button" key={key} aria-haspopup="dialog"
         aria-label={t('reader.evidence.showMembers', { category, alias: part.alias, count: part.evidenceIds.length })}
         onClick={(event) => {
           evidenceTriggerRef.current = event.currentTarget;
           setActiveEvidence({ alias: part.alias, category, count: part.evidenceIds.length, groups });
         }}>{inlineEvidenceLabel(part)}</button>;
-    });
+    }} />;
   }
 
   return (
@@ -3532,7 +3532,7 @@ function ReaderPage() {
                         <h5>{t(DETAILED_SECTION_LABEL_KEYS[section.id])}</h5>
                         {section.status !== 'available' && (section.failureReasons ?? (section.failureReason ? [section.failureReason] : [undefined])).map((reason, index) => <p key={index} className="overview-unavailable">{t(section.status === 'not_applicable' ? 'reader.insights.notApplicable' : reason ? DETAILED_FAILURE_LABEL_KEYS[reason] : 'reader.insights.insufficient')}</p>)}
                         {section.blocks.filter(block => block.text.trim()).map((block, index) => <div key={`${section.id}-${index}`} className="detailed-overview-block">
-                          <div className="insight-text">{renderInlineEvidence(section.status !== 'available' && block.text === UNGROUNDED_DETAILED_SECTION_FALLBACK ? t('reader.insights.ungroundedFallback') : block.text, block.evidenceRefs ?? [], true)}</div>
+                          <div className="insight-text">{renderInlineEvidence(section.status !== 'available' && block.text === UNGROUNDED_DETAILED_SECTION_FALLBACK ? t('reader.insights.ungroundedFallback') : block.text, block.evidenceRefs ?? [])}</div>
                         </div>)}
                       </section>)}
                     </div>

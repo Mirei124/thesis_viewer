@@ -1,3 +1,4 @@
+import { METHOD_PRESENTATION_INSTRUCTION } from './methodPresentation';
 /** Source-only context prefixes for the default detailed-overview path. */
 import type { ChatMessage, CompatibleUsage } from './compatibleProvider';
 import type { EvidenceLedger } from './evidenceLedger';
@@ -12,7 +13,7 @@ import {
 } from './detailedOverview';
 
 export const DETAILED_SHARED_CONTEXT_VERSION = 'detailed-shared-context-v1';
-const METHOD_INSTRUCTION = '为首次阅读本文的领域读者写紧凑的方法总览。先用一句说清任务输入和最终输出，再沿真实数据流或构建流程解释核心机制和步骤，最后区分必要的训练与实际使用。每个决定方法能工作的模块首次出现时，合写它是什么、接收什么、怎样变换、结果怎样交给下一步；不能用模块名称代替解释。依据论文类型取舍：模型/算法写表示、运算和连接；数据集/基准写采集、筛选、标注与评测；理论/规律研究写假设、估计/拟合和验证路径，不强套架构模板。只保留理解机制不可缺的训练目标/监督和条件；不展开硬件、参数枚举、样本量旁枝、下游任务或排名。必要公式需解释用途与变量；不清楚时准确用文字描述，不猜补。逐项核对模态、模块、训练/推理阶段和条件所属模型，不能把个别实验配置写成全局协议。数字与因果说法必须有直接原文支持。完整输入不要求逐段转述；省略枝节，保住核心定义和连接，不复述动机或贡献。只有真正阻断理解的来源缺口才用一句指出具体缺口，不把本次未选材料称为论文未提供。';
+const METHOD_INSTRUCTION = METHOD_PRESENTATION_INSTRUCTION + '为首次阅读本文的领域读者写紧凑的方法总览。先用一句说清任务输入和最终输出，再沿真实数据流或构建流程解释核心机制和步骤，最后区分必要的训练与实际使用。每个决定方法能工作的模块首次出现时，合写它是什么、接收什么、怎样变换、结果怎样交给下一步；不能用模块名称代替解释。依据论文类型取舍：模型/算法写表示、运算和连接；数据集/基准写采集、筛选、标注与评测；理论/规律研究写假设、估计/拟合和验证路径，不强套架构模板。只保留理解机制不可缺的训练目标/监督和条件；不展开硬件、参数枚举、样本量旁枝、下游任务或排名。必要公式需解释用途与变量；不清楚时准确用文字描述，不猜补。逐项核对模态、模块、训练/推理阶段和条件所属模型，不能把个别实验配置写成全局协议。数字与因果说法必须有直接原文支持。完整输入不要求逐段转述；省略枝节，保住核心定义和连接，不复述动机或贡献。只有真正阻断理解的来源缺口才用一句指出具体缺口，不把本次未选材料称为论文未提供。';
 const normalize = (text: string) => text.trim().replace(/\s+/gu, ' ').toLocaleLowerCase();
 const compact = (sources: readonly CompactEvidenceSource[]) => sources.map(({ alias, section, excerpt }) => ({ alias, section, excerpt }));
 

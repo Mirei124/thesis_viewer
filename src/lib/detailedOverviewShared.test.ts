@@ -1,3 +1,4 @@
+import { METHOD_PRESENTATION_INSTRUCTION } from './methodPresentation';
 import { describe, expect, it } from 'vitest';
 import { prepareSharedDetailedOverview } from './detailedOverviewShared';
 import { generateDetailedOverview } from './detailedOverviewPipeline';
@@ -28,6 +29,7 @@ describe('default source-prefix detailed overview pipeline', () => {
     const plan = prepareSharedDetailedOverview(fixture());
     expect(plan.fallbackReason).toBeUndefined();
     const problem = plan.requests[0], method = plan.requests[1], contribution = plan.requests[2];
+    expect(JSON.parse(method.messages.at(-1)!.content).instruction).toContain(METHOD_PRESENTATION_INSTRUCTION);
     expect(method.messages.slice(0, 2)).toEqual(problem.messages.slice(0, 2));
     expect(contribution.messages.slice(0, 2)).toEqual(method.messages.slice(0, 2));
     expect(contribution.messages).toHaveLength(3);

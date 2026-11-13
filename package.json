@@ -18,7 +18,9 @@
   },
   "dependencies": {
     "@wxt-dev/module-react": "^1.1.0",
+    "entities": "^9.0.0",
     "katex": "^0.18.9",
+    "marked": "^18.2.0",
     "pdfjs-dist": "^6.3.289",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
